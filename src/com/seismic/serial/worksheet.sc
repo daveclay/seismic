@@ -1,3 +1,11 @@
+String.format("%4s", "23")
+val s = "7890"
+
+f"hi: $s%4s test"
+"123456"
+f"$s%6.6s hi"
+
+
 Integer.toBinaryString(Integer.MAX_VALUE - 1)
 Integer.toBinaryString(byte2Byte(0xf).toByte)
 Integer.toBinaryString(1023)

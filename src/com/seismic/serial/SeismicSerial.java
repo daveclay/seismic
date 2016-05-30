@@ -24,25 +24,22 @@ package com.seismic.serial;
 */
 
 
-import java.lang.reflect.*;
-import java.util.Map;
-
 import jssc.*;
 
 
 /**
- * ( begin auto-generated from Serial.xml )
+ * ( begin auto-generated from SeismicSerial.xml )
  *
  * Class for sending and receiving data using the serial communication protocol.
  *
  * ( end auto-generated )
  * @webref serial
  * @brief Class for sending and receiving data using the serial communication protocol.
- * @instanceName serial any variable of type Serial
+ * @instanceName serial any variable of type SeismicSerial
  * @usage Application
  * @see_external LIB_serial/serialEvent
  */
-public class Serial implements SerialPortEventListener {
+public class SeismicSerial implements SerialPortEventListener {
     SerialListener parent;
     public SerialPort port;
 
@@ -65,7 +62,7 @@ public class Serial implements SerialPortEventListener {
     /**
      * @param parent typically use "this"
      */
-    public Serial(SerialListener parent) {
+    public SeismicSerial(SerialListener parent) {
         this(parent, "COM1", 9600, 'N', 8, 1);
     }
 
@@ -73,7 +70,7 @@ public class Serial implements SerialPortEventListener {
     /**
      * @param baudRate 9600 is the default
      */
-    public Serial(SerialListener parent, int baudRate) {
+    public SeismicSerial(SerialListener parent, int baudRate) {
         this(parent, "COM1", baudRate, 'N', 8, 1);
     }
 
@@ -81,12 +78,12 @@ public class Serial implements SerialPortEventListener {
     /**
      * @param portName name of the port (COM1 is the default)
      */
-    public Serial(SerialListener parent, String portName) {
+    public SeismicSerial(SerialListener parent, String portName) {
         this(parent, portName, 9600, 'N', 8, 1);
     }
 
 
-    public Serial(SerialListener parent, String portName, int baudRate) {
+    public SeismicSerial(SerialListener parent, String portName, int baudRate) {
         this(parent, portName, baudRate, 'N', 8, 1);
     }
 
@@ -96,7 +93,7 @@ public class Serial implements SerialPortEventListener {
      * @param dataBits 8 is the default
      * @param stopBits 1.0, 1.5, or 2.0 (1.0 is the default)
      */
-    public Serial(SerialListener parent, String portName, int baudRate, char parity, int dataBits, float stopBits) {
+    public SeismicSerial(SerialListener parent, String portName, int baudRate, char parity, int dataBits, float stopBits) {
         this.parent = parent;
 
         // setup parity
