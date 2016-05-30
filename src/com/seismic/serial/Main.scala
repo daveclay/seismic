@@ -1,6 +1,5 @@
-package com.seismic
+package com.seismic.serial
 
-import com.seismic.serial.SeismicSerial
 import com.seismic.serial.SeismicSerial.SerialListener
 
 object Main {

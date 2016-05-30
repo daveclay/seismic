@@ -1,6 +1,9 @@
+import com.seismic.utils.RandomHelper
+
+RandomHelper.pick("A", "B", "C")
+
 String.format("%4s", "23")
 val s = "7890"
-
 f"hi: $s%4s test"
 "123456"
 f"$s%6.6s hi"

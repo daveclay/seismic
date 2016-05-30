@@ -7,7 +7,7 @@ object RandomHelper {
 
   def random = randomImpl
 
-  def pick[T](values: T*) = {
+  def pick[T](values: T*): T = {
     values(random.nextInt(values.size))
   }
 }
