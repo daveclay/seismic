@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="pde">
-    <CLASSES>
-      <root url="jar:///Applications/Processing.app/Contents/Java/pde.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

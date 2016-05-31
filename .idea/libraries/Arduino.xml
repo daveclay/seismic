@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Arduino">
-    <CLASSES>
-      <root url="jar://$USER_HOME$/Documents/Processing/libraries/arduino/library/Arduino.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
