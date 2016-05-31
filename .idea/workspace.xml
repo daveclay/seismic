@@ -2,34 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1b47f382-f8c3-4195-8271-f4c7430e7cd0" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/InstrumentTriggerConfig.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/MIDIInstrument.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/Seismic.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/SetList.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/Song.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/TriggerMap.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/TriggeredState.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/messages/MessageSource.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/messages/TriggerMessageParser.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/messages/TriggerOffMessage.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/messages/TriggerOnMessage.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/midi/ControlChange.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/midi/MIDIIO.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/midi/MIDIListener.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/midi/MidiThread.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/midi/Note.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/midi/StupidMonkeyMIDI.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/p/Location.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/p/PText.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/p/SerialMIDITriggerV2.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/queue/Queue.scala" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/ScalaTest.scala" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/SerialMIDITrigger2.scala" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/Test.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/com/seismic/Main.scala" afterPath="$PROJECT_DIR$/src/com/seismic/serial/Main.scala" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/seismic/Instrument.scala" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/InstrumentTriggerConfig.scala" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/MIDIInstrument.scala" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/SetList.scala" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/seismic/TriggerMap.scala" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/seismic/Seismic.scala" afterPath="$PROJECT_DIR$/src/com/seismic/Seismic.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/seismic/Song.scala" afterPath="$PROJECT_DIR$/src/com/seismic/Song.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/seismic/TriggeredState.scala" afterPath="$PROJECT_DIR$/src/com/seismic/TriggeredState.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/seismic/messages/TriggerMessageParser.scala" afterPath="$PROJECT_DIR$/src/com/seismic/messages/TriggerMessageParser.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc" afterPath="$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/seismic/utils/RandomHelper.scala" afterPath="$PROJECT_DIR$/src/com/seismic/utils/RandomHelper.scala" />
     </list>
     <ignored path="seismic.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -52,41 +35,61 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="Seismic.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/seismic/Seismic.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-40">
+              <caret line="16" column="20" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Song.scala" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/com/seismic/Song.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="320">
+              <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Instrument.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/seismic/Instrument.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="SerialMIDITriggerV2.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/seismic/p/SerialMIDITriggerV2.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="13" column="6" selection-start-line="13" selection-start-column="6" selection-end-line="13" selection-end-column="6" />
+            <state relative-caret-position="135">
+              <caret line="9" column="45" selection-start-line="9" selection-start-column="45" selection-end-line="9" selection-end-column="45" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ProcessingUtils.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/seismic/p/ProcessingUtils.java">
+      <file leaf-file-name="TriggerMessageParser.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/seismic/messages/TriggerMessageParser.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="30">
-              <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+              <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="InstrumentTriggerConfig.scala" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/com/seismic/InstrumentTriggerConfig.scala">
+      <file leaf-file-name="worksheet.sc" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="6" column="28" selection-start-line="6" selection-start-column="28" selection-end-line="6" selection-end-column="28" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MIDIInstrument.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/seismic/MIDIInstrument.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+            <state relative-caret-position="150">
+              <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -115,38 +118,8 @@
       <file leaf-file-name="Queue.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/seismic/queue/Queue.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
+            <state relative-caret-position="515">
               <caret line="58" column="38" selection-start-line="58" selection-start-column="38" selection-end-line="58" selection-end-column="38" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="RandomHelper.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/seismic/utils/RandomHelper.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="10" column="4" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MidiThread.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/seismic/midi/MidiThread.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="4" column="103" selection-start-line="4" selection-start-column="103" selection-end-line="4" selection-end-column="103" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SeismicSerial.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/seismic/serial/SeismicSerial.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="41" column="13" selection-start-line="41" selection-start-column="13" selection-end-line="41" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -200,14 +173,21 @@
         <option value="$PROJECT_DIR$/src/com/seismic/midi/StupidMonkeyMIDI.java" />
         <option value="$PROJECT_DIR$/src/com/seismic/midi/StupidMonkeyMIDI.scala" />
         <option value="$PROJECT_DIR$/src/com/seismic/midi/MidiThread.scala" />
-        <option value="$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc" />
         <option value="$PROJECT_DIR$/src/com/seismic/utils/RandomHelper.scala" />
         <option value="$PROJECT_DIR$/src/com/seismic/queue/Queue.scala" />
         <option value="$PROJECT_DIR$/src/com/seismic/serial/Main.scala" />
         <option value="$PROJECT_DIR$/src/com/seismic/messages/TriggerOffMessage.scala" />
-        <option value="$PROJECT_DIR$/src/com/seismic/MIDIInstrument.scala" />
         <option value="$PROJECT_DIR$/src/com/seismic/SerialMIDITriggerV2.scala" />
         <option value="$PROJECT_DIR$/src/com/seismic/p/SerialMIDITriggerV2.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/MIDIInstrument.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/SetList.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc" />
+        <option value="$PROJECT_DIR$/src/com/seismic/Instrument.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/TriggerMap.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/InstrumentTriggerConfig.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/Seismic.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/messages/TriggerMessageParser.scala" />
+        <option value="$PROJECT_DIR$/src/com/seismic/Song.scala" />
       </list>
     </option>
   </component>
@@ -434,8 +414,34 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="MIDIInstrument.scala" />
+              <option name="myItemId" value="p" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SerialMIDITriggerV2.scala" />
               <option name="myItemType" value="org.jetbrains.plugins.scala.components.ScalaDefsProjectViewProvider$ScalaFileTreeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="seismic" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="seismic" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="seismic" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="p" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -471,27 +477,7 @@
       <recent name="com.seismic.midi" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Queue">
-    <configuration default="false" name="SerialMIDITrigger" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
-        <pattern>
-          <option name="PATTERN" value="com.seismic.utils.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="MAIN_CLASS_NAME" value="com.seismic.p.SerialMIDITrigger" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="seismic" />
-      <envs />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="Application.SerialMIDITrigger2 (1)">
     <configuration default="false" name="SerialMIDITrigger2" type="Application" factoryName="Application" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
@@ -560,6 +546,26 @@
         </pattern>
       </extension>
       <option name="MAIN_CLASS_NAME" value="com.seismic.queue.Queue" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="seismic" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="SerialMIDITrigger2 (1)" type="Application" factoryName="Application" temporary="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="com.seismic.p.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="MAIN_CLASS_NAME" value="com.seismic.p.SerialMIDITrigger2" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -1026,19 +1032,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Application.SerialMIDITrigger" />
-      <item index="1" class="java.lang.String" itemvalue="Application.SerialMIDITrigger2" />
-      <item index="2" class="java.lang.String" itemvalue="Application.Test" />
-      <item index="3" class="java.lang.String" itemvalue="Application.ScalaTest" />
-      <item index="4" class="java.lang.String" itemvalue="Application.Queue" />
+      <item index="0" class="java.lang.String" itemvalue="Application.SerialMIDITrigger2" />
+      <item index="1" class="java.lang.String" itemvalue="Application.Test" />
+      <item index="2" class="java.lang.String" itemvalue="Application.ScalaTest" />
+      <item index="3" class="java.lang.String" itemvalue="Application.Queue" />
+      <item index="4" class="java.lang.String" itemvalue="Application.SerialMIDITrigger2 (1)" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Application.Queue" />
-        <item index="1" class="java.lang.String" itemvalue="Application.SerialMIDITrigger2" />
-        <item index="2" class="java.lang.String" itemvalue="Application.ScalaTest" />
-        <item index="3" class="java.lang.String" itemvalue="Application.Test" />
-        <item index="4" class="java.lang.String" itemvalue="Application.SerialMIDITrigger" />
+        <item index="0" class="java.lang.String" itemvalue="Application.SerialMIDITrigger2 (1)" />
+        <item index="1" class="java.lang.String" itemvalue="Application.Queue" />
+        <item index="2" class="java.lang.String" itemvalue="Application.SerialMIDITrigger2" />
+        <item index="3" class="java.lang.String" itemvalue="Application.ScalaTest" />
+        <item index="4" class="java.lang.String" itemvalue="Application.Test" />
       </list>
     </recent_temporary>
   </component>
@@ -1063,12 +1069,12 @@
       <workItem from="1464448795589" duration="91000" />
       <workItem from="1464449009702" duration="17318000" />
       <workItem from="1464535720528" duration="9452000" />
-      <workItem from="1464564071839" duration="17342000" />
+      <workItem from="1464564071839" duration="22863000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="44203000" />
+    <option name="totallyTimeSpent" value="49724000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="10" y="23" width="1400" height="837" extended-state="0" />
@@ -1083,7 +1089,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294271" sideWeight="0.50285715" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294271" sideWeight="0.49714285" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3294271" sideWeight="0.49714285" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -1380,14 +1386,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="29">
-          <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/seismic/serial/SeismicSerial.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1420,14 +1418,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/queue/Queue.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="58" column="38" selection-start-line="58" selection-start-column="38" selection-end-line="58" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/seismic/ScalaTest.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -1452,18 +1442,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/messages/TriggerOffMessage.scala">
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/p/ProcessingUtils.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
-          <caret line="2" column="11" selection-start-line="2" selection-start-column="11" selection-end-line="2" selection-end-column="11" />
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/MIDIInstrument.scala">
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/TriggerMap.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+        <state relative-caret-position="60">
+          <caret line="4" column="9" selection-start-line="4" selection-start-column="9" selection-end-line="4" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/InstrumentTriggerConfig.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="16" selection-start-line="7" selection-start-column="16" selection-end-line="7" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/SetList.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/Seismic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-40">
+          <caret line="16" column="20" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/Instrument.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/serial/worksheet.sc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -1476,26 +1506,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/p/SerialMIDITriggerV2.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="6" selection-start-line="13" selection-start-column="6" selection-end-line="13" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/p/ProcessingUtils.java">
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/messages/TriggerOffMessage.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
-          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <caret line="2" column="11" selection-start-line="2" selection-start-column="11" selection-end-line="2" selection-end-column="11" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/seismic/InstrumentTriggerConfig.scala">
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/queue/Queue.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="28" selection-start-line="6" selection-start-column="28" selection-end-line="6" selection-end-column="28" />
+        <state relative-caret-position="515">
+          <caret line="58" column="38" selection-start-line="58" selection-start-column="38" selection-end-line="58" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/p/SerialMIDITriggerV2.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="45" selection-start-line="9" selection-start-column="45" selection-end-line="9" selection-end-column="45" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/messages/TriggerMessageParser.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/seismic/Song.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
           <folding />
         </state>
       </provider>

@@ -1,7 +1,5 @@
 package com.seismic.messages
 
-import TriggerOffMessage
-
 object TriggerMessageParser {
 
   def from(message: String) = {

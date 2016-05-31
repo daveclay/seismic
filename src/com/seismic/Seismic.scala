@@ -3,49 +3,58 @@ package com.seismic
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.MIDIIO
 
+/**
+  * Contains the structure and management of a SetList of Songs and MIDIInstruments
+  * @param midiIO
+  */
 class Seismic(midiIO: MIDIIO) {
 
-  val builder = new MIDIInstrumentBuilder(midiIO)
+  // TODO: edit this in the Processing UI, export/import JSON config.
+  val setList = SetList(
+    name = "The Setlist",
+    songs = Array(
+      Song(
+        name = "Song A",
+        channel = 1,
+        phrases = Array(
+          Phrase(
+            name = "intro",
+            kickInstruments = Array(
+              Instrument(60),
+              Instrument(61),
+              Instrument(62)
+            ),
 
-  // TODO: if I want to change instruments, I have to change these arrays, which means changing the TrigerMap which means changing et cetc etc
-  //
-  // So, if I want song A to be 3 instruments, Song B to be 2, and Song C to be 7, I have to create new maps each time.
-  // So, maybe I should adjust the grouping of what is changeable to things that change via knob and things that
-  // change via song change (foot controller? Or maybe not!)
-  //
-  // A song change might be a button or select in the UI: which midi banks/channels/mappings do I use for this song?
-  val kickInstruments = Array(
-    builder.instrument(0),
-    builder.instrument(1),
-    builder.instrument(2)
+            snareInstruments = Array(
+              Instrument(63),
+              Instrument(64),
+              Instrument(65)
+            )
+          )
+        )
+      )
+    )
   )
 
-  val snareInstruments = Array(
-    builder.instrument(3),
-    builder.instrument(4),
-    builder.instrument(5)
-  )
-
-  // TODO: I want to change thresholds or change midi channels on the fly depending on the song, or which channels are mapped
-  val kickMap = new TriggerMap(100, 800, kickInstruments)
-  val snareMap = new TriggerMap(100, 800, snareInstruments)
+  // TODO: select song/phrase via footswitch via message sent over serial
+  val song = setList.songs(0)
+  val phrase = song.phrases(0)
 
   val triggeredState = new TriggeredState
 
-  def midiMap(name: String) = name match {
-    case "KICK" => kickMap
-    case "SNARE" => snareMap
-  }
-
   def trigger(trigger: TriggerOnMessage): Unit = {
-    val instrument = midiMap(trigger.name).mapValue(trigger.handleValue)
-    instrument.noteOn(trigger.triggerValue)
+    val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
+    midiIO.sendNoteOn(song.channel,
+      instrument.note,
+      instrument.mapValueToVelocity(trigger.triggerValue))
+
     triggeredState.triggered(trigger.name, instrument)
   }
 
   def off(name: String): Unit = {
     triggeredState.lastTriggered(name) match {
-      case Some(instrument) => instrument.noteOff
+      case Some(instrument) =>
+        midiIO.sendNoteOff(song.channel, instrument.note, 0);
       case None => System.err.println(
         "Somehow managed to trigger an off event with no previous on event for " + name + ". Ignoring.")
     }

@@ -1,9 +1,9 @@
 package com.seismic
 
 class TriggeredState {
-  var lastTriggeredMap = Map[String, MIDIInstrument]()
+  var lastTriggeredMap = Map[String, Instrument]()
 
-  def triggered(name: String, instrument: MIDIInstrument): Unit = {
+  def triggered(name: String, instrument: Instrument): Unit = {
     lastTriggeredMap = lastTriggeredMap + (name -> instrument)
   }
 

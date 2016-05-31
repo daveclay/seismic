@@ -2,6 +2,15 @@ import com.seismic.utils.RandomHelper
 
 RandomHelper.pick("A", "B", "C")
 
+val hi = (int: Int) => int * 2
+hi(4)
+
+val foo = (int: Int) => (s: String) => 0 to int map { (i) => s + i }
+
+foo(3)("hi")
+
+4 to 7 map { (i) => i }
+
 String.format("%4s", "23")
 val s = "7890"
 f"hi: $s%4s test"
