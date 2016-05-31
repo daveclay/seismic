@@ -174,7 +174,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
             if (devices[i].getName().equals(deviceName)) return addInput(devices[i]);
         }
 
-        System.err.println("\nThe MidiBus Warning: No available input MIDI devices named: \"" + deviceName + "\" were found");
+        System.err.println("\nThe MidiBus Warning: No dataAvailable input MIDI devices named: \"" + deviceName + "\" were found");
         return false;
     }
 
@@ -307,7 +307,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
             if (devices[i].getName().equals(deviceName)) return addOutput(devices[i]);
         }
 
-        System.err.println("\nThe MidiBus Warning: No available input MIDI devices named: \"" + deviceName + "\" were found");
+        System.err.println("\nThe MidiBus Warning: No dataAvailable input MIDI devices named: \"" + deviceName + "\" were found");
         return false;
     }
 
@@ -439,7 +439,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
                 device = MidiSystem.getMidiDevice(availableDevices[i]);
                 if (device.isOpen()) device.close();
             } catch (MidiUnavailableException e) {
-                //Device wasn't available, which is fine since we wanted to close it anyways
+                //Device wasn't dataAvailable, which is fine since we wanted to close it anyways
             }
         }
 
@@ -917,16 +917,16 @@ public class StupidMonkeyMIDI implements MIDIIO {
 
     /**
      * Rescan for Midi Devices. This is autocalled once when the MidiBus starts up. It should be called again if you
-     * need to refresh the list of available MidiDevices while your program is running.
+     * need to refresh the list of dataAvailable MidiDevices while your program is running.
      */
     public static void findMidiDevices() {
         availableDevices = MidiSystem.getMidiDeviceInfo();
     }
 
     /**
-     * Returns the names of all the available input devices.
+     * Returns the names of all the dataAvailable input devices.
      *
-     * @return the names of the available inputs.
+     * @return the names of the dataAvailable inputs.
      * @see #list()
      * @see #availableOutputs()
      * @see #unavailableDevices()
@@ -943,9 +943,9 @@ public class StupidMonkeyMIDI implements MIDIIO {
     }
 
     /**
-     * Returns the names of all the available output devices.
+     * Returns the names of all the dataAvailable output devices.
      *
-     * @return the names of the available outputs.
+     * @return the names of the dataAvailable outputs.
      * @see #list()
      * @see #availableInputs()
      * @see #unavailableDevices()
@@ -981,9 +981,9 @@ public class StupidMonkeyMIDI implements MIDIIO {
     }
 
     /**
-     * Returns the MidiDevice.Info of all the available input devices.
+     * Returns the MidiDevice.Info of all the dataAvailable input devices.
      *
-     * @return the MidiDevice.Info of the available inputs.
+     * @return the MidiDevice.Info of the dataAvailable inputs.
      */
     public static MidiDevice.Info[] availableInputsMidiDeviceInfo() {
         if (availableDevices == null) findMidiDevices();
@@ -994,7 +994,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
         for (MidiDevice.Info info : availableDevices) {
             try {
                 device = MidiSystem.getMidiDevice(info);
-                //This open close checks to make sure the announced device is truely available
+                //This open close checks to make sure the announced device is truely dataAvailable
                 //There are many reports on Windows that some devices lie about their availability
                 //(For instance the Microsoft GS Wavetable Synth)
                 //But in theory I guess this could happen on any OS, so I'll just do it all the time.
@@ -1004,7 +1004,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
                 // }
                 if (device.getMaxTransmitters() != 0) deviceInfos.add(info);
             } catch (MidiUnavailableException e) {
-                //Device was unavailable which is fine, we only care about available inputs
+                //Device was unavailable which is fine, we only care about dataAvailable inputs
             }
         }
 
@@ -1016,9 +1016,9 @@ public class StupidMonkeyMIDI implements MIDIIO {
     }
 
     /**
-     * Returns the MidiDevice.Info of all the available output devices.
+     * Returns the MidiDevice.Info of all the dataAvailable output devices.
      *
-     * @return the MidiDevice.Info of the available output.
+     * @return the MidiDevice.Info of the dataAvailable output.
      */
     static MidiDevice.Info[] availableOutputsMidiDeviceInfo() {
         if (availableDevices == null) findMidiDevices();
@@ -1029,7 +1029,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
         for (MidiDevice.Info availableDevice : availableDevices) {
             try {
                 device = MidiSystem.getMidiDevice(availableDevice);
-                //This open close checks to make sure the announced device is truly available
+                //This open close checks to make sure the announced device is truly dataAvailable
                 //There are many reports on Windows that some devices lie about their availability
                 //(For instance the Microsoft GS Wavetable Synth)
                 //But in theory I guess this could happen on any OS, so I'll just do it all the time.
@@ -1039,7 +1039,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
                 // }
                 if (device.getMaxReceivers() != 0) devices_list.add(availableDevice);
             } catch (MidiUnavailableException e) {
-                //Device was unavailable which is fine, we only care about available output
+                //Device was unavailable which is fine, we only care about dataAvailable output
             }
         }
 
@@ -1064,7 +1064,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
         for (int i = 0; i < availableDevices.length; i++) {
             try {
                 device = MidiSystem.getMidiDevice(availableDevices[i]);
-                //This open close checks to make sure the announced device is truely available
+                //This open close checks to make sure the announced device is truely dataAvailable
                 //There are many reports on Windows that some devices lie about their availability
                 //(For instance the Microsoft GS Wavetable Synth)
                 //But in theory I guess this could happen on any OS, so I'll just do it all the time.

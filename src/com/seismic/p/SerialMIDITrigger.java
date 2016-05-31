@@ -12,7 +12,7 @@ public class SerialMIDITrigger extends PApplet {
     }
 
     MidiBus myBus; // The MidiBus
-    Serial myPort;  // Create object from SeismicSerial class
+    Serial myPort;  // Create object from SerialIO class
     String val;      // Data received from the serial port
 
     int lastKickChannel;
@@ -58,7 +58,7 @@ public class SerialMIDITrigger extends PApplet {
 
     public void draw() {
         background(0);
-        if ( myPort.available() > 0) {  // If data is available,
+        if ( myPort.available() > 0) {  // If data is dataAvailable,
             val = myPort.readStringUntil(10);        // read it and store it in val
             if (val != null) {
                 String s = val.trim();

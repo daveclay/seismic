@@ -1,15 +1,15 @@
 package com.seismic.serial
 
-import com.seismic.serial.SeismicSerial.SerialListener
+import SerialListener
 
 object Main {
 
   def main(args: Array[String]) {
-    SeismicSerial.list() foreach { name =>
+    SerialIO.list() foreach { name =>
       println(name)
     }
 
-    val serial = new SeismicSerial(new SerialListener {
+    val serial = new SerialIO(new SerialListener {
       override def handleMessage(bytes: Array[Byte]): Unit = {
         val result = bytes.foldLeft(0) { (value, byte) =>
           (value << 8) + (byte & 0xff)

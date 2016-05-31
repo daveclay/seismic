@@ -3,20 +3,22 @@ package com.seismic.p
 import com.seismic.Seismic
 import com.seismic.messages.{MessageSource, TriggerMessageParser, TriggerOffMessage, TriggerOnMessage}
 import com.seismic.midi.StupidMonkeyMIDI
+import com.seismic.serial.{SerialMessageHandler, SerialMonitor}
 import processing.core.{PApplet, PConstants, PFont}
 
-object SerialMIDITrigger2 {
+object SeismicApp {
   def main(args: Array[String]): Unit = {
-    PAppletRunner.run(new SerialMIDITrigger2)
+    PAppletRunner.run(new SeismicApp)
   }
 }
 
-class SerialMIDITrigger2 extends PApplet {
+class SeismicApp extends PApplet {
 
   var seismic: Seismic = null
   var font: PFont = null
   val messageSource = new MessageSource
   val midiIO = new StupidMonkeyMIDI("IAC Bus 2");
+  val serialMonitor = new SerialMonitor("/dev/xxx")
 
   val triggerOnDisplays = Map(
     "KICK" -> PText(Location(10, 40)),
@@ -28,14 +30,30 @@ class SerialMIDITrigger2 extends PApplet {
   }
 
   override def setup(): Unit = {
-    // TODO: reconnect button so you don't have to restart app
+    // TODO: reconnect button so you don't have to restart app when things get unplugged?
     seismic = new Seismic(midiIO)
+    serialMonitor.start(new SerialMessageHandler {
+      override def handleMessage(message: String): Unit = {
+        // Note: this is NOT called on the animation thread!
+        TriggerMessageParser.from(message) match {
+          case Some(triggerOn: TriggerOnMessage) =>
+            seismic.trigger(triggerOn)
+          case Some(TriggerOffMessage(name)) =>
+            seismic.off(name)
+          case None =>
+            System.out.println("Unknown message: \"" + message + "\"")
+        }
+      }
+    })
+
     font = createFont("Menlo-Regular", 13)
     PFont.list().foreach { (s) =>
       println(s)
     }
 
-    frameRate(1800)
+    // be conservative; all the timing-sensitive stuff is happening on other threads, so the animation
+    // is the least of our concerns.
+    frameRate(30)
   }
 
   override def draw(): Unit = {
@@ -59,10 +77,8 @@ class SerialMIDITrigger2 extends PApplet {
   def handleMessage(message: String) {
     TriggerMessageParser.from(message) match {
       case Some(triggerOn: TriggerOnMessage) =>
-        seismic.trigger(triggerOn)
         displayTrigger(triggerOn)
       case Some(TriggerOffMessage(name)) =>
-        seismic.off(name)
       case None =>
         System.out.println("Unknown message: \"" + message + "\"")
     }

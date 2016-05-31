@@ -28,20 +28,28 @@ import jssc.*;
 
 
 /**
- * ( begin auto-generated from SeismicSerial.xml )
+ * ( begin auto-generated from SerialIO.xml )
  *
  * Class for sending and receiving data using the serial communication protocol.
  *
  * ( end auto-generated )
  * @webref serial
  * @brief Class for sending and receiving data using the serial communication protocol.
- * @instanceName serial any variable of type SeismicSerial
+ * @instanceName serial any variable of type SerialIO
  * @usage Application
  * @see_external LIB_serial/serialEvent
  */
-public class SeismicSerial implements SerialPortEventListener {
-    SerialListener parent;
-    public SerialPort port;
+public class SerialIO implements SerialPortEventListener {
+    SerialListener serialListener;
+
+    int stopBitsIdx;
+    String portName;
+    int baudRate;
+    char parity;
+    int dataBits;
+    float stopBits;
+
+    SerialPort port;
 
     byte[] buffer = new byte[32768];
     int inBuffer = 0;
@@ -50,41 +58,34 @@ public class SeismicSerial implements SerialPortEventListener {
     int bufferUntilSize = 1;
     byte bufferUntilByte = 0;
 
-    public static interface SerialListener {
-        void handleMessage(byte[] bytes);
-    }
-
     // Things we are currently not exposing:
     // * hardware flow control
     // * state of the RING, RLSD line
     // * sending breaks
 
-    /**
-     * @param parent typically use "this"
-     */
-    public SeismicSerial(SerialListener parent) {
-        this(parent, "COM1", 9600, 'N', 8, 1);
+    public SerialIO() {
+        this("COM1", 9600, 'N', 8, 1);
     }
 
 
     /**
      * @param baudRate 9600 is the default
      */
-    public SeismicSerial(SerialListener parent, int baudRate) {
-        this(parent, "COM1", baudRate, 'N', 8, 1);
+    public SerialIO(int baudRate){
+        this("COM1", baudRate, 'N', 8, 1);
     }
 
 
     /**
      * @param portName name of the port (COM1 is the default)
      */
-    public SeismicSerial(SerialListener parent, String portName) {
-        this(parent, portName, 9600, 'N', 8, 1);
+    public SerialIO(String portName) {
+        this(portName, 9600, 'N', 8, 1);
     }
 
 
-    public SeismicSerial(SerialListener parent, String portName, int baudRate) {
-        this(parent, portName, baudRate, 'N', 8, 1);
+    public SerialIO(String portName, int baudRate) {
+        this(portName, baudRate, 'N', 8, 1);
     }
 
 
@@ -93,8 +94,14 @@ public class SeismicSerial implements SerialPortEventListener {
      * @param dataBits 8 is the default
      * @param stopBits 1.0, 1.5, or 2.0 (1.0 is the default)
      */
-    public SeismicSerial(SerialListener parent, String portName, int baudRate, char parity, int dataBits, float stopBits) {
-        this.parent = parent;
+    public SerialIO(String portName,
+                    int baudRate,
+                    char parity,
+                    int dataBits,
+                    float stopBits) {
+
+        this.portName = portName;
+        this.baudRate = baudRate;
 
         // setup parity
         if (parity == 'O') {
@@ -109,13 +116,20 @@ public class SeismicSerial implements SerialPortEventListener {
             parity = SerialPort.PARITY_NONE;
         }
 
+        this.parity = parity;
+        this.dataBits = dataBits;
+
         // setup stop bits
-        int stopBitsIdx = SerialPort.STOPBITS_1;
+        stopBitsIdx = SerialPort.STOPBITS_1;
         if (stopBits == 1.5f) {
             stopBitsIdx = SerialPort.STOPBITS_1_5;
         } else if (stopBits == 2) {
             stopBitsIdx = SerialPort.STOPBITS_2;
         }
+    }
+
+    public void open(SerialListener serialListener) {
+        this.serialListener = serialListener;
 
         port = new SerialPort(portName);
         try {
@@ -332,7 +346,7 @@ public class SeismicSerial implements SerialPortEventListener {
      * efficient than readBytes() returning a byte[] array.
      *
      * Returns an int for how many bytes were read. If more bytes
-     * are available than can fit into the byte array, only those
+     * are dataAvailable than can fit into the byte array, only those
      * that will fit are read.
      */
     public int readBytes(byte[] dest) {
@@ -486,7 +500,7 @@ public class SeismicSerial implements SerialPortEventListener {
      * @generate serialEvent.xml
      * @webref serial:events
      * @usage web_application
-     * @param event the port where new data is available
+     * @param event the port where new data is dataAvailable
      */
     public void serialEvent(SerialPortEvent event) {
         if (event.getEventType() == SerialPortEvent.RXCHAR) {
@@ -508,9 +522,8 @@ public class SeismicSerial implements SerialPortEventListener {
                     }
                 }
 
-                while (inBuffer >= 2) {
-                    byte[] bytes = readBytes(2);
-                    parent.handleMessage(bytes);
+                if (inBuffer > 0) {
+                    serialListener.dataAvailable();
                 }
             } catch (SerialPortException e) {
                 throw new RuntimeException("Error reading from serial port " + e.getPortName() + ": " + e.getExceptionType());
