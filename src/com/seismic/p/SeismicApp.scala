@@ -1,9 +1,11 @@
 package com.seismic.p
 
+import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue}
+
 import com.seismic.Seismic
 import com.seismic.messages.{MessageSource, TriggerMessageParser, TriggerOffMessage, TriggerOnMessage}
 import com.seismic.midi.StupidMonkeyMIDI
-import com.seismic.serial.{SerialMessageHandler, SerialMonitor}
+import com.seismic.serial.SerialMonitor
 import processing.core.{PApplet, PConstants, PFont}
 
 object SeismicApp {
@@ -14,16 +16,31 @@ object SeismicApp {
 
 class SeismicApp extends PApplet {
 
-  var seismic: Seismic = null
   var font: PFont = null
-  val messageSource = new MessageSource
-  val midiIO = new StupidMonkeyMIDI("IAC Bus 2");
-  val serialMonitor = new SerialMonitor("/dev/xxx")
-
   val triggerOnDisplays = Map(
     "KICK" -> PText(Location(10, 40)),
     "SNARE" -> PText(Location(10, 70))
   )
+  val renderQueue = new ArrayBlockingQueue[(PApplet) => Unit](100);
+
+  val messageHandler = (message: String) => {
+      // Note: this is NOT called on the animation thread!
+      TriggerMessageParser.from(message) match {
+        case Some(triggerOn: TriggerOnMessage) =>
+          seismic.trigger(triggerOn)
+          // notify the processing SeismicApp to render the trigger
+          renderQueue.add((canvas) => updateTriggerOnDisplay(triggerOn))
+        case Some(TriggerOffMessage(name)) =>
+          seismic.off(name)
+        case None =>
+          System.out.println("Unknown message: \"" + message + "\"")
+      }
+    }
+
+  val messageSource = new MessageSource
+  val midiIO = new StupidMonkeyMIDI("IAC Bus 2");
+  val serialMonitor = new SerialMonitor(messageHandler)
+  val seismic = new Seismic(midiIO)
 
   override def settings(): Unit = {
     size(800, 600)
@@ -31,20 +48,7 @@ class SeismicApp extends PApplet {
 
   override def setup(): Unit = {
     // TODO: reconnect button so you don't have to restart app when things get unplugged?
-    seismic = new Seismic(midiIO)
-    serialMonitor.start(new SerialMessageHandler {
-      override def handleMessage(message: String): Unit = {
-        // Note: this is NOT called on the animation thread!
-        TriggerMessageParser.from(message) match {
-          case Some(triggerOn: TriggerOnMessage) =>
-            seismic.trigger(triggerOn)
-          case Some(TriggerOffMessage(name)) =>
-            seismic.off(name)
-          case None =>
-            System.out.println("Unknown message: \"" + message + "\"")
-        }
-      }
-    })
+    serialMonitor.start("mock")
 
     font = createFont("Menlo-Regular", 13)
     PFont.list().foreach { (s) =>
@@ -62,10 +66,7 @@ class SeismicApp extends PApplet {
     textFont(font)
     fill(255)
 
-    nextMessage match {
-      case Some(message) => handleMessage(message)
-      case None =>
-    }
+    drawRenderQueue();
 
     triggerOnDisplays.values.foreach { (pText) =>
       pText.render(this)
@@ -74,33 +75,18 @@ class SeismicApp extends PApplet {
     text(f"$frameCount%6.6s $frameRate%6.4f", 10, 10)
   }
 
-  def handleMessage(message: String) {
-    TriggerMessageParser.from(message) match {
-      case Some(triggerOn: TriggerOnMessage) =>
-        displayTrigger(triggerOn)
-      case Some(TriggerOffMessage(name)) =>
-      case None =>
-        System.out.println("Unknown message: \"" + message + "\"")
-    }
+  def drawRenderQueue(): Unit = {
+    import scala.collection.JavaConversions._
+    renderQueue.iterator().foreach { (renderable) => renderable(this) }
   }
 
-  def nextMessage = {
-    if (frameCount % 20 != 0) {
-      None
-    } else {
-      Some(messageSource.nextMessage)
-    }
-  }
-
-  def displayTrigger(triggerOn: TriggerOnMessage): Unit = {
+  def updateTriggerOnDisplay(triggerOn: TriggerOnMessage): Unit = {
     triggerOnDisplays(triggerOn.name) match {
       case pText: PText =>
-        val (name, triggerValue, handleValue) =
-          (triggerOn.name, triggerOn.triggerValue, triggerOn.handleValue)
-        pText.set(f"$name%5.5s $triggerValue%4.4s $handleValue%4.4s")
+        pText.set(String.format("%5.5s %4.4s %4.4s",
+          triggerOn.name, triggerOn.triggerValue.toString, triggerOn.handleValue.toString))
 
       case _ => System.err.println(String.format("Unknown trigger: %s", triggerOn.name))
-
     }
   }
 }

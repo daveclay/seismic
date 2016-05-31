@@ -1,23 +1,26 @@
 package com.seismic.serial
 
-import SerialListener
-
 object Main {
 
   def main(args: Array[String]) {
-    SerialIO.list() foreach { name =>
+    StandardSerialIO.list() foreach { name =>
       println(name)
     }
 
-    val serial = new SerialIO(new SerialListener {
-      override def handleMessage(bytes: Array[Byte]): Unit = {
+    val serial = new StandardSerialIO(args(0))
+    serial.open(new SerialListener {
+      def handleMessage(bytes: Array[Byte]): Unit = {
         val result = bytes.foldLeft(0) { (value, byte) =>
           (value << 8) + (byte & 0xff)
         }
 
         println(result & 0xfff)
       }
-    }, args(0))
+
+      override def dataAvailable(): Unit = {
+
+      }
+    })
 
     Thread.sleep(2000)
     serial.write("A")
