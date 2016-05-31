@@ -35,16 +35,52 @@ class SerialMonitor(handler: (String) => Any) {
 }
 
 class MockSerialIO extends SerialIO {
+
+  object Trigger {
+    val format = "ON,%s,%s,%s"
+
+    def triggerOnMsg(name: String) = {
+      val triggerValue = random.nextInt(1023).toString
+      val handleValue = random.nextInt(1023).toString
+      String.format(format, name, triggerValue, handleValue)
+    }
+
+    def triggerOffMsg(name: String) = {
+      f"OFF,$name"
+    }
+  }
+
+  case class Trigger(name: String) {
+    import Trigger._
+    var on = false
+
+    def triggerOn() = {
+      on = true
+      triggerOnMsg(name)
+    }
+
+    def triggerOff() = {
+      on = false
+      triggerOffMsg(name)
+    }
+  }
+
+  val kick = Trigger("KICK")
+  val snare = Trigger("SNARE")
+  val kickOn = () => kick.triggerOn()
+  val snareOn = () => snare.triggerOn()
+  val kickOff = () => kick.triggerOff()
+  val snareOff = () => snare.triggerOff()
+
   def readStringUntil(byte: Int) = {
-    val s = new StringBuilder
-    s.append(pick("ON", "OFF"))
-    s.append(",")
-    s.append(pick("KICK", "SNARE"))
-    s.append(",")
-    s.append(random.nextInt(1023))
-    s.append(",")
-    s.append(random.nextInt(1023))
-    s.toString
+    kick.on match {
+      case true => kickOff()
+      case false =>
+        snare.on match {
+          case true => snareOff()
+          case false => pick(kickOn, snareOn)()
+        }
+    }
   }
 
   override def open(serialListener: SerialListener): Unit = {
@@ -52,11 +88,11 @@ class MockSerialIO extends SerialIO {
     val scheduler = Executors.newSingleThreadScheduledExecutor
     val notifier = new Runnable() {
       override def run(): Unit = {
-        serialListener.dataAvailable();
-        scheduler.schedule(this, random.nextInt(1000), TimeUnit.MILLISECONDS)
+        serialListener.dataAvailable()
+        scheduler.schedule(this, random.nextInt(1000) + 400, TimeUnit.MILLISECONDS)
       }
     }
 
-    scheduler.schedule(notifier, random.nextInt(1000), TimeUnit.MILLISECONDS)
+    scheduler.schedule(notifier, random.nextInt(1000) + 400, TimeUnit.MILLISECONDS)
   }
 }
