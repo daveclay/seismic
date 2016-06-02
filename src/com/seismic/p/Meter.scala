@@ -108,7 +108,7 @@ class Meter(id: String,
 
   def render(canvas: PApplet): Unit = {
     if (lighted && fadeValue > 0) {
-      fadeValue = PApplet.max(fadeValue - (triggerOnValue / 20), 0)
+      fadeValue = PApplet.max(fadeValue - (triggerOnValue / 10), 0)
       knob.doOrIgnore { (knob: Knob) =>
         if (fadeValue > -1) {
           val color = fadeMap.getColorForValue(fadeValue)
@@ -127,15 +127,21 @@ class Meter(id: String,
       val angle = knob.getAngle
 
       val length = knob.getRadius - 3
-      val endX = (location.x + (knob.getWidth / 2f)) + Math.cos(angle) * length
-      val endY = (location.y + (knob.getHeight / 2f)) + Math.sin(angle) * length
+      val centerX = location.x.toFloat + knob.getWidth / 2f
+      val centerY = location.y.toFloat + knob.getHeight / 2f
+      val endX = centerX + Math.cos(angle) * length
+      val endY = centerY + Math.sin(angle) * length
 
       canvas.stroke(180)
-      canvas.line(location.x.toFloat + knob.getWidth / 2f,
-                   location.y.toFloat + knob.getHeight / 2f,
+      canvas.line(centerX,
+                   centerY,
                    endX.toFloat,
                    endY.toFloat)
 
+      val centerSize = length + 4
+      canvas.noStroke()
+      canvas.fill(50, 50, 60)
+      canvas.ellipse(centerX, centerY, centerSize, centerSize)
     }
   }
 }

@@ -59,7 +59,7 @@ class SeismicUI(seismicRouter: SeismicRouter) extends PApplet {
   }
 
   override def draw(): Unit = {
-    background(10, 60, 130)
+    background(50, 50, 60)
     textAlign(PConstants.LEFT)
     textFont(ptMono13)
     fill(255)
