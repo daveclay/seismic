@@ -1,6 +1,7 @@
 package com.seismic
 
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.locks.LockSupport
 
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
@@ -10,7 +11,10 @@ import com.seismic.serial.SerialMonitor
 object SeismicApp {
   def main(args: Array[String]): Unit = {
     val seismicRouter = new SeismicRouter
-    PAppletRunner.run(new SeismicUI(seismicRouter))
+    // PAppletRunner.run(new SeismicUI(seismicRouter))
+
+    seismicRouter.start("mock")
+    LockSupport.park(this)
   }
 }
 

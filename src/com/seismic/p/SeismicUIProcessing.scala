@@ -6,7 +6,7 @@ import com.seismic.p.MeterFactory.buildMeter
 import controlP5.ControlP5
 import processing.core.{PApplet, PConstants, PFont}
 
-class SeismicUI(seismicRouter: SeismicRouter) extends PApplet {
+class SeismicUIProcessing(seismicRouter: SeismicRouter) extends PApplet {
 
   var canvas = this
   var ptMono11: PFont = null
