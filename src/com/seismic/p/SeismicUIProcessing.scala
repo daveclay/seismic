@@ -1,12 +1,11 @@
 package com.seismic.p
 
-import com.seismic.SeismicRouter
 import com.seismic.messages._
 import com.seismic.p.MeterFactory.buildMeter
 import controlP5.ControlP5
 import processing.core.{PApplet, PConstants, PFont}
 
-class SeismicUIProcessing(seismicRouter: SeismicRouter) extends PApplet {
+class SeismicUIProcessing() extends PApplet {
 
   var canvas = this
   var ptMono11: PFont = null
@@ -73,7 +72,6 @@ class SeismicUIProcessing(seismicRouter: SeismicRouter) extends PApplet {
   }
 
   def updateMessageData(): Unit = {
-    seismicRouter.drainMessages { (msg) => handleMessage(msg) }
   }
 
   private def handleTriggerOn(triggerOn: TriggerOnMessage) = {

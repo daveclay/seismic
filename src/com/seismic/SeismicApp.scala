@@ -1,6 +1,6 @@
 package com.seismic
 
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue}
 import java.util.concurrent.locks.LockSupport
 
 import com.seismic.messages._
@@ -10,52 +10,40 @@ import com.seismic.serial.SerialMonitor
 
 object SeismicApp {
   def main(args: Array[String]): Unit = {
-    val seismicRouter = new SeismicRouter
-    // PAppletRunner.run(new SeismicUI(seismicRouter))
+    val serialMonitor = new SerialMonitor
+    val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
+    val seismic = new Seismic(midiIO)
+    val seismicUI = new SeismicUI
 
-    seismicRouter.start("mock")
-    LockSupport.park(this)
+    val seismicMidiHandler = (message: Message) => {
+      message match {
+        case triggerOn: TriggerOnMessage => seismic.trigger(triggerOn)
+        case TriggerOffMessage(name) => seismic.off(name)
+      }
+    }
+
+    val uiMessageHandler = (message: Message) => {
+      seismicUI.handleMessage(message)
+    }
+
+    new SeismicMessageHandler(serialMonitor,
+                               Array(seismicMidiHandler, uiMessageHandler))
+
+    seismicUI.start()
+    serialMonitor.start("mock")
   }
 }
 
-class SeismicRouter {
-  val messageQueue = new ArrayBlockingQueue[Message](100)
+class SeismicMessageHandler(serialMonitor: SerialMonitor,
+                            handlers: Array[(Message => Unit)]) {
 
-  val messageHandler = (message: String) => {
-    // Note: this is NOT called on the animation thread!
+
+  serialMonitor.setHandler { (message: String) =>
     TriggerMessageParser.from(message) match {
-      case Some(triggerOn: TriggerOnMessage) => handleTriggerOn(triggerOn)
-      case Some(triggerOff: TriggerOffMessage) => handleTriggerOff(triggerOff)
+      case Some(message: Message) =>
+        handlers.foreach { (handler) => handler(message) }
+
       case _ => System.out.println("Unknown message: \"" + message + "\"")
     }
   }
-
-  val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
-  val serialMonitor = new SerialMonitor(messageHandler)
-  val seismic = new Seismic(midiIO)
-
-  def start(port: String): Unit = {
-    // TODO: reconnect button so you don't have to restart app when things get unplugged?
-    serialMonitor.start(port)
-  }
-
-  def drainMessages(handleMessage: (Message => Unit)) = {
-    import scala.collection.JavaConversions._
-    // TODO: hide this bullshit
-    val messages = new java.util.ArrayList[Message]()
-    messageQueue.drainTo(messages)
-    messages.foreach { (msg) => handleMessage(msg) }
-  }
-
-  private def handleTriggerOn(triggerOn: TriggerOnMessage) = {
-    seismic.trigger(triggerOn)
-    messageQueue.add(triggerOn)
-  }
-
-  private def handleTriggerOff(triggerOff: TriggerOffMessage) = {
-    val name = triggerOff.name
-    seismic.off(name)
-    messageQueue.add(triggerOff)
-  }
-
 }

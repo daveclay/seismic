@@ -5,24 +5,37 @@ import java.util.concurrent.{ExecutorService, Executors, ThreadPoolExecutor, Tim
 import scala.concurrent.{ExecutionContext, Future}
 import com.seismic.utils.RandomHelper._
 
-class SerialMonitor(handler: (String) => Any) {
+class SerialMonitor() {
+
+  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1))
+  var handlerOpt: Option[(String => Unit)] = None
+
+  def setHandler(handler: (String) => Unit): Unit = {
+    handlerOpt = Option(handler)
+  }
 
   def start(port: String): Unit = {
     val serialIO = serialIOFor(port)
-
-    implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1))
 
     serialIO.open(new SerialListener {
       override def dataAvailable(): Unit = {
         val message = serialIO.readStringUntil(10)
         if (message != null) {
-          Future {
-            // the handleMessage call is now on the thread from the Executor, not on Processing's animation thread.
-            handler(message)
-          }
+          handleMessage(message)
         }
       }
     })
+  }
+
+  private def handleMessage(message: String): Unit = {
+    handlerOpt match {
+      case Some(handler) => {
+        Future {
+          // handle on some other thread; though at this point that's the midi thread too.
+          handler(message)
+        }
+      }
+    }
   }
 
   private def serialIOFor(port: String) = {
