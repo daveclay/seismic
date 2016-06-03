@@ -1,8 +1,7 @@
-package com.seismic.p
+package com.seismic.ui.p
 
 import com.daveclay.swing.color.GradientValueMap
-import com.seismic.utils.RandomHelper
-import controlP5.{ControlP5, ControlP5Constants, Knob}
+import controlP5.{ControlP5, Knob}
 import processing.core.PApplet
 
 object MeterFactory {

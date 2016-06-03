@@ -1,7 +1,8 @@
 package com.seismic
 
 import com.seismic.Thresholds.{highHandleThreshold, lowHandleThreshold}
-import com.seismic.p.ProcessingUtils._
+import ProcessingUtils._
+import com.seismic.ui.p.ProcessingUtils
 
 /**
   * TODO: rotating the handle selects the instrument. To change the number of instruments done by providing a different

@@ -1,4 +1,4 @@
-package com.seismic.p;
+package com.seismic.ui.p;
 
 public class ProcessingUtils {
 

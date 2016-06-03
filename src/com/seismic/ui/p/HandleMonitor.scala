@@ -1,6 +1,6 @@
-package com.seismic.p
+package com.seismic.ui.p
 
-import com.seismic.messages.{TriggerOffMessage, TriggerOnMessage}
+import com.seismic.messages.TriggerOnMessage
 
 /**
   * TODO: probably shouldn't be an instrument monitor forever, but meh

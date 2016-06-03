@@ -1,7 +1,7 @@
-package com.seismic.p
+package com.seismic.ui.p
 
 import com.seismic.messages._
-import com.seismic.p.MeterFactory.buildMeter
+import com.seismic.ui.p.MeterFactory.buildMeter
 import controlP5.ControlP5
 import processing.core.{PApplet, PConstants, PFont}
 

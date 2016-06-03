@@ -1,4 +1,4 @@
-package com.seismic.swing
+package com.seismic.ui.swing
 
 import javax.swing.SwingUtilities
 

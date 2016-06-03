@@ -1,4 +1,4 @@
-package com.seismic.p
+package com.seismic.ui.p
 
 import com.seismic.messages.{TriggerOffMessage, TriggerOnMessage}
 import controlP5.ControlP5
