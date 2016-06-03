@@ -28,7 +28,7 @@ class Seismic(midiIO: MIDIIO) {
             snareInstruments = Array(
               Instrument(63),
               Instrument(64),
-              Instrument(65)
+              Instrument(65, 66) // You can send two midi notes at the same time. Kick and snare, for instance.
             )
           )
         )
@@ -44,9 +44,10 @@ class Seismic(midiIO: MIDIIO) {
 
   def trigger(trigger: TriggerOnMessage): Unit = {
     val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
-    midiIO.sendNoteOn(song.channel,
-      instrument.note,
-      instrument.mapValueToVelocity(trigger.triggerValue))
+    val pitch = instrument.mapValueToVelocity(trigger.triggerValue)
+    instrument.notes.foreach { (note) =>
+      midiIO.sendNoteOn(song.channel, note, pitch)
+    }
 
     triggeredState.triggered(trigger.name, instrument)
   }
@@ -54,7 +55,9 @@ class Seismic(midiIO: MIDIIO) {
   def off(name: String): Unit = {
     triggeredState.lastTriggered(name) match {
       case Some(instrument) =>
-        midiIO.sendNoteOff(song.channel, instrument.note, 0);
+        instrument.notes.foreach { (note) =>
+          midiIO.sendNoteOff(song.channel, note, 0)
+        }
       case None => System.err.println(
         "Somehow managed to trigger an off event with no previous on event for " + name + ". Ignoring.")
     }
