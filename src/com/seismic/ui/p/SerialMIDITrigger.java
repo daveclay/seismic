@@ -1,6 +1,5 @@
 package com.seismic.ui.p;
 
-import com.seismic.ui.PAppletRunner;
 import themidibus.*;
 import processing.serial.*;
 

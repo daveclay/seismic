@@ -5,8 +5,8 @@ import java.util.concurrent.locks.LockSupport
 
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
-import com.seismic.ui.SeismicUI
 import com.seismic.serial.SerialMonitor
+import com.seismic.ui.swing.SeismicUI
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
 object SeismicApp {

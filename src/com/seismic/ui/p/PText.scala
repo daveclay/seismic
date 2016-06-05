@@ -1,6 +1,5 @@
 package com.seismic.ui.p
 
-import Location
 import processing.core.PApplet
 
 case class PText(location: Location) {
