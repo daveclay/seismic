@@ -6,7 +6,7 @@ import java.util.concurrent.locks.LockSupport
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
 import com.seismic.serial.SerialMonitor
-import com.seismic.ui.swing.SeismicUI
+import com.seismic.ui.swing.{SeismicUI, SeismicUIFactory}
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
 object SeismicApp {
@@ -14,7 +14,7 @@ object SeismicApp {
     val serialMonitor = new SerialMonitor
     val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
     val seismic = new Seismic(midiIO)
-    val seismicUI = new SeismicUI
+    val seismicUIFactory = new SeismicUIFactory
 
     val seismicMidiHandler = (message: Message) => {
       message match {
@@ -23,16 +23,16 @@ object SeismicApp {
       }
     }
 
-    val uiMessageHandler = (message: Message) => {
-      seismicUI.handleMessage(message)
-    }
-
-    new SeismicMessageHandler(serialMonitor,
-                               Array(seismicMidiHandler, uiMessageHandler))
-
     invokeLater { () =>
-      seismicUI.start()
+      val seismicUI = seismicUIFactory.build()
     }
+
+    val uiMessageHandler = (message: Message) => {
+      seismicUIFactory.handleMessage(message)
+    }
+
+    new SeismicMessageHandler(serialMonitor, Array(seismicMidiHandler, uiMessageHandler))
+
     serialMonitor.start("mock")
   }
 }
