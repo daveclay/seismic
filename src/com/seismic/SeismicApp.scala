@@ -24,7 +24,7 @@ object SeismicApp {
     }
 
     invokeLater { () =>
-      val seismicUI = seismicUIFactory.build()
+      val seismicUI = seismicUIFactory.build(seismic)
     }
 
     val uiMessageHandler = (message: Message) => {

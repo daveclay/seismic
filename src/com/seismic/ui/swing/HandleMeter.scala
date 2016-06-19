@@ -4,6 +4,7 @@ import java.awt.event.{MouseEvent, MouseListener}
 import java.awt.{Color, Dimension, Font, Graphics}
 import javax.swing.{JLabel, JLayeredPane}
 
+import com.seismic.ui.swing.FontHelper._
 import com.daveclay.swing.util.Position._
 import com.seismic.utils.ValueMapHelper._
 
