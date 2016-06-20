@@ -2,9 +2,15 @@ package com.seismic.ui.swing
 
 import java.awt.Color
 import java.awt.event._
-import javax.swing.{BorderFactory, JTextField}
+import javax.swing.{BorderFactory, JLabel, JTextField}
 
 object SwingComponents {
+
+  def label(text: String) = {
+    val label = new JLabel(text)
+    label.setFocusable(false)
+    label
+  }
 
   def textField(backgroundColor: Color, size: Int): JTextField = {
     textField(backgroundColor, size, (value) => {})

@@ -52,7 +52,8 @@ class SeismicUI(seismic: Seismic,
 
   val titleFont = new Font("Arial", Font.PLAIN, 23)
   val monoFont = new Font("PT Mono", Font.PLAIN, 11)
-  val title = new JLabel("SEISMIC")
+  val title = SwingComponents.label("SEISMIC")
+
   val kickMonitor = new Meter("KICK", monoFont, new Dimension(300, 30))
   val snareMonitor = new Meter("SNARE", monoFont, new Dimension(300, 30))
   val triggerMonitors = Map(
@@ -81,6 +82,8 @@ class SeismicUI(seismic: Seismic,
 
   title.setFont(titleFont)
   title.setForeground(new Color(200, 200, 210))
+
+  mainPanel.setFocusTraversalPolicy(new ContainerOrderFocusTraversalPolicy)
 
   position(title).at(4, 4).in(mainPanel)
   position(openSetListButton).toTheRightOf(title).withMargin(5).in(mainPanel)
@@ -269,8 +272,9 @@ class InstrumentUI(labelValue: String,
   setPreferredSize(size)
   setBackground(backgroundColor)
 
-  val label = SwingComponents.textField(backgroundColor, 7)
-  label.setText(labelValue)
+  val label = SwingComponents.label(labelValue)
+  label.setBackground(backgroundColor)
+  label.setForeground(new Color(200, 200, 200))
   position(label).atOrigin().in(this)
 
   val addInstrumentButton = new JButton("Add")

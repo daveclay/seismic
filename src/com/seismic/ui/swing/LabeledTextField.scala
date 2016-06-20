@@ -10,7 +10,7 @@ class LabeledTextField(labelText: String,
                        size: Int,
                        onValueChange: String => Unit) extends JPanel {
 
-  val label = new JLabel(labelText)
+  val label = SwingComponents.label(labelText)
   label.setBackground(backgroundColor)
   label.setForeground(new Color(200, 200, 200))
 
