@@ -45,6 +45,11 @@ class SeismicUI(seismic: Seismic,
 
   val backgroundColor = new Color(50, 50, 60)
   val mainPanel = frame.getContentPane
+
+  // TODO: build a factory that knows about all this shared styling
+  // then ask the factory to create components, the factory sets the styling
+  // remove all the styling from this layout and state handling.
+
   val titleFont = new Font("Arial", Font.PLAIN, 23)
   val monoFont = new Font("PT Mono", Font.PLAIN, 11)
   val title = new JLabel("SEISMIC")
@@ -135,6 +140,7 @@ class SetlistUI(size: Dimension,
   setPreferredSize(size)
   setBackground(backgroundColor)
 
+  // TODO: name of the setlist is missing.
 
   var setListOpt: Option[SetList] = None
   val handleUpdate = () => setListOpt.foreach { setlist => setlist.write() }
@@ -167,9 +173,11 @@ class SongUI(size: Dimension,
     onSongUpdated()
   }
 
-  val nameField = new LabeledTextField("Name", backgroundColor, 12, onNameChange)
+  val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
   val phraseUI = new PhraseUI(onSongUpdated, new Dimension(size.width, size.height), backgroundColor)
+
+  // TODO: how do I add more phrases to the song?
 
   position(nameField).atOrigin().in(this)
   position(channelField).toTheRightOf(nameField).withMargin(5).in(this)
@@ -207,7 +215,7 @@ class PhraseUI(onSongUpdated: () => Unit,
     onSongUpdated()
   }
 
-  val nameField = new LabeledTextField("Name", backgroundColor, 12, onNameChange)
+  val nameField = new LabeledTextField("Phrase", backgroundColor, 12, onNameChange)
   position(nameField).atOrigin().in(this)
 
   def setPhrase(phrase: Phrase): Unit = {

@@ -3,15 +3,15 @@ package com.seismic
 import java.io.File
 
 import collection.mutable.ArrayBuffer
-import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.MIDIIO
+import com.seismic.utils.SetListSerializer
 import com.seismic.utils.ValueMapHelper.map
 import processing.core.PApplet.constrain
 
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
+  * TODO: should I rename "phrase" to "scene" to match Maschine?
   * @param midiIO
   */
 class Seismic(midiIO: MIDIIO) {
@@ -112,24 +112,6 @@ case class Instrument(var notes: ArrayBuffer[Int]) {
 object Thresholds {
   val lowHandleThreshold = 100
   val highHandleThreshold = 800
-}
-
-object SetListSerializer {
-
-  def write(setList: SetList): Unit = {
-    objectMapper().writeValue(new File(f"${setList.name}.json"), setList)
-  }
-
-  def read(file: File) = {
-    objectMapper().readValue(file, classOf[SetList])
-  }
-
-  private def objectMapper() = {
-    val mapper = new ObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-    mapper.enable(SerializationFeature.INDENT_OUTPUT)
-  }
-
 }
 
 case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
