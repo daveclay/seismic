@@ -2,7 +2,8 @@ package com.seismic
 
 import java.io.File
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import collection.mutable.ArrayBuffer
+import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.MIDIIO
@@ -58,20 +59,20 @@ class Seismic(midiIO: MIDIIO) {
   def getEmptySetList = {
     SetList(
              name = "New Set List",
-             songs = Array(
+             songs = ArrayBuffer(
                             Song(
                                   name = "Song A",
                                   channel = 1,
-                                  phrases = Array(
+                                  phrases = ArrayBuffer(
                                                    Phrase(
                                                            name = "Intro",
-                                                           kickInstruments = Array(
-                                                                                    Instrument(Array(60)),
-                                                                                    Instrument(Array(61)),
-                                                                                    Instrument(Array(62))
+                                                           kickInstruments = ArrayBuffer(
+                                                                                    Instrument(ArrayBuffer(60)),
+                                                                                    Instrument(ArrayBuffer(61)),
+                                                                                    Instrument(ArrayBuffer(62))
                                                                                   ),
-                                                           snareInstruments = Array(
-                                                                                     Instrument(Array(63))
+                                                           snareInstruments = ArrayBuffer(
+                                                                                     Instrument(ArrayBuffer(63))
                                                                                    )
                                                          )
                                                  )
@@ -81,7 +82,7 @@ class Seismic(midiIO: MIDIIO) {
   }
 }
 
-case class Instrument(var notes: Array[Int]) {
+case class Instrument(var notes: ArrayBuffer[Int]) {
 
   private var threshold = 900
 
@@ -94,7 +95,7 @@ case class Instrument(var notes: Array[Int]) {
     constrain(map(value, 0, threshold, 0, 127), 0, 127).toInt
   }
 
-  def setNotes(notes: Array[Int]) {
+  def setNotes(notes: ArrayBuffer[Int]) {
     this.notes = notes
   }
 }
@@ -126,11 +127,12 @@ object SetListSerializer {
   private def objectMapper() = {
     val mapper = new ObjectMapper
     mapper.registerModule(DefaultScalaModule)
+    mapper.enable(SerializationFeature.INDENT_OUTPUT)
   }
 
 }
 
-case class SetList(var name: String, var songs: Array[Song]) {
+case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
 
   def write(): Unit = {
     SetListSerializer.write(this)
@@ -139,7 +141,7 @@ case class SetList(var name: String, var songs: Array[Song]) {
 
 case class Song(var name: String,
                 var channel: Int,
-                phrases: Array[Phrase]) {
+                phrases: ArrayBuffer[Phrase]) {
 
   def setName(name: String): Unit = {
     this.name = name
@@ -151,12 +153,19 @@ case class Song(var name: String,
 }
 
 case class Phrase(var name: String,
-                  kickInstruments: Array[Instrument],
-                  snareInstruments: Array[Instrument]) {
+                  kickInstruments: ArrayBuffer[Instrument],
+                  snareInstruments: ArrayBuffer[Instrument]) {
 
-  import Thresholds._
+  def addKickInstruments(instrument: Instrument): Unit = {
+    kickInstruments += instrument
+  }
 
-  private def instrumentsByValue(instruments: Array[Instrument]) = {
+  def addSnareInstruments(instrument: Instrument): Unit = {
+    snareInstruments += instrument
+  }
+
+  private def instrumentsByValue(instruments: ArrayBuffer[Instrument]) = {
+    import Thresholds._ // TODO: config this, eh?
     (value: Int) => {
       val idx = map(value, lowHandleThreshold, highHandleThreshold, 0, instruments.length - 1)
       instruments(idx.toInt)

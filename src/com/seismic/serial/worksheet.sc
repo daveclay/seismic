@@ -1,9 +1,16 @@
 import com.seismic.utils.RandomHelper
 
+import scala.collection.mutable.ArrayBuffer
+
 RandomHelper.pick("A", "B", "C")
 
 val hi = (int: Int) => int * 2
 hi(4)
+
+val a = ArrayBuffer(0, 2, 3)
+a += 0
+a
+
 
 val foo = (int: Int) => (s: String) => 0 to int map { (i) => s + i }
 

@@ -1,7 +1,6 @@
 package com.seismic.ui.swing
 
 import java.awt._
-import java.awt.event._
 import javax.swing._
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -10,6 +9,7 @@ import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
 import com.seismic.messages._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+import collection.mutable.ArrayBuffer
 
 class SeismicUIFactory {
   var seismicUIOpt: Option[SeismicUI] = None
@@ -191,11 +191,16 @@ class PhraseUI(onSongUpdated: () => Unit,
   setBackground(backgroundColor)
 
   var curentPhraseOpt: Option[Phrase] = None
-  var instrumentUIOpts: Option[Array[InstrumentUI]] = None
+  var instrumentUIOpts: Option[Seq[InstrumentUI]] = None
   val kickLabel = SwingComponents.textField(backgroundColor, 7)
   kickLabel.setText("Kick")
   val snareLabel = SwingComponents.textField(backgroundColor, 7)
   snareLabel.setText("Snare")
+
+  val addKickInstrumentButton = new JButton("Add")
+  addKickInstrumentButton.addActionListener(e => {
+    addKickInstrument()
+  })
 
   val onNameChange = (name: String) => curentPhraseOpt.foreach {
     phrase => phrase.setName(name)
@@ -208,24 +213,35 @@ class PhraseUI(onSongUpdated: () => Unit,
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
-    clearInstruments()
-    val kickInstrumentUIs = buildInstrumentUIs(phrase.kickInstruments)
-    val snareInstrumentUIs = buildInstrumentUIs(phrase.snareInstruments)
+    updateInstrumentUIs()
+  }
+
+  def updateInstrumentUIs() {
+    curentPhraseOpt.foreach { phrase =>
+      clearInstruments()
+      val kickInstrumentUIs = buildInstrumentUIs(phrase.kickInstruments)
+      val snareInstrumentUIs = buildInstrumentUIs(phrase.snareInstruments)
+      positionInstrumentUIs(kickInstrumentUIs, snareInstrumentUIs)
+    }
+  }
+
+  def positionInstrumentUIs(kickInstrumentUIs: Seq[InstrumentUI], snareInstrumentUIs: Seq[InstrumentUI]): Unit = {
     instrumentUIOpts = Option(kickInstrumentUIs ++ snareInstrumentUIs)
     position(kickLabel).below(nameField).withMargin(4).in(this)
     addInstrumentUIs(kickLabel, kickInstrumentUIs)
-    position(snareLabel).below(kickInstrumentUIs.last).withMargin(4).in(this)
+    position(addKickInstrumentButton).below(kickInstrumentUIs.last).withMargin(4).in(this)
+    position(snareLabel).below(addKickInstrumentButton).withMargin(4).in(this)
     addInstrumentUIs(snareLabel, snareInstrumentUIs)
   }
 
-  def addInstrumentUIs(topComponent: Container, instrumentUIs: Array[InstrumentUI]): Unit = {
+  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentUI]): Unit = {
     instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
       position(instrumentUI).below(previousComponent).withMargin(4).in(this)
       instrumentUI
     }
   }
 
-  def buildInstrumentUIs(instruments: Array[Instrument]) = {
+  def buildInstrumentUIs(instruments: Seq[Instrument]) = {
     instruments.map { instrument =>
       new InstrumentUI(instrument,
                         onSongUpdated,
@@ -237,10 +253,18 @@ class PhraseUI(onSongUpdated: () => Unit,
   def clearInstruments(): Unit = {
     remove(kickLabel)
     remove(snareLabel)
-    instrumentUIOpts match {
-      case Some(instrumentUIs) => instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
-      case None =>
+    instrumentUIOpts.foreach { instrumentUIs =>
+      instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
     }
+  }
+
+  def addKickInstrument(): Unit = {
+    val instrument = new Instrument(ArrayBuffer(0))
+    curentPhraseOpt.foreach { phrase =>
+      phrase.addKickInstruments(instrument)
+      onSongUpdated()
+    }
+    updateInstrumentUIs()
   }
 }
 
@@ -254,7 +278,7 @@ class InstrumentUI(instrument: Instrument,
 
   val onValueChange = (value: String) => {
     // TODO: value should be maybe "C2, C#2, D3" or "C2, 63, C#2"
-    instrument.setNotes(value.split(", ").map { value => value.toInt })
+    instrument.setNotes(value.split(", ").map { value => value.toInt }.to[ArrayBuffer])
     onSongUpdated()
   }
 
