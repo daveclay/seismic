@@ -60,8 +60,13 @@ class SeismicUI(seismic: Seismic,
   val setlistUI = new SetlistUI(new Dimension(800, 500), backgroundColor)
 
   val openSetListButton = new JButton("Open Set List")
-  openSetListButton.addActionListener((e: ActionEvent) => {
+  openSetListButton.addActionListener(e => {
     showOpenSetListFileChooser()
+  })
+
+  val newSetListButton = new JButton("New Set List")
+  newSetListButton.addActionListener(e => {
+    setlistUI.setSetList(seismic.getEmptySetList)
   })
 
   setlistUI.setBackground(backgroundColor)
@@ -74,6 +79,7 @@ class SeismicUI(seismic: Seismic,
 
   position(title).at(4, 4).in(mainPanel)
   position(openSetListButton).toTheRightOf(title).withMargin(5).in(mainPanel)
+  position(newSetListButton).toTheRightOf(openSetListButton).withMargin(5).in(mainPanel)
   position(kickMonitor).below(title).withMargin(5).in(mainPanel)
   position(snareMonitor).toTheRightOf(kickMonitor).withMargin(5).in(mainPanel)
   position(handleMeter).toTheRightOf(snareMonitor).in(mainPanel)

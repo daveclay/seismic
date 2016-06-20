@@ -11,33 +11,6 @@ import processing.core.PApplet.constrain
 
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
-  **
-  *val sampleSetList = SetList(
-  *name = "The Setlist",
-  *songs = Array(
-  *Song(
-  *name = "Song A",
-  *channel = 1,
-  *phrases = Array(
-  *Phrase(
-  *name = "intro",
-  *kickInstruments = Array(
-  *Instrument(Array(60)),
-  *Instrument(Array(61)),
-  *Instrument(Array(62))
-  *),
-  **
-  *snareInstruments = Array(
-  *Instrument(Array(63)),
-  *Instrument(Array(64)),
-  *Instrument(Array(65, 66)) // You can send two midi notes at the same time. Kick and snare, for instance.
-  *)
-  *)
-  *)
-  *)
-  *)
-  *)
-  *
   * @param midiIO
   */
 class Seismic(midiIO: MIDIIO) {
@@ -80,6 +53,31 @@ class Seismic(midiIO: MIDIIO) {
           System.err.println(f"Somehow managed to trigger an off event with no previous on event for $name. Ignoring.")
       }
     }
+  }
+
+  def getEmptySetList = {
+    SetList(
+             name = "New Set List",
+             songs = Array(
+                            Song(
+                                  name = "Song A",
+                                  channel = 1,
+                                  phrases = Array(
+                                                   Phrase(
+                                                           name = "Intro",
+                                                           kickInstruments = Array(
+                                                                                    Instrument(Array(60)),
+                                                                                    Instrument(Array(61)),
+                                                                                    Instrument(Array(62))
+                                                                                  ),
+                                                           snareInstruments = Array(
+                                                                                     Instrument(Array(63))
+                                                                                   )
+                                                         )
+                                                 )
+                                )
+                          )
+           )
   }
 }
 
