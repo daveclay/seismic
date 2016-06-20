@@ -1,7 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt._
-import java.util.concurrent.Executors
+import java.awt.event._
 import javax.swing._
 
 import com.daveclay.swing.util.Position.position
@@ -113,25 +113,41 @@ class SetlistUI(size: Dimension,
   setPreferredSize(size)
   setBackground(backgroundColor)
 
-  val currentSongUI = new SongUI(size, backgroundColor)
+
+  var setListOpt: Option[SetList] = None
+  val handleUpdate = () => setListOpt.foreach { setlist => setlist.write() }
+  val currentSongUI = new SongUI(size, backgroundColor, handleUpdate)
+
   currentSongUI.setBackground(backgroundColor)
   position(currentSongUI).atOrigin().in(this)
 
   def setSetList(setList: SetList): Unit = {
+    setListOpt = Option(setList)
     currentSongUI.setSong(setList.songs(0))
   }
 }
 
 class SongUI(size: Dimension,
-             backgroundColor: Color) extends JPanel {
+             backgroundColor: Color,
+             onSongUpdated: () => Unit) extends JPanel {
   setPreferredSize(size)
   setBackground(backgroundColor)
 
   var songOpt: Option[Song] = None
 
-  val nameField = new LabeledTextField("Name", backgroundColor, 12)
-  val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3)
-  val phraseUI = new PhraseUI(new Dimension(size.width, size.height), backgroundColor)
+  val onNameChange = (name: String) => songOpt.foreach {
+    song => song.setName(name)
+    onSongUpdated()
+  }
+
+  val onChannelChange = (channel: String) => songOpt.foreach {
+    song => song.setChannel(channel.toInt)
+    onSongUpdated()
+  }
+
+  val nameField = new LabeledTextField("Name", backgroundColor, 12, onNameChange)
+  val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
+  val phraseUI = new PhraseUI(onSongUpdated, new Dimension(size.width, size.height), backgroundColor)
 
   position(nameField).atOrigin().in(this)
   position(channelField).toTheRightOf(nameField).withMargin(5).in(this)
@@ -146,7 +162,9 @@ class SongUI(size: Dimension,
   }
 }
 
-class PhraseUI(size: Dimension, backgroundColor: Color) extends JPanel {
+class PhraseUI(onSongUpdated: () => Unit,
+               size: Dimension,
+               backgroundColor: Color) extends JPanel {
   setPreferredSize(size)
   setBackground(backgroundColor)
 
@@ -157,7 +175,12 @@ class PhraseUI(size: Dimension, backgroundColor: Color) extends JPanel {
   val snareLabel = SwingComponents.textField(backgroundColor, 7)
   snareLabel.setText("Snare")
 
-  val nameField = new LabeledTextField("Name", backgroundColor, 12)
+  val onNameChange = (name: String) => curentPhraseOpt.foreach {
+    phrase => phrase.setName(name)
+    onSongUpdated()
+  }
+
+  val nameField = new LabeledTextField("Name", backgroundColor, 12, onNameChange)
   position(nameField).atOrigin().in(this)
 
   def setPhrase(phrase: Phrase): Unit = {
@@ -183,6 +206,7 @@ class PhraseUI(size: Dimension, backgroundColor: Color) extends JPanel {
   def buildInstrumentUIs(instruments: Array[Instrument]) = {
     instruments.map { instrument =>
       new InstrumentUI(instrument,
+                        onSongUpdated,
                         new Dimension(size.width, 20),
                         backgroundColor)
     }
@@ -198,55 +222,24 @@ class PhraseUI(size: Dimension, backgroundColor: Color) extends JPanel {
   }
 }
 
-class InstrumentUI(instrument: Instrument, size: Dimension, backgroundColor: Color) extends JPanel {
+class InstrumentUI(instrument: Instrument,
+                   onSongUpdated: () => Unit,
+                   size: Dimension,
+                   backgroundColor: Color) extends JPanel {
+
   setPreferredSize(size)
   setBackground(backgroundColor)
-  val nameField = new LabeledTextField("Note", backgroundColor, 3)
-  // nameField.setText(instrument.notes) // hah, I'm tired, I forgot how this works.
+
+  val onValueChange = (value: String) => {
+    // TODO: value should be maybe "C2, C#2, D3" or "C2, 63, C#2"
+    instrument.setNotes(value.split(", ").map { value => value.toInt })
+    onSongUpdated()
+  }
+
+  val nameField = new LabeledTextField("Note", backgroundColor, 3, onValueChange)
+  nameField.setText(instrument.notes.mkString(", "))
   position(nameField).atOrigin().in(this)
+
 }
-
-class LabeledTextField(labelText: String, backgroundColor: Color, size: Int) extends JPanel {
-
-  val label = new JLabel(labelText)
-  label.setBackground(backgroundColor)
-  label.setForeground(new Color(200, 200, 200))
-
-  setBackground(backgroundColor)
-
-  val textField = SwingComponents.textField(Color.BLACK, size)
-
-  val labelSize = label.getPreferredSize
-  var textFieldSize = textField.getPreferredSize
-
-  setPreferredSize(new Dimension(labelSize.width + textFieldSize.width, textFieldSize.height))
-
-  position(label).atOrigin().in(this)
-  position(textField).toTheRightOf(label).withMargin(10).in(this)
-
-  def setText(text: String): Unit = {
-    textField.setText(text)
-  }
-}
-
-object SwingComponents {
-
-  def textField(backgroundColor: Color, size: Int) = {
-    val field = new JTextField(size)
-    field.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2))
-    field.setForeground(new Color(200, 200, 200))
-    field.setBackground(backgroundColor)
-    field.setOpaque(true)
-    field.setEditable(false)
-    field
-  }
-}
-
-
-
-
-
-
-
 
 

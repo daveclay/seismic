@@ -6,13 +6,6 @@ object OptionExtensions {
 
   class ExtendedOption[T](option: Option[T]) {
 
-    def doOrElse[R](f: (T) => R) = {
-      option match {
-        case Some(v) => f(v)
-        case None =>
-      }
-    }
-
     def getOrCreateIfNone(builder: () => T, setter: (Option[T] => Unit)) = {
       option match {
         case Some(v) => v

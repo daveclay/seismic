@@ -28,12 +28,10 @@ class SerialMonitor() {
   }
 
   private def handleMessage(message: String): Unit = {
-    handlerOpt match {
-      case Some(handler) => {
-        Future {
-          // handle on some other thread; though at this point that's the midi thread too.
-          handler(message)
-        }
+    handlerOpt.foreach { handler =>
+      Future {
+        // handle on some other thread; though at this point that's the midi thread too.
+        handler(message)
       }
     }
   }
