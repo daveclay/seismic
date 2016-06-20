@@ -11,6 +11,7 @@ import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
 object SeismicApp {
   def main(args: Array[String]): Unit = {
+    System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Seismic")
     val serialMonitor = new SerialMonitor
     val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
     val seismic = new Seismic(midiIO)

@@ -1,6 +1,8 @@
 package com.seismic.ui.swing
 
 import java.awt._
+import java.awt.event.{ActionEvent, ActionListener, KeyEvent, KeyListener}
+import java.beans.PropertyChangeListener
 import javax.swing._
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -9,6 +11,7 @@ import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
 import com.seismic.messages._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+
 import collection.mutable.ArrayBuffer
 
 class SeismicUIFactory {
@@ -16,6 +19,10 @@ class SeismicUIFactory {
 
   def build(seismic: Seismic) = {
     val frame = new JFrame("Seismic")
+
+    System.setProperty("apple.laf.useScreenMenuBar", "true")
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
+
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
 
@@ -85,6 +92,19 @@ class SeismicUI(seismic: Seismic,
 
   mainPanel.setFocusTraversalPolicy(new ContainerOrderFocusTraversalPolicy)
 
+  val menuBar = new JMenuBar
+  val fileMenu = new JMenu("File")
+  val saveMenuItem = new JMenuItem("Save")
+  saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
+  saveMenuItem.setMnemonic(KeyEvent.VK_S)
+  saveMenuItem.addActionListener((e: ActionEvent) => {
+    setlistUI.save()
+  })
+
+  fileMenu.add(saveMenuItem)
+  menuBar.add(fileMenu)
+  frame.setJMenuBar( menuBar )
+
   position(title).at(4, 4).in(mainPanel)
   position(openSetListButton).toTheRightOf(title).withMargin(5).in(mainPanel)
   position(newSetListButton).toTheRightOf(openSetListButton).withMargin(5).in(mainPanel)
@@ -140,16 +160,16 @@ class SeismicUI(seismic: Seismic,
 
 class SetlistUI(size: Dimension,
                 backgroundColor: Color) extends JPanel {
+
   setPreferredSize(size)
   setBackground(backgroundColor)
 
   var setListOpt: Option[SetList] = None
-  val handleUpdate = () => setListOpt.foreach { setlist => setlist.write() }
-  val currentSongUI = new SongUI(size, backgroundColor, handleUpdate)
+  val currentSongUI = new SongUI(size, backgroundColor, save)
   val onNameChange = (name: String) => setListOpt.foreach {
     setList => {
       setList.setName(name)
-      handleUpdate()
+      save()
     }
   }
 
@@ -158,6 +178,10 @@ class SetlistUI(size: Dimension,
   currentSongUI.setBackground(backgroundColor)
   position(nameField).atOrigin().in(this)
   position(currentSongUI).below(nameField).withMargin(4).in(this)
+
+  def save(): Unit = {
+    setListOpt.foreach { setlist => setlist.write() }
+  }
 
   def setSetList(setList: SetList): Unit = {
     setListOpt = Option(setList)
