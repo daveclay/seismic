@@ -11,62 +11,74 @@ import processing.core.PApplet.constrain
 
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
+  **
+  *val sampleSetList = SetList(
+  *name = "The Setlist",
+  *songs = Array(
+  *Song(
+  *name = "Song A",
+  *channel = 1,
+  *phrases = Array(
+  *Phrase(
+  *name = "intro",
+  *kickInstruments = Array(
+  *Instrument(Array(60)),
+  *Instrument(Array(61)),
+  *Instrument(Array(62))
+  *),
+  **
+  *snareInstruments = Array(
+  *Instrument(Array(63)),
+  *Instrument(Array(64)),
+  *Instrument(Array(65, 66)) // You can send two midi notes at the same time. Kick and snare, for instance.
+  *)
+  *)
+  *)
+  *)
+  *)
+  *)
   *
   * @param midiIO
   */
 class Seismic(midiIO: MIDIIO) {
 
-  // TODO: edit this in the Processing UI, export/import JSON config.
-  val setList = SetList(
-    name = "The Setlist",
-    songs = Array(
-      Song(
-        name = "Song A",
-        channel = 1,
-        phrases = Array(
-          Phrase(
-            name = "intro",
-            kickInstruments = Array(
-              Instrument(Array(60)),
-              Instrument(Array(61)),
-              Instrument(Array(62))
-            ),
+  var setListOpt: Option[SetList] = None
 
-            snareInstruments = Array(
-              Instrument(Array(63)),
-              Instrument(Array(64)),
-              Instrument(Array(65, 66)) // You can send two midi notes at the same time. Kick and snare, for instance.
-            )
-          )
-        )
-      )
-    )
-  )
-
-  // TODO: select song/phrase via footswitch via message sent over serial
-  val song = setList.songs(0)
-  val phrase = song.phrases(0)
+  def openSetList(file: File) = {
+    val setList = SetListSerializer.read(file)
+    setListOpt = Option(setList)
+    setList
+  }
 
   val triggeredState = new TriggeredState
 
   def trigger(trigger: TriggerOnMessage): Unit = {
-    val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
-    val pitch = instrument.mapValueToVelocity(trigger.triggerValue)
-    instrument.notes.foreach { (note) =>
-      midiIO.sendNoteOn(song.channel, note, pitch)
-    }
+    setListOpt.foreach { setList =>
+      val song = setList.songs(0)
+      val phrase = song.phrases(0)
 
-    triggeredState.triggered(trigger.name, instrument)
+      val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
+      val pitch = instrument.mapValueToVelocity(trigger.triggerValue)
+      instrument.notes.foreach { (note) =>
+        midiIO.sendNoteOn(song.channel, note, pitch)
+      }
+
+      triggeredState.triggered(trigger.name, instrument)
+
+    }
   }
 
   def off(name: String): Unit = {
-    triggeredState.lastTriggered(name) match {
-      case Some(instrument) =>
-        instrument.notes.foreach { (note) =>
-          midiIO.sendNoteOff(song.channel, note, 0)
-        }
-      case None => System.err.println(
-        "Somehow managed to trigger an off event with no previous on event for " + name + ". Ignoring.")
+    setListOpt.foreach { setList =>
+      val song = setList.songs(0)
+      triggeredState.lastTriggered(name) match {
+        case Some(instrument) =>
+          instrument.notes.foreach { (note) =>
+            midiIO.sendNoteOff(song.channel, note, 0)
+          }
+        case None =>
+          System.err.println(f"Somehow managed to trigger an off event with no previous on event for $name. Ignoring.")
+      }
     }
   }
 }
@@ -103,14 +115,28 @@ object Thresholds {
   val highHandleThreshold = 800
 }
 
+object SetListSerializer {
+
+  def write(setList: SetList): Unit = {
+    objectMapper().writeValue(new File(f"${setList.name}.json"), setList)
+  }
+
+  def read(file: File) = {
+    objectMapper().readValue(file, classOf[SetList])
+  }
+
+  private def objectMapper() = {
+    val mapper = new ObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+  }
+
+}
+
 case class SetList(var name: String, var songs: Array[Song]) {
 
   def write(): Unit = {
-    val mapper = new ObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-    mapper.writeValue(new File(f"$name.json"), this)
+    SetListSerializer.write(this)
   }
-
 }
 
 case class Song(var name: String,

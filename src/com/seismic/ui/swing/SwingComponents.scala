@@ -19,16 +19,16 @@ object SwingComponents {
     field.setBackground(backgroundColor)
     field.setOpaque(true)
     field.setEditable(false)
+    field.setCaretColor(new Color(250, 250, 20))
 
     field.addMouseListener(new MouseListener() {
-      override def mouseExited(e: MouseEvent): Unit = {
-        field.setEditable(false)
-        onValueChange(field.getText)
-      }
+      override def mouseExited(e: MouseEvent): Unit = {}
 
       override def mouseClicked(e: MouseEvent): Unit = {
         field.selectAll()
         field.setEditable(true)
+        field.getCaret.setVisible(true)
+        field.getCaret.setSelectionVisible(true)
       }
 
       override def mouseEntered(e: MouseEvent): Unit = {}
@@ -36,10 +36,10 @@ object SwingComponents {
       override def mouseReleased(e: MouseEvent): Unit = {}
     })
 
-    field.addActionListener(new ActionListener() {
-      override def actionPerformed(e: ActionEvent): Unit = {
-        onValueChange(field.getText)
-      }
+    field.addActionListener((e: ActionEvent) => {
+      field.setEditable(false)
+      field.getCaret.setVisible(false)
+      onValueChange(field.getText)
     })
 
     field

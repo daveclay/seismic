@@ -3,6 +3,7 @@ package com.seismic.ui.swing
 import java.awt._
 import java.awt.event._
 import javax.swing._
+import javax.swing.filechooser.FileNameExtensionFilter
 
 import com.daveclay.swing.util.Position.position
 import com.daveclay.swing.util.Size.setPreferredSize
@@ -41,6 +42,7 @@ class SeismicUIFactory {
 class SeismicUI(seismic: Seismic,
                 frame: JFrame,
                 graphics: Graphics) {
+
   val backgroundColor = new Color(50, 50, 60)
   val mainPanel = frame.getContentPane
   val titleFont = new Font("Arial", Font.PLAIN, 23)
@@ -55,10 +57,13 @@ class SeismicUI(seismic: Seismic,
   val handleMeter = new HandleMeter(monoFont, new Dimension(120, 120), graphics)
   handleMeter.setBackground(backgroundColor)
 
-  val setlistUI = new SetlistUI(new Dimension(800, 500),
-                                 backgroundColor)
+  val setlistUI = new SetlistUI(new Dimension(800, 500), backgroundColor)
 
-  setlistUI.setSetList(seismic.setList)
+  val openSetListButton = new JButton("Open Set List")
+  openSetListButton.addActionListener((e: ActionEvent) => {
+    showOpenSetListFileChooser()
+  })
+
   setlistUI.setBackground(backgroundColor)
 
   setPreferredSize(frame, 800, 600)
@@ -68,10 +73,21 @@ class SeismicUI(seismic: Seismic,
   title.setForeground(new Color(200, 200, 210))
 
   position(title).at(4, 4).in(mainPanel)
+  position(openSetListButton).toTheRightOf(title).withMargin(5).in(mainPanel)
   position(kickMonitor).below(title).withMargin(5).in(mainPanel)
   position(snareMonitor).toTheRightOf(kickMonitor).withMargin(5).in(mainPanel)
   position(handleMeter).toTheRightOf(snareMonitor).in(mainPanel)
   position(setlistUI).below(kickMonitor).withMargin(10).in(mainPanel)
+
+  def showOpenSetListFileChooser(): Unit = {
+    val chooser = new JFileChooser
+    val filter = new FileNameExtensionFilter("JSON Files", "json")
+    chooser.setFileFilter(filter)
+    if (chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+      val file = chooser.getSelectedFile
+      setlistUI.setSetList(seismic.openSetList(file))
+    }
+  }
 
   def handleMessage(message: Message): Unit = {
     invokeLater { () =>
@@ -236,7 +252,7 @@ class InstrumentUI(instrument: Instrument,
     onSongUpdated()
   }
 
-  val nameField = new LabeledTextField("Note", backgroundColor, 3, onValueChange)
+  val nameField = new LabeledTextField("Note", backgroundColor, 10, onValueChange)
   nameField.setText(instrument.notes.mkString(", "))
   position(nameField).atOrigin().in(this)
 
