@@ -1,8 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt._
-import java.awt.event.{ActionEvent, ActionListener, KeyEvent, KeyListener}
-import java.beans.PropertyChangeListener
+import java.awt.event.{ActionEvent, KeyEvent}
 import javax.swing._
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -61,6 +60,9 @@ class SeismicUI(seismic: Seismic,
   val monoFont = new Font("PT Mono", Font.PLAIN, 11)
   val title = SwingComponents.label("SEISMIC")
 
+  mainPanel.setBackground(backgroundColor)
+  mainPanel.setFocusTraversalPolicy(new ContainerOrderFocusTraversalPolicy)
+
   val kickMonitor = new Meter("KICK", monoFont, new Dimension(300, 30))
   val snareMonitor = new Meter("SNARE", monoFont, new Dimension(300, 30))
   val triggerMonitors = Map(
@@ -72,28 +74,26 @@ class SeismicUI(seismic: Seismic,
 
   val setlistUI = new SetlistUI(new Dimension(800, 500), backgroundColor)
 
-  val openSetListButton = new JButton("Open Set List")
-  openSetListButton.addActionListener(e => {
-    showOpenSetListFileChooser()
-  })
-
-  val newSetListButton = new JButton("New Set List")
-  newSetListButton.addActionListener(e => {
-    setlistUI.setSetList(seismic.getEmptySetList)
-  })
-
-  setlistUI.setBackground(backgroundColor)
-
   setPreferredSize(frame, 800, 600)
-  mainPanel.setBackground(backgroundColor)
+  setlistUI.setBackground(backgroundColor)
 
   title.setFont(titleFont)
   title.setForeground(new Color(200, 200, 210))
 
-  mainPanel.setFocusTraversalPolicy(new ContainerOrderFocusTraversalPolicy)
-
   val menuBar = new JMenuBar
   val fileMenu = new JMenu("File")
+  val newMenuItem = new JMenuItem("New Set List")
+  newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
+  newMenuItem.setMnemonic(KeyEvent.VK_N)
+  newMenuItem.addActionListener((e: ActionEvent) => {
+    setlistUI.setSetList(seismic.getEmptySetList)
+  })
+  val openMenuItem = new JMenuItem("Open")
+  openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
+  openMenuItem.setMnemonic(KeyEvent.VK_O)
+  openMenuItem.addActionListener((e: ActionEvent) => {
+    showOpenSetListFileChooser()
+  })
   val saveMenuItem = new JMenuItem("Save")
   saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
   saveMenuItem.setMnemonic(KeyEvent.VK_S)
@@ -101,13 +101,13 @@ class SeismicUI(seismic: Seismic,
     setlistUI.save()
   })
 
+  fileMenu.add(newMenuItem)
+  fileMenu.add(openMenuItem)
   fileMenu.add(saveMenuItem)
   menuBar.add(fileMenu)
   frame.setJMenuBar( menuBar )
 
   position(title).at(4, 4).in(mainPanel)
-  position(openSetListButton).toTheRightOf(title).withMargin(5).in(mainPanel)
-  position(newSetListButton).toTheRightOf(openSetListButton).withMargin(5).in(mainPanel)
   position(kickMonitor).below(title).withMargin(5).in(mainPanel)
   position(snareMonitor).toTheRightOf(kickMonitor).withMargin(5).in(mainPanel)
   position(handleMeter).toTheRightOf(snareMonitor).in(mainPanel)
