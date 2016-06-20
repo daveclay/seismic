@@ -138,8 +138,14 @@ case class Phrase(var name: String,
                   kickInstruments: ArrayBuffer[Instrument],
                   snareInstruments: ArrayBuffer[Instrument]) {
 
-  def addKickInstruments(instrument: Instrument): Unit = {
-    kickInstruments += instrument
+  def addNewKickInstrument(): Unit = {
+    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
+    kickInstruments += new Instrument(ArrayBuffer(0))
+  }
+
+  def addNewSnareInstrument(): Unit = {
+    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
+    snareInstruments += new Instrument(ArrayBuffer(0))
   }
 
   def addSnareInstruments(instrument: Instrument): Unit = {

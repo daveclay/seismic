@@ -199,16 +199,19 @@ class PhraseUI(onSongUpdated: () => Unit,
   setBackground(backgroundColor)
 
   var curentPhraseOpt: Option[Phrase] = None
-  var instrumentUIOpts: Option[Seq[InstrumentUI]] = None
-  val kickLabel = SwingComponents.textField(backgroundColor, 7)
-  kickLabel.setText("Kick")
-  val snareLabel = SwingComponents.textField(backgroundColor, 7)
-  snareLabel.setText("Snare")
+  val instrumentUISize = new Dimension(200, 300)
 
-  val addKickInstrumentButton = new JButton("Add")
-  addKickInstrumentButton.addActionListener(e => {
-    addKickInstrument()
-  })
+  val kickInstrumentUI = new InstrumentUI("Kick",
+                                           onAddKickInstrumentClicked,
+                                           onSongUpdated,
+                                           instrumentUISize,
+                                           backgroundColor)
+
+  val snareInstrumentUI = new InstrumentUI("Snare",
+                                            onAddSnareInstrumentClicked,
+                                            onSongUpdated,
+                                            instrumentUISize,
+                                            backgroundColor)
 
   val onNameChange = (name: String) => curentPhraseOpt.foreach {
     phrase => phrase.setName(name)
@@ -221,65 +224,97 @@ class PhraseUI(onSongUpdated: () => Unit,
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
-    updateInstrumentUIs()
+    kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
+    snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
+    position(kickInstrumentUI).below(nameField).withMargin(4).in(this)
+    position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
   }
 
-  def updateInstrumentUIs() {
+  private def positionInstrumentUIs() {
+    position(kickInstrumentUI).below(nameField).withMargin(4).in(this)
+    position(snareInstrumentUI).below(kickInstrumentUI).withMargin(4).in(this)
+  }
+
+  private def onAddKickInstrumentClicked(): Unit = {
     curentPhraseOpt.foreach { phrase =>
-      clearInstruments()
-      val kickInstrumentUIs = buildInstrumentUIs(phrase.kickInstruments)
-      val snareInstrumentUIs = buildInstrumentUIs(phrase.snareInstruments)
-      positionInstrumentUIs(kickInstrumentUIs, snareInstrumentUIs)
+      phrase.addNewKickInstrument()
+      kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
+      onSongUpdated()
     }
   }
 
-  def positionInstrumentUIs(kickInstrumentUIs: Seq[InstrumentUI], snareInstrumentUIs: Seq[InstrumentUI]): Unit = {
-    instrumentUIOpts = Option(kickInstrumentUIs ++ snareInstrumentUIs)
-    position(kickLabel).below(nameField).withMargin(4).in(this)
-    addInstrumentUIs(kickLabel, kickInstrumentUIs)
-    position(addKickInstrumentButton).below(kickInstrumentUIs.last).withMargin(4).in(this)
-    position(snareLabel).below(addKickInstrumentButton).withMargin(4).in(this)
-    addInstrumentUIs(snareLabel, snareInstrumentUIs)
+  private def onAddSnareInstrumentClicked(): Unit = {
+    curentPhraseOpt.foreach { phrase =>
+      phrase.addNewSnareInstrument()
+      snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
+      onSongUpdated()
+    }
+  }
+}
+
+class InstrumentUI(labelValue: String,
+                   onAddInstrumentClicked: () => Unit,
+                   onSongUpdated: () => Unit,
+                   size: Dimension,
+                   backgroundColor: Color) extends JPanel {
+
+  setPreferredSize(size)
+  setBackground(backgroundColor)
+
+  val label = SwingComponents.textField(backgroundColor, 7)
+  label.setText(labelValue)
+  position(label).atOrigin().in(this)
+
+  val addInstrumentButton = new JButton("Add")
+  addInstrumentButton.addActionListener(e => {
+    onAddInstrumentClicked()
+  })
+
+  var instrumentNoteUIsOpt: Option[Seq[InstrumentNoteUI]] = None
+
+  def setInstrumentNotes(instruments: Seq[Instrument]): Unit = {
+    removeCurrentInstrumentNoteUIs()
+    instrumentNoteUIsOpt = Option(buildInstrumentNoteUIs(instruments))
+    positionInstrumentUIs()
   }
 
-  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentUI]): Unit = {
+  def positionInstrumentUIs() {
+    instrumentNoteUIsOpt.foreach { instrumentUIs =>
+      addInstrumentUIs(label, instrumentUIs)
+      position(addInstrumentButton).below(instrumentUIs.last).withMargin(4).in(this)
+    }
+    repaint()
+  }
+
+  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
     instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
       position(instrumentUI).below(previousComponent).withMargin(4).in(this)
       instrumentUI
     }
   }
 
-  def buildInstrumentUIs(instruments: Seq[Instrument]) = {
+  def buildInstrumentNoteUIs(instruments: Seq[Instrument]) = {
     instruments.map { instrument =>
-      new InstrumentUI(instrument,
-                        onSongUpdated,
-                        new Dimension(size.width, 20),
-                        backgroundColor)
+      new InstrumentNoteUI(instrument,
+                            onSongUpdated,
+                            new Dimension(size.width, 20),
+                            backgroundColor)
     }
   }
 
-  def clearInstruments(): Unit = {
-    remove(kickLabel)
-    remove(snareLabel)
-    instrumentUIOpts.foreach { instrumentUIs =>
-      instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
-    }
+  def removeCurrentInstrumentNoteUIs(): Unit = {
+    instrumentNoteUIsOpt.foreach { kickInstrumentUIs => removeInstrumentUIs(kickInstrumentUIs) }
   }
 
-  def addKickInstrument(): Unit = {
-    val instrument = new Instrument(ArrayBuffer(0))
-    curentPhraseOpt.foreach { phrase =>
-      phrase.addKickInstruments(instrument)
-      onSongUpdated()
-    }
-    updateInstrumentUIs()
+  def removeInstrumentUIs(instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
+    instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
   }
 }
 
-class InstrumentUI(instrument: Instrument,
-                   onSongUpdated: () => Unit,
-                   size: Dimension,
-                   backgroundColor: Color) extends JPanel {
+class InstrumentNoteUI(instrument: Instrument,
+                       onSongUpdated: () => Unit,
+                       size: Dimension,
+                       backgroundColor: Color) extends JPanel {
 
   setPreferredSize(size)
   setBackground(backgroundColor)
