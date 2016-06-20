@@ -1,7 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt.Color
-import java.awt.event.{ActionEvent, ActionListener, MouseEvent, MouseListener}
+import java.awt.event._
 import javax.swing.{BorderFactory, JTextField}
 
 object SwingComponents {
@@ -21,25 +21,26 @@ object SwingComponents {
     field.setEditable(false)
     field.setCaretColor(new Color(250, 250, 20))
 
-    field.addMouseListener(new MouseListener() {
-      override def mouseExited(e: MouseEvent): Unit = {}
+    val triggerValueChange = () => {
+      field.setEditable(false)
+      field.getCaret.setVisible(false)
+      onValueChange(field.getText)
+    }
 
-      override def mouseClicked(e: MouseEvent): Unit = {
-        field.selectAll()
+    field.addFocusListener(new FocusListener {
+      override def focusGained(e: FocusEvent): Unit = {
         field.setEditable(true)
         field.getCaret.setVisible(true)
         field.getCaret.setSelectionVisible(true)
       }
 
-      override def mouseEntered(e: MouseEvent): Unit = {}
-      override def mousePressed(e: MouseEvent): Unit = {}
-      override def mouseReleased(e: MouseEvent): Unit = {}
+      override def focusLost(e: FocusEvent): Unit = {
+        triggerValueChange()
+      }
     })
 
     field.addActionListener((e: ActionEvent) => {
-      field.setEditable(false)
-      field.getCaret.setVisible(false)
-      onValueChange(field.getText)
+      triggerValueChange()
     })
 
     field

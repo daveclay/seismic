@@ -119,6 +119,10 @@ case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
   def write(): Unit = {
     SetListSerializer.write(this)
   }
+
+  def setName(name: String): Unit = {
+    this.name = name
+  }
 }
 
 case class Song(var name: String,

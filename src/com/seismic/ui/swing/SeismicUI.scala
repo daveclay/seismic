@@ -140,17 +140,25 @@ class SetlistUI(size: Dimension,
   setPreferredSize(size)
   setBackground(backgroundColor)
 
-  // TODO: name of the setlist is missing.
-
   var setListOpt: Option[SetList] = None
   val handleUpdate = () => setListOpt.foreach { setlist => setlist.write() }
   val currentSongUI = new SongUI(size, backgroundColor, handleUpdate)
+  val onNameChange = (name: String) => setListOpt.foreach {
+    setList => {
+      setList.setName(name)
+      handleUpdate()
+    }
+  }
+
+  val nameField = new LabeledTextField("Set List", backgroundColor, 12, onNameChange)
 
   currentSongUI.setBackground(backgroundColor)
-  position(currentSongUI).atOrigin().in(this)
+  position(nameField).atOrigin().in(this)
+  position(currentSongUI).below(nameField).withMargin(4).in(this)
 
   def setSetList(setList: SetList): Unit = {
     setListOpt = Option(setList)
+    nameField.setText(setList.name)
     currentSongUI.setSong(setList.songs(0))
   }
 }
