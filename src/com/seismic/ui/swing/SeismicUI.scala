@@ -2,6 +2,7 @@ package com.seismic.ui.swing
 
 import java.awt._
 import java.awt.event.{ActionEvent, KeyEvent}
+import java.io.File
 import javax.swing._
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -80,31 +81,21 @@ class SeismicUI(seismic: Seismic,
   title.setFont(titleFont)
   title.setForeground(new Color(200, 200, 210))
 
-  val menuBar = new JMenuBar
-  val fileMenu = new JMenu("File")
-  val newMenuItem = new JMenuItem("New Set List")
-  newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
-  newMenuItem.setMnemonic(KeyEvent.VK_N)
-  newMenuItem.addActionListener((e: ActionEvent) => {
-    setlistUI.setSetList(seismic.getEmptySetList)
-  })
-  val openMenuItem = new JMenuItem("Open")
-  openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
-  openMenuItem.setMnemonic(KeyEvent.VK_O)
-  openMenuItem.addActionListener((e: ActionEvent) => {
-    showOpenSetListFileChooser()
-  })
-  val saveMenuItem = new JMenuItem("Save")
-  saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit.getMenuShortcutKeyMask))
-  saveMenuItem.setMnemonic(KeyEvent.VK_S)
-  saveMenuItem.addActionListener((e: ActionEvent) => {
-    setlistUI.save()
-  })
+  val onFileSelected = (file: File) => setlistUI.setSetList(seismic.openSetList(file))
+  val fileChooser = new JSONFileChooser(frame, onFileSelected)
 
-  fileMenu.add(newMenuItem)
-  fileMenu.add(openMenuItem)
-  fileMenu.add(saveMenuItem)
+  val newSetList = () => setlistUI.setSetList(seismic.getEmptySetList)
+  val saveSetList = () => setlistUI.save()
+  val openSetList = () => fileChooser.show()
+
+  val menuBar = new JMenuBar
+  val fileMenu = new SMenu("File")
   menuBar.add(fileMenu)
+
+  fileMenu.addItem("New Set List", acceleratorMnemonicKey = KeyEvent.VK_N, newSetList)
+  fileMenu.addItem("Open", acceleratorMnemonicKey = KeyEvent.VK_O, openSetList)
+  fileMenu.addItem("Save", acceleratorMnemonicKey = KeyEvent.VK_S, saveSetList)
+
   frame.setJMenuBar( menuBar )
 
   position(title).at(4, 4).in(mainPanel)
@@ -112,16 +103,6 @@ class SeismicUI(seismic: Seismic,
   position(snareMonitor).toTheRightOf(kickMonitor).withMargin(5).in(mainPanel)
   position(handleMeter).toTheRightOf(snareMonitor).in(mainPanel)
   position(setlistUI).below(kickMonitor).withMargin(10).in(mainPanel)
-
-  def showOpenSetListFileChooser(): Unit = {
-    val chooser = new JFileChooser
-    val filter = new FileNameExtensionFilter("JSON Files", "json")
-    chooser.setFileFilter(filter)
-    if (chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-      val file = chooser.getSelectedFile
-      setlistUI.setSetList(seismic.openSetList(file))
-    }
-  }
 
   def handleMessage(message: Message): Unit = {
     invokeLater { () =>
