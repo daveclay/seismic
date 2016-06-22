@@ -192,7 +192,8 @@ class SongUI(size: Dimension,
 
   val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
-  val phraseUI = new PhraseUI(onSongUpdated,
+  val phraseUI = new PhraseUI(onInstrumentUpdated,
+                               onPhraseUpdated,
                                new Dimension(600, 400), backgroundColor)
   val phraseSelect = new SMenuButton[Option[Phrase]]("Phrases", onSelectPhrase)
 
@@ -205,26 +206,45 @@ class SongUI(size: Dimension,
     this.songOpt = Option(song)
 
     nameField.setText(song.name)
-    song.phrases.foreach { phrase => phraseSelect.addItem(phrase.name, Option(phrase)) }
-    phraseSelect.addItem("Add Phrase", None)
     channelField.setText(song.channel.toString)
     phraseUI.setPhrase(song.phrases.head)
+    updatePhraseSelect()
+  }
+
+  def updatePhraseSelect(): Unit = {
+    songOpt.foreach { song =>
+      phraseSelect.removeItems()
+      song.phrases.foreach { phrase => phraseSelect.addItem(phrase.name, Option(phrase)) }
+      phraseSelect.addItem("Add Phrase", None)
+    }
   }
 
   def onSelectPhrase(phraseOpt: Option[Phrase]): Unit = {
     phraseOpt match {
-      case Some(phrase) => phraseUI.setPhrase(phrase)
+      case Some(phrase) =>
+        phraseUI.setPhrase(phrase)
       case None =>
         songOpt.foreach { song =>
           val phrase = song.addPhrase()
           phraseUI.setPhrase(phrase)
-          onSongUpdated
+          onSongUpdated()
+          updatePhraseSelect()
         }
     }
   }
+
+  def onInstrumentUpdated(): Unit = {
+    onSongUpdated()
+  }
+
+  def onPhraseUpdated(): Unit = {
+    onSongUpdated()
+    updatePhraseSelect()
+  }
 }
 
-class PhraseUI(onSongUpdated: () => Unit,
+class PhraseUI(onInstrumentAdded: () => Unit,
+               onPhraseUpdated: () => Unit,
                size: Dimension,
                backgroundColor: Color) extends JPanel {
 
@@ -237,19 +257,19 @@ class PhraseUI(onSongUpdated: () => Unit,
 
   val kickInstrumentUI = new InstrumentUI("Kick",
                                            onAddKickInstrumentClicked,
-                                           onSongUpdated,
+                                           onInstrumentAdded,
                                            instrumentUISize,
                                            backgroundColor)
 
   val snareInstrumentUI = new InstrumentUI("Snare",
                                             onAddSnareInstrumentClicked,
-                                            onSongUpdated,
+                                            onInstrumentAdded,
                                             instrumentUISize,
                                             backgroundColor)
 
   val onNameChange = (name: String) => curentPhraseOpt.foreach {
     phrase => phrase.setName(name)
-    onSongUpdated()
+    onPhraseUpdated()
   }
 
   val nameField = new LabeledTextField("Phrase", backgroundColor, 12, onNameChange)
@@ -273,7 +293,7 @@ class PhraseUI(onSongUpdated: () => Unit,
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewKickInstrument()
       kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
-      onSongUpdated()
+      onInstrumentAdded()
     }
   }
 
@@ -281,7 +301,7 @@ class PhraseUI(onSongUpdated: () => Unit,
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewSnareInstrument()
       snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
-      onSongUpdated()
+      onInstrumentAdded()
     }
   }
 }

@@ -8,12 +8,17 @@ import scala.collection.mutable.ArrayBuffer
 
 class SMenuButton[T](text: String, onSelected: (T) => Unit) extends JButton(text) {
 
+  case class MenuItemIndex(item: JMenuItem, index: Int)
+
   val popup = new JPopupMenu()
   popup.setOpaque(true)
   popup.setBackground(Color.BLACK)
   popup.setForeground(new Color(200, 200, 200))
+  addActionListener( (e) =>
+    popup.show(this, 7, getHeight - 4)
+  )
 
-  val items = ArrayBuffer[JMenuItem]()
+  val items = ArrayBuffer[MenuItemIndex]()
 
   SwingComponents.configureButton(this)
 
@@ -25,11 +30,14 @@ class SMenuButton[T](text: String, onSelected: (T) => Unit) extends JButton(text
       }
     })
 
-    items :+ items
+    items :+ MenuItemIndex(item, items.size)
     popup.add(item)
+    popup.revalidate()
   }
 
-  addActionListener( (e) =>
-    popup.show(this, 7, getHeight - 4)
-  )
+  def removeItems() = {
+    popup.removeAll()
+    items.clear()
+    popup.revalidate()
+  }
 }
