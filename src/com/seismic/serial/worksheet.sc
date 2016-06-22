@@ -11,6 +11,12 @@ val a = ArrayBuffer(0, 2, 3)
 a += 0
 a
 
+val x = ArrayBuffer("A", "B", "C", "D")
+x.zipWithIndex.foldLeft("") { (acc, item) =>
+  f"$acc, ${item._1} at ${item._2}"
+}
+x
+
 
 val foo = (int: Int) => (s: String) => 0 to int map { (i) => s + i }
 

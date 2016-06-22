@@ -1,10 +1,9 @@
 package com.seismic.ui.swing
 
 import java.awt._
-import java.awt.event.{ActionEvent, KeyEvent, MouseAdapter, MouseEvent}
+import java.awt.event._
 import java.io.File
 import javax.swing._
-import javax.swing.filechooser.FileNameExtensionFilter
 
 import com.daveclay.swing.util.Position.position
 import com.daveclay.swing.util.Size.setPreferredSize
@@ -171,6 +170,116 @@ class SetlistUI(size: Dimension,
   }
 }
 
+class PhraseList(onPhraseSelected: (Phrase) => Unit,
+                 onPhraseAdded: () => Unit,
+                 backgroundColor: Color) extends JPanel() {
+
+  setPreferredSize(new Dimension(140, 400))
+  setBackground(backgroundColor)
+
+  var addPhraseItem = new AddPhraseItem(onPhraseAdded)
+  var phraseItemsOpt: Option[Seq[PhraseItem]] = None
+
+  def addPhrase(phrase: Phrase): Unit = {
+    phraseItemsOpt.foreach { phraseItems =>
+      phraseItemsOpt = Option(phraseItems :+ new SelectPhraseItem(phrase, onPhraseSelected))
+    }
+    layoutPhraseItems()
+  }
+
+  def setPhrases(phrases: Seq[Phrase]): Unit = {
+    phraseItemsOpt = Option(phrases.map { phrase =>
+      new SelectPhraseItem(phrase, onPhraseSelected)
+    })
+    layoutPhraseItems()
+  }
+
+  def phraseWasUpdated(phrase: Phrase): Unit = {
+    findPhraseItemForPhrase(phrase) match {
+      case Some(item) => item.setLabel(phrase.name)
+      case None => println(s"Could not find phrase to update")
+    }
+  }
+
+  private def findPhraseItemForPhrase(phraseToFind: Phrase) = {
+    phraseItemsOpt.flatMap { phraseItems =>
+      phraseItems.find {
+        case item: SelectPhraseItem => item.phrase.equals(phraseToFind)
+        case _ => false
+      }
+    }
+  }
+
+  private def layoutPhraseItems(): Unit = {
+    phraseItemsOpt.foreach { phraseItems =>
+      val firstPhraseItem = phraseItems.head
+      position(firstPhraseItem).atOrigin().in(this)
+      val lastPhraseItem = phraseItems.foldLeft(firstPhraseItem) { (itemAbove, phraseItem) =>
+        position(phraseItem).below(itemAbove).withMargin(4).in(this)
+        phraseItem
+      }
+
+      position(addPhraseItem).below(lastPhraseItem).withMargin(4).in(this)
+    }
+  }
+}
+
+case class AddPhraseItem(onAddPhrase:() => Unit) extends PhraseItem("Add Phrase", () => onAddPhrase())
+case class SelectPhraseItem(phrase: Phrase, onSelected: (Phrase) => Unit) extends PhraseItem(phrase.name, () => onSelected(phrase))
+
+class PhraseItem(name: String,
+                 onClick: () => Unit) extends JPanel() {
+  setFocusable(true)
+  setPreferredSize(new Dimension(140, 20))
+  setBackground(Color.BLACK)
+
+  val nameLabel = SwingComponents.label(name)
+  nameLabel.setForeground(new Color(200, 200, 200))
+
+  position(nameLabel).atOrigin().in(this)
+
+  addFocusListener(new FocusListener {
+    override def focusGained(e: FocusEvent): Unit = {
+      nameLabel.setForeground(Color.WHITE)
+    }
+
+    override def focusLost(e: FocusEvent): Unit = {
+      setBackground(Color.BLACK)
+      nameLabel.setForeground(new Color(200, 200, 200))
+    }
+  })
+
+  addKeyListener(new KeyListener {
+    override def keyTyped(e: KeyEvent): Unit = {
+      if (e.getKeyCode == KeyEvent.VK_SPACE && PhraseItem.this.isFocusOwner) {
+        onClick()
+      }
+    }
+    override def keyReleased(e: KeyEvent): Unit = {}
+    override def keyPressed(e: KeyEvent): Unit = {}
+  })
+
+  addMouseListener(new MouseListener {
+    override def mouseExited(e: MouseEvent): Unit = {}
+    override def mouseClicked(e: MouseEvent): Unit = {
+      onClick()
+    }
+    override def mouseEntered(e: MouseEvent): Unit = {}
+    override def mousePressed(e: MouseEvent): Unit = {
+      setBackground(new Color(250, 200, 0))
+      nameLabel.setForeground(Color.BLACK)
+    }
+    override def mouseReleased(e: MouseEvent): Unit = {
+      setBackground(Color.BLACK)
+      nameLabel.setForeground(new Color(200, 200, 200))
+    }
+  })
+
+  def setLabel(text: String): Unit = {
+    nameLabel.setText(text)
+  }
+}
+
 class SongUI(size: Dimension,
              backgroundColor: Color,
              onSongUpdated: () => Unit) extends JPanel {
@@ -192,61 +301,55 @@ class SongUI(size: Dimension,
 
   val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
-  val phraseUI = new PhraseUI(onInstrumentUpdated,
-                               onPhraseUpdated,
-                               new Dimension(600, 400), backgroundColor)
-  val phraseSelect = new SMenuButton[Option[Phrase]]("Phrases", onSelectPhrase)
+  val phraseEditor = new PhraseEditor(onInstrumentUpdated,
+                                      onPhraseUpdated,
+                                      new Dimension(600, 400),
+                                      backgroundColor)
+  val phraseSelect = new PhraseList(onSelectPhrase, onAddPhrase, backgroundColor)
 
   position(nameField).at(0, 4).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
   position(phraseSelect).below(nameField).withMargin(4).in(this)
-  position(phraseUI).below(phraseSelect).withMargin(4).in(this)
+  position(phraseEditor).toTheRightOf(phraseSelect).withMargin(4).in(this)
 
   def setSong(song: Song): Unit = {
     this.songOpt = Option(song)
 
     nameField.setText(song.name)
     channelField.setText(song.channel.toString)
-    phraseUI.setPhrase(song.phrases.head)
-    updatePhraseSelect()
-  }
-
-  def updatePhraseSelect(): Unit = {
+    phraseEditor.setPhrase(song.phrases.head)
     songOpt.foreach { song =>
-      phraseSelect.removeItems()
-      song.phrases.foreach { phrase => phraseSelect.addItem(phrase.name, Option(phrase)) }
-      phraseSelect.addItem("Add Phrase", None)
+      phraseSelect.setPhrases(song.phrases)
     }
   }
 
-  def onSelectPhrase(phraseOpt: Option[Phrase]): Unit = {
-    phraseOpt match {
-      case Some(phrase) =>
-        phraseUI.setPhrase(phrase)
-      case None =>
-        songOpt.foreach { song =>
-          val phrase = song.addPhrase()
-          phraseUI.setPhrase(phrase)
-          onSongUpdated()
-          updatePhraseSelect()
-        }
+  def onAddPhrase(): Unit = {
+    songOpt.foreach { song =>
+      val phrase = song.addPhrase()
+      onSongUpdated()
+      phraseEditor.setPhrase(phrase)
+      phraseSelect.addPhrase(phrase)
     }
+  }
+
+  def onSelectPhrase(phrase: Phrase): Unit = {
+    phraseEditor.setPhrase(phrase)
   }
 
   def onInstrumentUpdated(): Unit = {
     onSongUpdated()
   }
 
-  def onPhraseUpdated(): Unit = {
+  def onPhraseUpdated(phrase: Phrase): Unit = {
     onSongUpdated()
-    updatePhraseSelect()
+    phraseSelect.phraseWasUpdated(phrase)
   }
 }
 
-class PhraseUI(onInstrumentAdded: () => Unit,
-               onPhraseUpdated: () => Unit,
-               size: Dimension,
-               backgroundColor: Color) extends JPanel {
+class PhraseEditor(onAddInstrumentClicked: () => Unit,
+                   onPhraseUpdated: (Phrase) => Unit,
+                   size: Dimension,
+                   backgroundColor: Color) extends JPanel {
 
   setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)))
   setPreferredSize(size)
@@ -257,19 +360,21 @@ class PhraseUI(onInstrumentAdded: () => Unit,
 
   val kickInstrumentUI = new InstrumentUI("Kick",
                                            onAddKickInstrumentClicked,
-                                           onInstrumentAdded,
+                                           onAddInstrumentClicked,
                                            instrumentUISize,
                                            backgroundColor)
 
   val snareInstrumentUI = new InstrumentUI("Snare",
                                             onAddSnareInstrumentClicked,
-                                            onInstrumentAdded,
+                                            onAddInstrumentClicked,
                                             instrumentUISize,
                                             backgroundColor)
 
   val onNameChange = (name: String) => curentPhraseOpt.foreach {
-    phrase => phrase.setName(name)
-    onPhraseUpdated()
+    phrase => {
+      phrase.setName(name)
+      onPhraseUpdated(phrase)
+    }
   }
 
   val nameField = new LabeledTextField("Phrase", backgroundColor, 12, onNameChange)
@@ -293,7 +398,7 @@ class PhraseUI(onInstrumentAdded: () => Unit,
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewKickInstrument()
       kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
-      onInstrumentAdded()
+      onAddInstrumentClicked()
     }
   }
 
@@ -301,7 +406,7 @@ class PhraseUI(onInstrumentAdded: () => Unit,
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewSnareInstrument()
       snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
-      onInstrumentAdded()
+      onAddInstrumentClicked()
     }
   }
 }
