@@ -1,7 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt._
-import java.awt.event.{ActionEvent, KeyEvent}
+import java.awt.event.{ActionEvent, KeyEvent, MouseAdapter, MouseEvent}
 import java.io.File
 import javax.swing._
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -178,6 +178,7 @@ class SongUI(size: Dimension,
   setBackground(backgroundColor)
 
   var songOpt: Option[Song] = None
+  var currentPhraseOpt: Option[Phrase] = None
 
   val onNameChange = (name: String) => songOpt.foreach {
     song => song.setName(name)
@@ -191,26 +192,43 @@ class SongUI(size: Dimension,
 
   val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
-  val phraseUI = new PhraseUI(onSongUpdated, new Dimension(size.width, size.height), backgroundColor)
+  val phraseUI = new PhraseUI(onSongUpdated,
+                               new Dimension(600, 400), backgroundColor)
+  val phraseSelect = new SMenuButton[Option[Phrase]]("Phrases", onSelectPhrase)
 
-  // TODO: how do I add more phrases to the song?
-
-  position(nameField).atOrigin().in(this)
-  position(channelField).toTheRightOf(nameField).withMargin(5).in(this)
-  position(phraseUI).below(nameField).withMargin(5).in(this)
+  position(nameField).at(0, 4).in(this)
+  position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
+  position(phraseSelect).below(nameField).withMargin(4).in(this)
+  position(phraseUI).below(phraseSelect).withMargin(4).in(this)
 
   def setSong(song: Song): Unit = {
     this.songOpt = Option(song)
 
     nameField.setText(song.name)
+    song.phrases.foreach { phrase => phraseSelect.addItem(phrase.name, Option(phrase)) }
+    phraseSelect.addItem("Add Phrase", None)
     channelField.setText(song.channel.toString)
-    phraseUI.setPhrase(song.phrases(0))
+    phraseUI.setPhrase(song.phrases.head)
+  }
+
+  def onSelectPhrase(phraseOpt: Option[Phrase]): Unit = {
+    phraseOpt match {
+      case Some(phrase) => phraseUI.setPhrase(phrase)
+      case None =>
+        songOpt.foreach { song =>
+          val phrase = song.addPhrase()
+          phraseUI.setPhrase(phrase)
+          onSongUpdated
+        }
+    }
   }
 }
 
 class PhraseUI(onSongUpdated: () => Unit,
                size: Dimension,
                backgroundColor: Color) extends JPanel {
+
+  setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)))
   setPreferredSize(size)
   setBackground(backgroundColor)
 
@@ -235,14 +253,14 @@ class PhraseUI(onSongUpdated: () => Unit,
   }
 
   val nameField = new LabeledTextField("Phrase", backgroundColor, 12, onNameChange)
-  position(nameField).atOrigin().in(this)
+  position(nameField).at(4, 4).in(this)
 
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
     kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
     snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
-    position(kickInstrumentUI).below(nameField).withMargin(4).in(this)
+    position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
   }
 
@@ -282,7 +300,7 @@ class InstrumentUI(labelValue: String,
   label.setForeground(new Color(200, 200, 200))
   position(label).atOrigin().in(this)
 
-  val addInstrumentButton = new JButton("Add")
+  val addInstrumentButton = SwingComponents.button("Add")
   addInstrumentButton.addActionListener(e => {
     onAddInstrumentClicked()
   })

@@ -129,6 +129,15 @@ case class Song(var name: String,
                 var channel: Int,
                 phrases: ArrayBuffer[Phrase]) {
 
+  def addPhrase() = {
+    val newPhrase = Phrase("New Phrase",
+                            ArrayBuffer(Instrument(ArrayBuffer(0))),
+                            ArrayBuffer(Instrument(ArrayBuffer(0))))
+    phrases += newPhrase
+
+    newPhrase
+  }
+
   def setName(name: String): Unit = {
     this.name = name
   }

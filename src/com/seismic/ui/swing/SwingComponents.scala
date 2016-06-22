@@ -1,10 +1,53 @@
 package com.seismic.ui.swing
 
-import java.awt.Color
+import java.awt.{Color, Component, Graphics, Insets}
 import java.awt.event._
-import javax.swing.{BorderFactory, JLabel, JTextField}
+import javax.swing.border.{Border, CompoundBorder, EmptyBorder, LineBorder}
+import javax.swing.{BorderFactory, JButton, JLabel, JTextField}
 
 object SwingComponents {
+
+  class RoundedBorder(radius: Int) extends Border {
+    def getBorderInsets(c: Component) = {
+      new Insets(this.radius+1, this.radius+1, this.radius+2, this.radius)
+    }
+
+    def isBorderOpaque = {
+      true
+    }
+
+    def paintBorder(c: Component, g: Graphics, x: Int, y: Int, width: Int, height: Int) {
+      g.drawRoundRect(x, y, width-1, height-1, radius, radius);
+    }
+  }
+
+  def configureButton(button: JButton): Unit = {
+    button.setForeground(new Color(200, 200, 200))
+    button.setBackground(Color.BLACK)
+    button.setOpaque(true)
+    button.addFocusListener(new FocusListener {
+      override def focusGained(e: FocusEvent): Unit = {
+        button.setBackground(new Color(250, 200, 0))
+        button.setForeground(Color.BLACK)
+      }
+      override def focusLost(e: FocusEvent): Unit = {
+        button.setBackground(Color.BLACK)
+        button.setForeground(new Color(200, 200, 200))
+      }
+    })
+
+    val line = new LineBorder(new Color(100, 100, 100))
+    val margin = new EmptyBorder(5, 15, 5, 15)
+    val compound = new CompoundBorder(line, margin)
+    button.setBorder(compound)
+
+  }
+
+  def button(text: String) = {
+    val button = new JButton(text)
+    configureButton(button)
+    button
+  }
 
   def label(text: String) = {
     val label = new JLabel(text)
