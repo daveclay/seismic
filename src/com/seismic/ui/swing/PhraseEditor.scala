@@ -34,6 +34,7 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     phrase => {
       phrase.setName(name)
       onPhraseUpdated(phrase)
+      kickInstrumentUI.grabFocus()
     }
   }
 

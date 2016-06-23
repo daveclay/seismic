@@ -66,6 +66,10 @@ class InstrumentUI(labelValue: String,
   def removeInstrumentUIs(instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
     instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
   }
+
+  override def grabFocus(): Unit = {
+    instrumentNoteUIsOpt.foreach { instrumentNoteUIs => instrumentNoteUIs.head.nameField.grabFocus() }
+  }
 }
 
 class InstrumentNoteUI(instrument: Instrument,
