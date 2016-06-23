@@ -1,0 +1,92 @@
+package com.seismic.ui.swing
+
+import java.awt.{Color, Container, Dimension}
+import javax.swing.JPanel
+
+import com.daveclay.swing.util.Position._
+import com.seismic.Instrument
+
+import scala.collection.mutable.ArrayBuffer
+
+class InstrumentUI(labelValue: String,
+                   onAddInstrumentClicked: () => Unit,
+                   onSongUpdated: () => Unit,
+                   size: Dimension,
+                   backgroundColor: Color) extends JPanel {
+
+  setPreferredSize(size)
+  setBackground(backgroundColor)
+
+  val label = SwingComponents.label(labelValue)
+  label.setBackground(backgroundColor)
+  label.setForeground(new Color(200, 200, 200))
+  position(label).atOrigin().in(this)
+
+  val addInstrumentButton = SwingComponents.button("Add")
+  addInstrumentButton.addActionListener(e => {
+    onAddInstrumentClicked()
+  })
+
+  var instrumentNoteUIsOpt: Option[Seq[InstrumentNoteUI]] = None
+
+  def setInstrumentNotes(instruments: Seq[Instrument]): Unit = {
+    removeCurrentInstrumentNoteUIs()
+    instrumentNoteUIsOpt = Option(buildInstrumentNoteUIs(instruments))
+    positionInstrumentUIs()
+  }
+
+  def positionInstrumentUIs() {
+    instrumentNoteUIsOpt.foreach { instrumentUIs =>
+      addInstrumentUIs(label, instrumentUIs)
+      position(addInstrumentButton).below(instrumentUIs.last).withMargin(4).in(this)
+    }
+    repaint()
+  }
+
+  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
+    instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
+      position(instrumentUI).below(previousComponent).withMargin(4).in(this)
+      instrumentUI
+    }
+  }
+
+  def buildInstrumentNoteUIs(instruments: Seq[Instrument]) = {
+    instruments.map { instrument =>
+      new InstrumentNoteUI(instrument,
+                            onSongUpdated,
+                            new Dimension(size.width, 20),
+                            backgroundColor)
+    }
+  }
+
+  def removeCurrentInstrumentNoteUIs(): Unit = {
+    instrumentNoteUIsOpt.foreach { kickInstrumentUIs => removeInstrumentUIs(kickInstrumentUIs) }
+  }
+
+  def removeInstrumentUIs(instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
+    instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
+  }
+}
+
+class InstrumentNoteUI(instrument: Instrument,
+                       onSongUpdated: () => Unit,
+                       size: Dimension,
+                       backgroundColor: Color) extends JPanel {
+
+  setPreferredSize(size)
+  setBackground(backgroundColor)
+
+  val onValueChange = (value: String) => {
+    // TODO: value should be maybe "C2, C#2, D3" or "C2, 63, C#2"
+    instrument.setNotes(value.split(", ").map { value => value.toInt }.to[ArrayBuffer])
+    onSongUpdated()
+  }
+
+  val nameField = new LabeledTextField("Note", backgroundColor, 10, onValueChange)
+  nameField.setText(instrument.notes.mkString(", "))
+  position(nameField).atOrigin().in(this)
+
+}
+
+
+

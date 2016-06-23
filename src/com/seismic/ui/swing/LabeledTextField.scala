@@ -29,4 +29,8 @@ class LabeledTextField(labelText: String,
   def setText(text: String): Unit = {
     textField.setText(text)
   }
+
+  override def grabFocus(): Unit = {
+    textField.grabFocus()
+  }
 }
