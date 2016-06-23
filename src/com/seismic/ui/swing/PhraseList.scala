@@ -15,7 +15,7 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
   setPreferredSize(new Dimension(250, 400))
   setBackground(backgroundColor)
 
-  var addPhraseButton = new JButton("Add Phrase")
+  var addPhraseButton = SwingComponents.button("Add Phrase")
   addPhraseButton.addActionListener(e => { onAddPhraseSelected() })
   var phraseItemsOpt: Option[Seq[PhraseItem]] = None
 

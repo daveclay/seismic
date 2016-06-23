@@ -32,9 +32,11 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
 
   val onNameChange = (name: String) => curentPhraseOpt.foreach {
     phrase => {
+      if ( ! phrase.name.equals(name)) {
+        kickInstrumentUI.grabFocus()
+      }
       phrase.setName(name)
       onPhraseUpdated(phrase)
-      kickInstrumentUI.grabFocus()
     }
   }
 
