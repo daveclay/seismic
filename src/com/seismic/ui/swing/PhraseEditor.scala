@@ -1,6 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt.{Color, Dimension}
+import javax.swing.border.CompoundBorder
 import javax.swing.{BorderFactory, JPanel}
 
 import com.daveclay.swing.util.Position._
@@ -8,12 +9,11 @@ import com.seismic.Phrase
 
 class PhraseEditor(onAddInstrumentClicked: () => Unit,
                    onPhraseUpdated: (Phrase) => Unit,
-                   size: Dimension,
                    backgroundColor: Color) extends JPanel {
 
-  setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)))
-  setPreferredSize(size)
-  setBackground(backgroundColor)
+  SwingComponents.addBorder(this)
+  setPreferredSize(new Dimension(400, 400))
+  setOpaque(false)
 
   var curentPhraseOpt: Option[Phrase] = None
   val instrumentUISize = new Dimension(200, 300)

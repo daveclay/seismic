@@ -193,17 +193,16 @@ class SongUI(size: Dimension,
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
   val phraseEditor = new PhraseEditor(onInstrumentUpdated,
                                       onPhraseUpdated,
-                                      new Dimension(600, 400),
                                       backgroundColor)
   val phraseSelect = new PhraseList(onSelectPhrase,
+                                     onEditPhraseSelected,
                                      onAddPhrase,
-                                     onEditPhraseClicked,
                                      backgroundColor)
 
   position(nameField).at(0, 4).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
-  position(phraseSelect).below(nameField).withMargin(4).in(this)
-  position(phraseEditor).toTheRightOf(phraseSelect).withMargin(4).in(this)
+  position(phraseSelect).below(nameField).withMargin(1).in(this)
+  position(phraseEditor).toTheRightOf(phraseSelect).withMargin(1).in(this)
 
   def setSong(song: Song): Unit = {
     this.songOpt = Option(song)
@@ -230,7 +229,8 @@ class SongUI(size: Dimension,
     phraseEditor.setPhrase(phrase)
   }
 
-  def onEditPhraseClicked(): Unit = {
+  def onEditPhraseSelected(phrase: Phrase): Unit = {
+    phraseEditor.setPhrase(phrase)
     phraseEditor.requestEdit()
   }
 

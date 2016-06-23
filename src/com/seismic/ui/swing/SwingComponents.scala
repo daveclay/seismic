@@ -3,7 +3,7 @@ package com.seismic.ui.swing
 import java.awt.{Color, Component, Graphics, Insets}
 import java.awt.event._
 import javax.swing.border.{Border, CompoundBorder, EmptyBorder, LineBorder}
-import javax.swing.{BorderFactory, JButton, JLabel, JTextField}
+import javax.swing._
 
 object SwingComponents {
 
@@ -19,6 +19,18 @@ object SwingComponents {
     def paintBorder(c: Component, g: Graphics, x: Int, y: Int, width: Int, height: Int) {
       g.drawRoundRect(x, y, width-1, height-1, radius, radius);
     }
+  }
+
+  def addBorder(panel: JPanel) = {
+    panel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)))
+    panel
+  }
+
+  def addBorderWithMargin(panel: JPanel, margin: Int) = {
+    val outerBorder = BorderFactory.createLineBorder(new Color(0, 0, 0))
+    val marginBorder = BorderFactory.createEmptyBorder(margin, margin, margin, margin)
+    panel.setBorder(BorderFactory.createCompoundBorder(outerBorder, marginBorder))
+    panel
   }
 
   def configureButton(button: JButton): Unit = {

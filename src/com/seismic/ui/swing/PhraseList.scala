@@ -1,26 +1,30 @@
 package com.seismic.ui.swing
 
 import java.awt.{Color, Dimension}
-import javax.swing.JPanel
+import javax.swing.{JButton, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Phrase
 
 class PhraseList(onPhraseSelected: (Phrase) => Unit,
-                 onPhraseAdded: () => Unit,
-                 onEditPhraseClicked: () => Unit,
+                 onEditPhraseSelected: (Phrase) => Unit,
+                 onAddPhraseSelected: () => Unit,
                  backgroundColor: Color) extends JPanel() {
 
-  setPreferredSize(new Dimension(140, 400))
+  SwingComponents.addBorder(this)
+  setPreferredSize(new Dimension(250, 400))
   setBackground(backgroundColor)
 
-  var addPhraseItem = new AddPhraseItem(onPhraseAdded, selectLast, selectFirst)
-  var phraseItemsOpt: Option[Seq[SelectPhraseItem]] = None
+  var addPhraseButton = new JButton("Add Phrase")
+  addPhraseButton.addActionListener(e => { onAddPhraseSelected() })
+  var phraseItemsOpt: Option[Seq[PhraseItem]] = None
 
   def addPhrase(phrase: Phrase): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
       val phraseItem = createPhraseItem(phrase)
-      phraseItemsOpt = Option(phraseItems :+ phraseItem)
+      val all = phraseItems :+ phraseItem
+      phraseItemsOpt = Option(all)
+      indicateSelectedItem(phraseItem)
     }
     layoutPhraseItems()
   }
@@ -32,13 +36,33 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
     layoutPhraseItems()
   }
 
-  private def createPhraseItem(phrase: Phrase) = {
-    val selectPrevious = () => findPhraseItemForPhrase(phrase).foreach { phraseItem => selectPreviousFrom(phraseItem) }
-    val selectNext = () => findPhraseItemForPhrase(phrase).foreach { phraseItem => selectNextFrom(phraseItem) }
-    val selected = () => {
-      onPhraseSelected(phrase)
+  def findPhraseFunc(phrase: Phrase, f: (PhraseItem) => Unit) = {
+    () => findPhraseItemForPhrase(phrase).foreach { phraseItem => f(phraseItem) }
+  }
+
+  private def indicateSelectedItem(phraseItem: PhraseItem): Unit = {
+    phraseItemsOpt.foreach { phraseItems =>
+      phraseItems.foreach { item => item.indicateUnselect() }
+      phraseItem.indicateSelected()
     }
-    new SelectPhraseItem(phrase, selected, onEditPhraseClicked, selectPrevious, selectNext)
+  }
+
+  private def indicateSelectedPhrase(phrase: Phrase): Unit = {
+    findPhraseItemForPhrase(phrase).foreach { phraseItem => indicateSelectedItem(phraseItem) }
+  }
+
+  private def createPhraseItem(phrase: Phrase) = {
+    val selectPrevious = findPhraseFunc(phrase, { phraseItem => selectPreviousFrom(phraseItem) })
+    val selectNext = findPhraseFunc(phrase, { phraseItem => selectNextFrom(phraseItem) })
+    val onShowPhrase = () => {
+      onPhraseSelected(phrase)
+      indicateSelectedPhrase(phrase)
+    }
+    val onEditPhrase = () => {
+      onEditPhraseSelected(phrase)
+      indicateSelectedPhrase(phrase)
+    }
+    new PhraseItem(phrase, onShowPhrase, onEditPhrase, selectPrevious, selectNext)
   }
 
   def phraseWasUpdated(phrase: Phrase): Unit = {
@@ -48,9 +72,8 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
     }
   }
 
-  private def selectPreviousFrom(phraseItem: SelectPhraseItem): Unit = {
+  private def selectPreviousFrom(phraseItem: PhraseItem): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
-      phraseItem.unselect()
       val index = phraseItems.indexOf(phraseItem)
       selectItemAt(wrapIndex(index - 1, phraseItems))
     }
@@ -58,7 +81,6 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
 
   private def selectNextFrom(phraseItem: PhraseItem): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
-      phraseItem.unselect()
       val index = phraseItems.indexOf(phraseItem)
       selectItemAt(wrapIndex(index + 1, phraseItems))
     }
@@ -76,24 +98,30 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
 
   private def selectFirst(): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
-      phraseItems.head.select()
+      phraseItems.head.grabFocus()
     }
   }
 
   private def selectLast(): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
-      phraseItems.last.select()
+      phraseItems.last.grabFocus()
     }
   }
 
   private def selectItemAt(index: Int): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
-      phraseItems(index).select()
+      selectItem(phraseItems(index))
     }
+  }
+
+  private def selectItem(item: PhraseItem): Unit = {
+    item.grabFocus()
+    indicateSelectedItem(item)
   }
 
   private def findPhraseItemForPhrase(phraseToFind: Phrase) = {
     phraseItemsOpt.flatMap { phraseItems =>
+      // TODO: nope, they're case classes, it just does the name equality. two phrases named the same are bad. prevent it.
       phraseItems.find { item => item.phrase.equals(phraseToFind) }
     }
   }
@@ -107,7 +135,7 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
         phraseItem
       }
 
-      position(addPhraseItem).below(lastPhraseItem).withMargin(4).in(this)
+      position(addPhraseButton).below(lastPhraseItem).withMargin(4).in(this)
     }
   }
 }

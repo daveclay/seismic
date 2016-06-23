@@ -7,53 +7,30 @@ import javax.swing.JPanel
 import com.daveclay.swing.util.Position._
 import com.seismic.Phrase
 
-case class AddPhraseItem(onAddPhrase:() => Unit,
-                         onSelectPrevious: () => Unit,
-                         onSelectNext: () => Unit)
-  extends PhraseItem("Add Phrase",
-                      () => onAddPhrase(),
-                      () => Unit,
-                      () => Unit,
-                      onSelectPrevious,
-                      onSelectNext)
+case class PhraseItem(phrase: Phrase,
+                      onShowSelected: () => Unit,
+                      onEditPhraseSelected: () => Unit,
+                      onSelectPrevious: () => Unit,
+                      onSelectNext: () => Unit) extends JPanel {
 
-case class SelectPhraseItem(phrase: Phrase,
-                            onSelected: () => Unit,
-                            onEditPhraseClicked: () => Unit,
-                            onSelectPrevious: () => Unit,
-                            onSelectNext: () => Unit)
-  extends PhraseItem(phrase.name,
-                      onSelected,
-                      onSelected,
-                      onEditPhraseClicked,
-                      onSelectPrevious,
-                      onSelectNext)
+  private val itemSize = new Dimension(250, 20)
 
-class PhraseItem(name: String,
-                 onClick: () => Unit,
-                 onFocus: () => Unit,
-                 onEditPhraseClicked: () => Unit,
-                 onSelectPrevious: () => Unit,
-                 onSelectNext: () => Unit) extends JPanel() {
   setFocusable(true)
-  setPreferredSize(new Dimension(140, 20))
+  setPreferredSize(itemSize)
   setBackground(Color.BLACK)
 
-  val nameLabel = SwingComponents.label(name)
+  val nameLabel = SwingComponents.label(phrase.name)
+  nameLabel.setPreferredSize(new Dimension(itemSize.width, 20))
   nameLabel.setForeground(new Color(200, 200, 200))
 
   position(nameLabel).atOrigin().in(this)
 
   addFocusListener(new FocusListener {
     override def focusGained(e: FocusEvent): Unit = {
-      setBackground(new Color(230, 190, 0))
-      nameLabel.setForeground(Color.BLACK)
-      onFocus()
+      onShowSelected()
     }
 
     override def focusLost(e: FocusEvent): Unit = {
-      setBackground(Color.BLACK)
-      nameLabel.setForeground(new Color(200, 200, 200))
     }
   })
 
@@ -68,9 +45,9 @@ class PhraseItem(name: String,
       } else if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_KP_DOWN) {
         onSelectNext()
       } else if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_KP_RIGHT) {
-        onEditPhraseClicked()
+        onEditPhraseSelected()
       } else if (code == KeyEvent.VK_SPACE) {
-        onClick()
+        onEditPhraseSelected()
       }
     }
   })
@@ -78,25 +55,24 @@ class PhraseItem(name: String,
   addMouseListener(new MouseListener {
     override def mouseExited(e: MouseEvent): Unit = {}
     override def mouseClicked(e: MouseEvent): Unit = {
-      onClick()
+      onEditPhraseSelected()
     }
     override def mouseEntered(e: MouseEvent): Unit = {}
     override def mousePressed(e: MouseEvent): Unit = {
-      setBackground(new Color(250, 240, 100))
-      nameLabel.setForeground(Color.BLACK)
+      setBackground(new Color(100, 40, 0))
+      nameLabel.setForeground(Color.WHITE)
     }
-    override def mouseReleased(e: MouseEvent): Unit = {
-      unselect()
-    }
+    override def mouseReleased(e: MouseEvent): Unit = {}
   })
 
-  def unselect(): Unit = {
-    setBackground(Color.BLACK)
-    nameLabel.setForeground(new Color(200, 200, 200))
+  def indicateSelected() = {
+    setBackground(new Color(230, 190, 0))
+    nameLabel.setForeground(Color.BLACK)
   }
 
-  def select(): Unit = {
-    this.grabFocus()
+  def indicateUnselect(): Unit = {
+    setBackground(Color.BLACK)
+    nameLabel.setForeground(new Color(200, 200, 200))
   }
 
   def setLabel(text: String): Unit = {
