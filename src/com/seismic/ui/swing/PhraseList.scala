@@ -1,7 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt.{Color, Dimension}
-import javax.swing.{JButton, JPanel}
+import javax.swing.{JButton, JLabel, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Phrase
@@ -13,7 +13,7 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
 
   SwingComponents.addBorder(this)
   setPreferredSize(new Dimension(250, 400))
-  setBackground(backgroundColor)
+  setBackground(new Color(70, 70, 70))
 
   var addPhraseButton = SwingComponents.button("Add Phrase")
   addPhraseButton.addActionListener(e => { onAddPhraseSelected() })
@@ -24,15 +24,13 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
       val phraseItem = createPhraseItem(phrase)
       val all = phraseItems :+ phraseItem
       phraseItemsOpt = Option(all)
+      layoutPhraseItems()
       indicateSelectedItem(phraseItem)
     }
-    layoutPhraseItems()
   }
 
   def setPhrases(phrases: Seq[Phrase]): Unit = {
-    phraseItemsOpt = Option(phrases.map { phrase =>
-      createPhraseItem(phrase)
-    })
+    phraseItemsOpt = Option(phrases.map { phrase => createPhraseItem(phrase) })
     layoutPhraseItems()
   }
 
@@ -41,10 +39,8 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
   }
 
   private def indicateSelectedItem(phraseItem: PhraseItem): Unit = {
-    phraseItemsOpt.foreach { phraseItems =>
-      phraseItems.foreach { item => item.indicateUnselect() }
-      phraseItem.indicateSelected()
-    }
+    foreachPhraseItem { phraseItem => phraseItem.indicateUnselect() }
+    phraseItem.indicateSelected()
   }
 
   private def indicateSelectedPhrase(phrase: Phrase): Unit = {
@@ -126,11 +122,19 @@ class PhraseList(onPhraseSelected: (Phrase) => Unit,
     }
   }
 
+  private def foreachPhraseItem(f: (PhraseItem) => Unit): Unit = {
+    phraseItemsOpt.foreach { phraseItems =>
+      phraseItems.foreach { phraseItem => f(phraseItem) }
+    }
+  }
+
   private def layoutPhraseItems(): Unit = {
     phraseItemsOpt.foreach { phraseItems =>
+      removeAll()
       val firstPhraseItem = phraseItems.head
       position(firstPhraseItem).atOrigin().in(this)
-      val lastPhraseItem = phraseItems.foldLeft(firstPhraseItem) { (itemAbove, phraseItem) =>
+
+      val lastPhraseItem = phraseItems.drop(1).foldLeft(firstPhraseItem) { (itemAbove, phraseItem) =>
         position(phraseItem).below(itemAbove).withMargin(4).in(this)
         phraseItem
       }

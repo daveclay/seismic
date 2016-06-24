@@ -23,7 +23,7 @@ case class PhraseItem(phrase: Phrase,
   nameLabel.setPreferredSize(new Dimension(itemSize.width, 20))
   nameLabel.setForeground(new Color(200, 200, 200))
 
-  position(nameLabel).atOrigin().in(this)
+  position(nameLabel).at(4, 0).in(this)
 
   addFocusListener(new FocusListener {
     override def focusGained(e: FocusEvent): Unit = {

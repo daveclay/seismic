@@ -201,8 +201,8 @@ class SongUI(size: Dimension,
 
   position(nameField).at(0, 4).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
-  position(phraseSelect).below(nameField).withMargin(1).in(this)
-  position(phraseEditor).toTheRightOf(phraseSelect).withMargin(1).in(this)
+  position(phraseSelect).below(nameField).withMargin(4).in(this)
+  position(phraseEditor).toTheRightOf(phraseSelect).withMargin(4).in(this)
 
   def setSong(song: Song): Unit = {
     this.songOpt = Option(song)

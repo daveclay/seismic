@@ -13,7 +13,7 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
 
   SwingComponents.addBorder(this)
   setPreferredSize(new Dimension(400, 400))
-  setOpaque(false)
+  setBackground(new Color(70, 70, 70))
 
   var curentPhraseOpt: Option[Phrase] = None
   val instrumentUISize = new Dimension(200, 300)
