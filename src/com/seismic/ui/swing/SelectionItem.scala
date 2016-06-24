@@ -5,13 +5,12 @@ import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
-import com.seismic.Phrase
 
-case class PhraseItem(phrase: Phrase,
-                      onShowSelected: () => Unit,
-                      onEditPhraseSelected: () => Unit,
-                      onSelectPrevious: () => Unit,
-                      onSelectNext: () => Unit) extends JPanel {
+case class SelectionItem[T <: Selectable](item: T,
+                                          onShowSelected: () => Unit,
+                                          onEditSelected: () => Unit,
+                                          onSelectPrevious: () => Unit,
+                                          onSelectNext: () => Unit) extends JPanel {
 
   private val itemSize = new Dimension(250, 20)
 
@@ -19,7 +18,7 @@ case class PhraseItem(phrase: Phrase,
   setPreferredSize(itemSize)
   setBackground(Color.BLACK)
 
-  val nameLabel = SwingComponents.label(phrase.name)
+  val nameLabel = SwingComponents.label(item.name)
   nameLabel.setPreferredSize(new Dimension(itemSize.width, 20))
   nameLabel.setForeground(new Color(200, 200, 200))
 
@@ -45,9 +44,9 @@ case class PhraseItem(phrase: Phrase,
       } else if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_KP_DOWN) {
         onSelectNext()
       } else if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_KP_RIGHT) {
-        onEditPhraseSelected()
+        onEditSelected()
       } else if (code == KeyEvent.VK_SPACE) {
-        onEditPhraseSelected()
+        onEditSelected()
       }
     }
   })
@@ -55,7 +54,7 @@ case class PhraseItem(phrase: Phrase,
   addMouseListener(new MouseListener {
     override def mouseExited(e: MouseEvent): Unit = {}
     override def mouseClicked(e: MouseEvent): Unit = {
-      onEditPhraseSelected()
+      onEditSelected()
     }
     override def mouseEntered(e: MouseEvent): Unit = {}
     override def mousePressed(e: MouseEvent): Unit = {

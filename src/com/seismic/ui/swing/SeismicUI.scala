@@ -11,8 +11,6 @@ import com.seismic._
 import com.seismic.messages._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
-import collection.mutable.ArrayBuffer
-
 class SeismicUIFactory {
   var seismicUIOpt: Option[SeismicUI] = None
 
@@ -194,10 +192,10 @@ class SongUI(size: Dimension,
   val phraseEditor = new PhraseEditor(onInstrumentUpdated,
                                       onPhraseUpdated,
                                       backgroundColor)
-  val phraseSelect = new PhraseList(onSelectPhrase,
-                                     onEditPhraseSelected,
-                                     onAddPhrase,
-                                     backgroundColor)
+  val phraseSelect = new SelectionList[Phrase](onSelectPhrase,
+                                               onEditPhraseSelected,
+                                               onAddPhrase,
+                                               backgroundColor)
 
   position(nameField).at(0, 4).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
@@ -211,7 +209,7 @@ class SongUI(size: Dimension,
     channelField.setText(song.channel.toString)
     phraseEditor.setPhrase(song.phrases.head)
     songOpt.foreach { song =>
-      phraseSelect.setPhrases(song.phrases)
+      phraseSelect.setItems(song.phrases)
     }
   }
 
@@ -220,7 +218,7 @@ class SongUI(size: Dimension,
       val phrase = song.addPhrase()
       onSongUpdated()
       phraseEditor.setPhrase(phrase)
-      phraseSelect.addPhrase(phrase)
+      phraseSelect.addItem(phrase)
       phraseEditor.requestEdit()
     }
   }
@@ -240,6 +238,6 @@ class SongUI(size: Dimension,
 
   def onPhraseUpdated(phrase: Phrase): Unit = {
     onSongUpdated()
-    phraseSelect.phraseWasUpdated(phrase)
+    phraseSelect.itemWasUpdated(phrase)
   }
 }

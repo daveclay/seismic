@@ -5,6 +5,7 @@ import java.io.File
 import collection.mutable.ArrayBuffer
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.MIDIIO
+import com.seismic.ui.swing.Selectable
 import com.seismic.utils.SetListSerializer
 import com.seismic.utils.ValueMapHelper.map
 import processing.core.PApplet.constrain
@@ -149,7 +150,7 @@ case class Song(var name: String,
 
 case class Phrase(var name: String,
                   kickInstruments: ArrayBuffer[Instrument],
-                  snareInstruments: ArrayBuffer[Instrument]) {
+                  snareInstruments: ArrayBuffer[Instrument]) extends Selectable {
 
   def addNewKickInstrument(): Unit = {
     // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
