@@ -149,11 +149,13 @@ class SetlistUI(size: Dimension,
   val songSelect = new SelectionList[Song](onSongSelected,
                                             onEditSongSelected,
                                             onAddSong,
+                                            onSongBackSelected,
                                             componentBGColor)
 
   val phraseSelect = new SelectionList[Phrase](onShowPhraseSelected,
                                                 onEditPhraseSelected,
                                                 onAddPhraseSelected,
+                                                onPhraseBackSelected,
                                                 componentBGColor)
   val songEditor = new SongEditor(onSongUpdated, componentBGColor)
 
@@ -200,6 +202,10 @@ class SetlistUI(size: Dimension,
     }
   }
 
+  def onSongBackSelected(song: Song): Unit = {
+    //TODO?
+  }
+
   def onSongUpdated(song: Song): Unit = {
     save()
     songSelect.itemWasUpdated(song)
@@ -237,6 +243,10 @@ class SetlistUI(size: Dimension,
   def onPhraseUpdated(phrase: Phrase): Unit = {
     save()
     phraseSelect.itemWasUpdated(phrase)
+  }
+
+  def onPhraseBackSelected(phrase: Phrase): Unit = {
+    songSelect.grabFocus()
   }
 
   def setSetList(setList: SetList): Unit = {

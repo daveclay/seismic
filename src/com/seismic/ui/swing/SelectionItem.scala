@@ -10,7 +10,8 @@ case class SelectionItem[T <: Selectable](item: T,
                                           onShowSelected: () => Unit,
                                           onEditSelected: () => Unit,
                                           onSelectPrevious: () => Unit,
-                                          onSelectNext: () => Unit) extends JPanel {
+                                          onSelectNext: () => Unit,
+                                          onBackSelected: () => Unit) extends JPanel {
 
   private val itemSize = new Dimension(250, 20)
 
@@ -45,6 +46,8 @@ case class SelectionItem[T <: Selectable](item: T,
         onSelectNext()
       } else if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_KP_RIGHT) {
         onEditSelected()
+      } else if (code == KeyEvent.VK_LEFT || code == KeyEvent.VK_KP_LEFT) {
+        onBackSelected()
       } else if (code == KeyEvent.VK_SPACE) {
         onEditSelected()
       }

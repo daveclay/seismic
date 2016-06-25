@@ -12,6 +12,7 @@ trait Selectable {
 class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
                                      onEditItemSelected: (T) => Unit,
                                      onAddItemSelected: () => Unit,
+                                     onBackSelected: (T) => Unit,
                                      backgroundColor: Color) extends JPanel() {
 
   SwingComponents.addBorder(this)
@@ -38,6 +39,12 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     layoutSelectionItems()
   }
 
+  override def grabFocus(): Unit = {
+    selectionItemsOpt.foreach { selectItems =>
+      selectItems.head.grabFocus()
+    }
+  }
+
   def applySelectionItemFor(item: T, f: (SelectionItem[T]) => Unit) = {
     () => findSelectionItemFor(item).foreach { selectionItem => f(selectionItem) }
   }
@@ -52,8 +59,8 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   }
 
   private def createSelectItem(item: T) = {
-    val selectPrevious = applySelectionItemFor(item, { selectionItem => selectPreviousFrom(selectionItem) })
-    val selectNext = applySelectionItemFor(item, { selectionItem => selectNextFrom(selectionItem) })
+    val onSelectPrevious = applySelectionItemFor(item, { selectionItem => selectPreviousFrom(selectionItem) })
+    val onSelectNext = applySelectionItemFor(item, { selectionItem => selectNextFrom(selectionItem) })
     val onShowPhrase = () => {
       onItemSelected(item)
       indicateSelectedItem(item)
@@ -62,7 +69,8 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
       onEditItemSelected(item)
       indicateSelectedItem(item)
     }
-    new SelectionItem(item, onShowPhrase, onEditPhrase, selectPrevious, selectNext)
+    val onSelectBack = () => { onBackSelected(item) }
+    new SelectionItem(item, onShowPhrase, onEditPhrase, onSelectPrevious, onSelectNext, onSelectBack)
   }
 
   def itemWasUpdated(updatedItem: T): Unit = {
