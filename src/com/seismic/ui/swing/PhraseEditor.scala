@@ -52,7 +52,7 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
   }
 
-  def requestEdit(): Unit = {
+  override def grabFocus(): Unit = {
     nameField.grabFocus()
   }
 

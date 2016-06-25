@@ -20,10 +20,10 @@ class SeismicUIFactory {
     System.setProperty("apple.laf.useScreenMenuBar", "true")
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
 
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
 
     val seismicUI = new SeismicUI(seismic, frame, frame.getGraphics)
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
     frame.setVisible(true)
 
@@ -47,8 +47,9 @@ class SeismicUI(seismic: Seismic,
                 frame: JFrame,
                 graphics: Graphics) {
 
-  val backgroundColor = new Color(50, 50, 60)
   val mainPanel = frame.getContentPane
+  val backgroundColor = new Color(50, 50, 60)
+  val componentBGColor = new Color(70, 70, 70)
 
   // TODO: build a factory that knows about all this shared styling
   // then ask the factory to create components, the factory sets the styling
@@ -67,12 +68,12 @@ class SeismicUI(seismic: Seismic,
     "KICK" -> kickMonitor,
     "SNARE" -> snareMonitor)
 
-  val handleMeter = new HandleMeter(monoFont, new Dimension(120, 120), graphics)
+  val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80), graphics)
   handleMeter.setBackground(backgroundColor)
 
-  val setlistUI = new SetlistUI(new Dimension(800, 500), backgroundColor)
+  val setlistUI = new SetlistUI(new Dimension(1020, 600), componentBGColor)
 
-  setPreferredSize(frame, 800, 600)
+  setPreferredSize(frame, 1024, 800)
   setlistUI.setBackground(backgroundColor)
 
   title.setFont(titleFont)
@@ -98,8 +99,8 @@ class SeismicUI(seismic: Seismic,
   position(title).at(4, 4).in(mainPanel)
   position(kickMonitor).below(title).withMargin(5).in(mainPanel)
   position(snareMonitor).toTheRightOf(kickMonitor).withMargin(5).in(mainPanel)
-  position(handleMeter).toTheRightOf(snareMonitor).in(mainPanel)
-  position(setlistUI).below(kickMonitor).withMargin(10).in(mainPanel)
+  position(handleMeter).toTheRightOf(snareMonitor).withMargin(4).in(mainPanel)
+  position(setlistUI).below(kickMonitor).withMargin(60).in(mainPanel)
 
   def handleMessage(message: Message): Unit = {
     invokeLater { () =>
@@ -137,107 +138,160 @@ class SeismicUI(seismic: Seismic,
 }
 
 class SetlistUI(size: Dimension,
-                backgroundColor: Color) extends JPanel {
+                componentBGColor: Color) extends JPanel {
 
   setPreferredSize(size)
-  setBackground(backgroundColor)
 
   var setListOpt: Option[SetList] = None
-  val currentSongUI = new SongUI(size, backgroundColor, save)
-  val onNameChange = (name: String) => setListOpt.foreach {
-    setList => {
-      setList.setName(name)
-      save()
-    }
-  }
+  var currentSongOpt: Option[Song] = None
+  val nameField = new LabeledTextField("Set List", componentBGColor, 12, onSetListNameChange)
 
-  val nameField = new LabeledTextField("Set List", backgroundColor, 12, onNameChange)
+  val songSelect = new SelectionList[Song](onSongSelected,
+                                            onEditSongSelected,
+                                            onAddSong,
+                                            componentBGColor)
 
-  currentSongUI.setBackground(backgroundColor)
+  val phraseSelect = new SelectionList[Phrase](onShowPhraseSelected,
+                                                onEditPhraseSelected,
+                                                onAddPhraseSelected,
+                                                componentBGColor)
+  val songEditor = new SongEditor(onSongUpdated, componentBGColor)
+
+  val phraseEditor = new PhraseEditor(save,
+                                      onPhraseUpdated,
+                                       componentBGColor)
+
+  val selector = new Selector(songSelect, phraseSelect)
+  selector.setBackground(componentBGColor)
+
+  val editor = new Editor(songEditor, phraseEditor)
+  editor.setBackground(componentBGColor)
+
   position(nameField).atOrigin().in(this)
-  position(currentSongUI).below(nameField).withMargin(4).in(this)
+  position(selector).below(nameField).withMargin(4).in(this)
+  position(editor).toTheRightOf(selector).withMargin(4).in(this)
 
   def save(): Unit = {
     setListOpt.foreach { setlist => setlist.write() }
   }
 
+  def onPhraseSelected(phrase: Phrase): Unit = {
+    phraseEditor.setPhrase(phrase)
+  }
+
+  def onSongSelected(song: Song): Unit = {
+    currentSongOpt = Option(song)
+    onPhraseSelected(song.phrases.head)
+    songEditor.setSong(song)
+    phraseSelect.setItems(song.phrases)
+  }
+
+  def onEditSongSelected(song: Song): Unit = {
+    onSongSelected(song)
+    phraseSelect.grabFocus()
+  }
+
+  def onSetListNameChange(name: String): Unit = {
+    setListOpt.foreach {
+      setList => {
+        setList.setName(name)
+        save()
+      }
+    }
+  }
+
+  def onSongUpdated(song: Song): Unit = {
+    save()
+    songSelect.itemWasUpdated(song)
+  }
+
+  def onAddSong(): Unit = {
+    setListOpt.foreach { setList =>
+      val song = setList.addSong()
+      save()
+      songSelect.addItem(song)
+      onSongSelected(song)
+      phraseSelect.grabFocus()
+    }
+  }
+
+  def onAddPhraseSelected(): Unit = {
+    currentSongOpt.foreach { song =>
+      val phrase = song.addPhrase()
+      save()
+      phraseEditor.setPhrase(phrase)
+      phraseSelect.addItem(phrase)
+      phraseEditor.grabFocus()
+    }
+  }
+
+  def onShowPhraseSelected(phrase: Phrase): Unit = {
+    phraseEditor.setPhrase(phrase)
+  }
+
+  def onEditPhraseSelected(phrase: Phrase): Unit = {
+    phraseEditor.setPhrase(phrase)
+    phraseEditor.grabFocus()
+  }
+
+  def onPhraseUpdated(phrase: Phrase): Unit = {
+    save()
+    phraseSelect.itemWasUpdated(phrase)
+  }
+
   def setSetList(setList: SetList): Unit = {
     setListOpt = Option(setList)
     nameField.setText(setList.name)
-    currentSongUI.setSong(setList.songs(0))
+    songSelect.setItems(setList.songs)
+    onSongSelected(setList.songs.head)
   }
 }
 
-class SongUI(size: Dimension,
-             backgroundColor: Color,
-             onSongUpdated: () => Unit) extends JPanel {
-  setPreferredSize(size)
+class Editor(songEditor: SongEditor,
+             phraseEditor: PhraseEditor) extends JPanel {
+  setPreferredSize(new Dimension(Sizing.fitWidth(phraseEditor), 600))
+
+  position(songEditor).atOrigin().in(this)
+  position(phraseEditor).below(songEditor).withMargin(4).in(this)
+}
+
+class SongEditor(onSongUpdated: (Song) => Unit,
+                 backgroundColor: Color) extends JPanel {
+  setPreferredSize(new Dimension(200, 80))
   setBackground(backgroundColor)
 
   var songOpt: Option[Song] = None
   var currentPhraseOpt: Option[Phrase] = None
 
-  val onNameChange = (name: String) => songOpt.foreach {
-    song => song.setName(name)
-    onSongUpdated()
+  val onNameChange = (name: String) => songOpt.foreach { song =>
+    song.setName(name)
+    onSongUpdated(song)
   }
 
-  val onChannelChange = (channel: String) => songOpt.foreach {
-    song => song.setChannel(channel.toInt)
-    onSongUpdated()
+  val onChannelChange = (channel: String) => songOpt.foreach { song =>
+    song.setChannel(channel.toInt)
+    onSongUpdated(song)
   }
 
   val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
-  val phraseEditor = new PhraseEditor(onInstrumentUpdated,
-                                      onPhraseUpdated,
-                                      backgroundColor)
-  val phraseSelect = new SelectionList[Phrase](onSelectPhrase,
-                                               onEditPhraseSelected,
-                                               onAddPhrase,
-                                               backgroundColor)
 
   position(nameField).at(0, 4).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
-  position(phraseSelect).below(nameField).withMargin(4).in(this)
-  position(phraseEditor).toTheRightOf(phraseSelect).withMargin(4).in(this)
 
   def setSong(song: Song): Unit = {
     this.songOpt = Option(song)
 
     nameField.setText(song.name)
     channelField.setText(song.channel.toString)
-    phraseEditor.setPhrase(song.phrases.head)
-    songOpt.foreach { song =>
-      phraseSelect.setItems(song.phrases)
-    }
   }
+}
 
-  def onAddPhrase(): Unit = {
-    songOpt.foreach { song =>
-      val phrase = song.addPhrase()
-      onSongUpdated()
-      phraseEditor.setPhrase(phrase)
-      phraseSelect.addItem(phrase)
-      phraseEditor.requestEdit()
-    }
-  }
+class Selector(songSelect: SelectionList[Song],
+               phraseSelect: SelectionList[Phrase]) extends JPanel {
 
-  def onSelectPhrase(phrase: Phrase): Unit = {
-    phraseEditor.setPhrase(phrase)
-  }
+  setPreferredSize(new Dimension(Sizing.fitWidth(songSelect, phraseSelect), 600))
 
-  def onEditPhraseSelected(phrase: Phrase): Unit = {
-    phraseEditor.setPhrase(phrase)
-    phraseEditor.requestEdit()
-  }
-
-  def onInstrumentUpdated(): Unit = {
-    onSongUpdated()
-  }
-
-  def onPhraseUpdated(phrase: Phrase): Unit = {
-    onSongUpdated()
-    phraseSelect.itemWasUpdated(phrase)
-  }
+  position(songSelect).atOrigin().withMargin(4).in(this)
+  position(phraseSelect).toTheRightOf(songSelect).withMargin(4).in(this)
 }

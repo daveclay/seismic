@@ -117,6 +117,16 @@ object Thresholds {
 
 case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
 
+  def addSong() = {
+    val newPhrase = Phrase("New Phrase",
+                            ArrayBuffer(Instrument(ArrayBuffer(0))),
+                            ArrayBuffer(Instrument(ArrayBuffer(0))))
+
+    val newSong = Song("New Song", 0, ArrayBuffer[Phrase](newPhrase))
+    songs += newSong
+    newSong
+  }
+
   def write(): Unit = {
     SetListSerializer.write(this)
   }
@@ -128,7 +138,7 @@ case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
 
 case class Song(var name: String,
                 var channel: Int,
-                phrases: ArrayBuffer[Phrase]) {
+                phrases: ArrayBuffer[Phrase]) extends Selectable {
 
   def addPhrase() = {
     val newPhrase = Phrase("New Phrase",
