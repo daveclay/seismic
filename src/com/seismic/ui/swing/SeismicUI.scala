@@ -164,10 +164,10 @@ class SetlistUI(size: Dimension,
                                        componentBGColor)
 
   val selector = new Selector(songSelect, phraseSelect)
-  selector.setBackground(componentBGColor)
+  selector.setOpaque(false)
 
   val editor = new Editor(songEditor, phraseEditor)
-  editor.setBackground(componentBGColor)
+  editor.setOpaque(false)
 
   position(nameField).atOrigin().in(this)
   position(selector).below(nameField).withMargin(4).in(this)
@@ -267,8 +267,9 @@ class Editor(songEditor: SongEditor,
 
 class SongEditor(onSongUpdated: (Song) => Unit,
                  backgroundColor: Color) extends JPanel {
-  setPreferredSize(new Dimension(200, 80))
+  setPreferredSize(new Dimension(400, 30))
   setBackground(backgroundColor)
+  SwingComponents.addBorder(this)
 
   var songOpt: Option[Song] = None
   var currentPhraseOpt: Option[Phrase] = None
@@ -286,7 +287,7 @@ class SongEditor(onSongUpdated: (Song) => Unit,
   val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
 
-  position(nameField).at(0, 4).in(this)
+  position(nameField).at(4, 4).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
 
   def setSong(song: Song): Unit = {
@@ -300,7 +301,7 @@ class SongEditor(onSongUpdated: (Song) => Unit,
 class Selector(songSelect: SelectionList[Song],
                phraseSelect: SelectionList[Phrase]) extends JPanel {
 
-  setPreferredSize(new Dimension(Sizing.fitWidth(songSelect, phraseSelect), 600))
+  setPreferredSize(new Dimension(Sizing.fitWidth(songSelect, phraseSelect) + 4, 600))
 
   position(songSelect).atOrigin().withMargin(4).in(this)
   position(phraseSelect).toTheRightOf(songSelect).withMargin(4).in(this)

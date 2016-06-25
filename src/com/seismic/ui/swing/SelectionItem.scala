@@ -13,7 +13,7 @@ case class SelectionItem[T <: Selectable](item: T,
                                           onSelectNext: () => Unit,
                                           onBackSelected: () => Unit) extends JPanel {
 
-  private val itemSize = new Dimension(250, 20)
+  private val itemSize = new Dimension(248, 20)
 
   setFocusable(true)
   setPreferredSize(itemSize)
