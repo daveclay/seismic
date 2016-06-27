@@ -1,6 +1,7 @@
 import com.seismic.utils.RandomHelper
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.matching.Regex
 
 RandomHelper.pick("A", "B", "C")
 
@@ -16,6 +17,13 @@ x.zipWithIndex.foldLeft("") { (acc, item) =>
   f"$acc, ${item._1} at ${item._2}"
 }
 x
+
+val pattern = "([A-Z]{1}#{0,1})([0-9]{1})".r
+pattern.findAllIn("C#3").matchData.toArray
+val NOTE_NAMES = Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+0.to(127).map { i =>
+  f"\"${NOTE_NAMES(i % 12)}${i / 12}\" -> $i,"
+}.mkString("\n")
 
 
 val foo = (int: Int) => (s: String) => 0 to int map { (i) => s + i }

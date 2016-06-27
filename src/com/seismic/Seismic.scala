@@ -4,7 +4,7 @@ import java.io.File
 
 import collection.mutable.ArrayBuffer
 import com.seismic.messages.TriggerOnMessage
-import com.seismic.midi.MIDIIO
+import com.seismic.midi.{MIDIIO, MidiNoteMap}
 import com.seismic.ui.swing.Selectable
 import com.seismic.utils.SetListSerializer
 import com.seismic.utils.ValueMapHelper.map
@@ -42,12 +42,12 @@ class Seismic(midiIO: MIDIIO) {
   def trigger(trigger: TriggerOnMessage): Unit = {
     withCurrentPhraseInSong { (phrase, song) =>
       val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
-      val pitch = instrument.mapValueToVelocity(trigger.triggerValue)
+      val velocity = instrument.mapValueToVelocity(trigger.triggerValue)
       instrument.notes.foreach { (note) =>
-        midiIO.sendNoteOn(song.channel, note, pitch)
+        midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note), velocity)
       }
       triggeredState.triggered(trigger.name, instrument)
-      instrument.fireTriggerOnListener(pitch)
+      instrument.fireTriggerOnListener(velocity)
     }
   }
 
@@ -56,7 +56,7 @@ class Seismic(midiIO: MIDIIO) {
       triggeredState.lastTriggered(name) match {
         case Some(instrument) =>
           instrument.notes.foreach { (note) =>
-            midiIO.sendNoteOff(song.channel, note, 0)
+            midiIO.sendNoteOff(song.channel, MidiNoteMap.valueForNote(note), 0)
           }
           instrument.fireTriggerOffListener()
         case None =>
@@ -86,12 +86,12 @@ class Seismic(midiIO: MIDIIO) {
                                                    Phrase(
                                                            name = "Intro",
                                                            kickInstruments = ArrayBuffer(
-                                                                                    Instrument(ArrayBuffer(60)),
-                                                                                    Instrument(ArrayBuffer(61)),
-                                                                                    Instrument(ArrayBuffer(62))
+                                                                                    Instrument(ArrayBuffer("C0")),
+                                                                                    Instrument(ArrayBuffer("C#0")),
+                                                                                    Instrument(ArrayBuffer("D0"))
                                                                                   ),
                                                            snareInstruments = ArrayBuffer(
-                                                                                     Instrument(ArrayBuffer(63))
+                                                                                     Instrument(ArrayBuffer("D#0"))
                                                                                    )
                                                          )
                                                  )
@@ -101,7 +101,7 @@ class Seismic(midiIO: MIDIIO) {
   }
 }
 
-case class Instrument(var notes: ArrayBuffer[Int]) {
+case class Instrument(var notes: ArrayBuffer[String]) {
 
   private var triggeredOnListener: Option[(Int) => Unit] = None
   private var triggeredOffListener: Option[() => Unit] = None
@@ -116,7 +116,7 @@ case class Instrument(var notes: ArrayBuffer[Int]) {
     constrain(map(value, 0, threshold, 0, 127), 0, 127).toInt
   }
 
-  def setNotes(notes: ArrayBuffer[Int]) {
+  def setNotes(notes: ArrayBuffer[String]) {
     this.notes = notes
   }
 
@@ -155,8 +155,8 @@ case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
 
   def addSong() = {
     val newPhrase = Phrase("New Phrase",
-                            ArrayBuffer(Instrument(ArrayBuffer(0))),
-                            ArrayBuffer(Instrument(ArrayBuffer(0))))
+                            ArrayBuffer(Instrument(ArrayBuffer("C0"))),
+                            ArrayBuffer(Instrument(ArrayBuffer("C0"))))
 
     val newSong = Song("New Song", 0, ArrayBuffer[Phrase](newPhrase))
     songs += newSong
@@ -178,8 +178,8 @@ case class Song(var name: String,
 
   def addPhrase() = {
     val newPhrase = Phrase("New Phrase",
-                            ArrayBuffer(Instrument(ArrayBuffer(0))),
-                            ArrayBuffer(Instrument(ArrayBuffer(0))))
+                            ArrayBuffer(Instrument(ArrayBuffer("C0"))),
+                            ArrayBuffer(Instrument(ArrayBuffer("C0"))))
     phrases += newPhrase
 
     newPhrase
@@ -205,12 +205,12 @@ case class Phrase(var name: String,
 
   def addNewKickInstrument(): Unit = {
     // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    kickInstruments += new Instrument(ArrayBuffer(0))
+    kickInstruments += new Instrument(ArrayBuffer("C0"))
   }
 
   def addNewSnareInstrument(): Unit = {
     // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    snareInstruments += new Instrument(ArrayBuffer(0))
+    snareInstruments += new Instrument(ArrayBuffer("C0"))
   }
 
   def addSnareInstruments(instrument: Instrument): Unit = {

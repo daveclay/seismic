@@ -106,11 +106,12 @@ class InstrumentNoteUI(instrument: Instrument,
   }
 
   private def onValueChange(value: String):Unit = {
-    // TODO: value should be maybe "C2, C#2, D3" or "C2, 63, C#2"
-    instrument.setNotes(value.split(", ").map { value => value.toInt }.to[ArrayBuffer])
+    instrument.setNotes(value.split(", ").to[ArrayBuffer])
     onSongUpdated()
   }
 }
+
+
 
 
 
