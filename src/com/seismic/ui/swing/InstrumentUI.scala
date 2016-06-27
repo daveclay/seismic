@@ -5,6 +5,7 @@ import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Instrument
+import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -43,6 +44,15 @@ class InstrumentUI(labelValue: String,
     repaint()
   }
 
+  def triggerOn(): Unit = {
+    setBackground(new Color(170, 170, 170))
+    setForeground(Color.BLACK)
+  }
+
+  def triggerOff(): Unit = {
+    setBackground(backgroundColor)
+  }
+
   def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
     instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
       position(instrumentUI).below(previousComponent).withMargin(4).in(this)
@@ -63,8 +73,10 @@ class InstrumentUI(labelValue: String,
     instrumentNoteUIsOpt.foreach { kickInstrumentUIs => removeInstrumentUIs(kickInstrumentUIs) }
   }
 
-  def removeInstrumentUIs(instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
-    instrumentUIs.foreach { instrumentUI => remove(instrumentUI) }
+  def removeInstrumentUIs(instrumentNoteUIs: Seq[InstrumentNoteUI]): Unit = {
+    instrumentNoteUIs.foreach { instrumentNoteUI =>
+      remove(instrumentNoteUI)
+    }
   }
 
   override def grabFocus(): Unit = {
@@ -80,16 +92,24 @@ class InstrumentNoteUI(instrument: Instrument,
   setPreferredSize(size)
   setBackground(backgroundColor)
 
-  val onValueChange = (value: String) => {
+  val nameField = new LabeledTextField("Note", backgroundColor, 10, onValueChange)
+  nameField.setText(instrument.notes.mkString(", "))
+
+  position(nameField).atOrigin().in(this)
+
+  instrument.wasTriggeredOn { (pitch) =>
+    invokeLater { () => nameField.highlightField() }
+  }
+
+  instrument.wasTriggeredOff { () =>
+    invokeLater { () => nameField.unhighlightField() }
+  }
+
+  private def onValueChange(value: String):Unit = {
     // TODO: value should be maybe "C2, C#2, D3" or "C2, 63, C#2"
     instrument.setNotes(value.split(", ").map { value => value.toInt }.to[ArrayBuffer])
     onSongUpdated()
   }
-
-  val nameField = new LabeledTextField("Note", backgroundColor, 10, onValueChange)
-  nameField.setText(instrument.notes.mkString(", "))
-  position(nameField).atOrigin().in(this)
-
 }
 
 

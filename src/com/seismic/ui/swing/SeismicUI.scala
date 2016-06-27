@@ -20,8 +20,6 @@ class SeismicUIFactory {
     System.setProperty("apple.laf.useScreenMenuBar", "true")
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
 
-    frame.pack()
-
     val seismicUI = new SeismicUI(seismic, frame, frame.getGraphics)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
@@ -68,10 +66,10 @@ class SeismicUI(seismic: Seismic,
     "KICK" -> kickMonitor,
     "SNARE" -> snareMonitor)
 
-  val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80), graphics)
+  val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80))
   handleMeter.setBackground(backgroundColor)
 
-  val setlistUI = new SetlistUI(new Dimension(1020, 600), componentBGColor)
+  val setlistUI = new SetlistUI(seismic, new Dimension(1020, 600), componentBGColor)
 
   setPreferredSize(frame, 1024, 800)
   setlistUI.setBackground(backgroundColor)
@@ -117,27 +115,23 @@ class SeismicUI(seismic: Seismic,
     triggerMonitors.get(triggerOn.name) match {
       case Some(monitor) =>
         val value = triggerOn.triggerValue
-        val name = triggerOn.name
         monitor.setValue(value)
-        handleMeter.setValue(triggerOn.handleValue)
-        handleMeter.repaint()
-        monitor.repaint()
       case None =>
     }
+    handleMeter.setValue(triggerOn.handleValue)
   }
 
   private def handleTriggerOff(triggerOff: TriggerOffMessage): Unit = {
     triggerMonitors.get(triggerOff.name) match {
       case Some(monitor) =>
-        val name = triggerOff.name
         monitor.off()
-        monitor.repaint()
       case None =>
     }
   }
 }
 
-class SetlistUI(size: Dimension,
+class SetlistUI(seismic: Seismic,
+                size: Dimension,
                 componentBGColor: Color) extends JPanel {
 
   setPreferredSize(size)
@@ -186,6 +180,7 @@ class SetlistUI(size: Dimension,
     onPhraseSelected(song.phrases.head)
     songEditor.setSong(song)
     phraseSelect.setItems(song.phrases)
+    seismic.setCurrentSong(song)
   }
 
   def onEditSongSelected(song: Song): Unit = {
@@ -233,6 +228,7 @@ class SetlistUI(size: Dimension,
 
   def onShowPhraseSelected(phrase: Phrase): Unit = {
     phraseEditor.setPhrase(phrase)
+    seismic.setCurrentPhrase(phrase)
   }
 
   def onEditPhraseSelected(phrase: Phrase): Unit = {

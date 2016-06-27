@@ -26,6 +26,16 @@ class LabeledTextField(labelText: String,
   position(label).atOrigin().in(this)
   position(textField).toTheRightOf(label).withMargin(10).in(this)
 
+  def highlightField(): Unit = {
+    textField.setBackground(new Color(170, 170, 170))
+    textField.setForeground(Color.BLACK)
+  }
+
+  def unhighlightField(): Unit = {
+    textField.setBackground(Color.BLACK)
+    textField.setForeground(new Color(200, 200, 200))
+  }
+
   def setText(text: String): Unit = {
     textField.setText(text)
   }

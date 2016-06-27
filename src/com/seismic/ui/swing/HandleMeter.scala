@@ -9,8 +9,7 @@ import com.daveclay.swing.util.Position._
 import com.seismic.utils.ValueMapHelper._
 
 class HandleMeter(font: Font,
-                  size: Dimension,
-                  graphics: Graphics) extends JLayeredPane {
+                  size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
 
   var value = 0
@@ -28,7 +27,7 @@ class HandleMeter(font: Font,
   position(indicator).at(0, 0).in(this)
   setLayer(indicator, 1)
 
-  val labelDimensions = font.getFontMeasurement(graphics).getFontDimensions("1024")
+  val labelDimensions = new Dimension(36, 18)
   val labelX = centerX.toInt - labelDimensions.getWidth / 2f
   val labelY = centerY.toInt - labelDimensions.getHeight / 2f
 
