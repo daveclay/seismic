@@ -79,7 +79,7 @@ object SwingComponents {
     field.setForeground(new Color(200, 200, 200))
     field.setBackground(backgroundColor)
     field.setOpaque(true)
-    field.setEditable(false)
+    // field.setEditable(false)
     field.setCaretColor(new Color(250, 250, 20))
 
     val triggerValueChange = () => {

@@ -3,6 +3,7 @@ package com.seismic.ui.swing
 import java.awt._
 import java.awt.event._
 import java.io.File
+import java.util
 import javax.swing._
 
 import com.daveclay.swing.util.Position.position
@@ -10,6 +11,8 @@ import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
 import com.seismic.messages._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+import com.seismic.utils.ArrayUtils
+import com.seismic.utils.ArrayUtils.wrapIndex
 
 class SeismicUIFactory {
   var seismicUIOpt: Option[SeismicUI] = None
@@ -58,7 +61,6 @@ class SeismicUI(seismic: Seismic,
   val title = SwingComponents.label("SEISMIC")
 
   mainPanel.setBackground(backgroundColor)
-  mainPanel.setFocusTraversalPolicy(new ContainerOrderFocusTraversalPolicy)
 
   val kickMonitor = new Meter("KICK", monoFont, new Dimension(300, 30))
   val snareMonitor = new Meter("SNARE", monoFont, new Dimension(300, 30))
@@ -69,7 +71,7 @@ class SeismicUI(seismic: Seismic,
   val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80))
   handleMeter.setBackground(backgroundColor)
 
-  val setlistUI = new SetlistUI(seismic, new Dimension(1020, 600), componentBGColor)
+  val setlistUI = new SetlistUI(seismic, new Dimension(1020, 600), backgroundColor, componentBGColor)
 
   setPreferredSize(frame, 1024, 800)
   setlistUI.setBackground(backgroundColor)
@@ -132,24 +134,29 @@ class SeismicUI(seismic: Seismic,
 
 class SetlistUI(seismic: Seismic,
                 size: Dimension,
+                backgroundColor: Color,
                 componentBGColor: Color) extends JPanel {
 
   setPreferredSize(size)
 
   var setListOpt: Option[SetList] = None
   var currentSongOpt: Option[Song] = None
-  val nameField = new LabeledTextField("Set List", componentBGColor, 12, onSetListNameChange)
+  val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
 
   val songSelect = new SelectionList[Song](onShowSongSelected,
                                             onEditSongSelected,
                                             onAddSongSelected,
                                             onSongBackSelected,
+                                            selectPreviousSong,
+                                            selectNextSong,
                                             componentBGColor)
 
   val phraseSelect = new SelectionList[Phrase](onShowPhraseSelected,
                                                 onEditPhraseSelected,
                                                 onAddPhraseSelected,
                                                 onPhraseBackSelected,
+                                                selectPreviousSong,
+                                                selectNextSong,
                                                 componentBGColor)
   val songEditor = new SongEditor(onSongUpdated, componentBGColor)
 
@@ -182,8 +189,8 @@ class SetlistUI(seismic: Seismic,
       currentSongOpt = Option(song)
       seismic.setCurrentSong(song)
       songSelect.selectItem(song)
-      songEditor.setSong(song)
       phraseSelect.setItems(song.phrases)
+      songEditor.setSong(song)
       onShowPhraseSelected(song.phrases.head)
     }
   }
@@ -242,6 +249,36 @@ class SetlistUI(seismic: Seismic,
 
   def onPhraseBackSelected(phrase: Phrase): Unit = {
     songSelect.grabFocus()
+  }
+
+  def selectPreviousSong(): Unit = {
+    withSetListSong { (setList, song) =>
+      val index = setList.songs.indexOf(song)
+      selectSongAt(index - 1)
+    }
+  }
+
+  def selectNextSong(): Unit = {
+    withSetListSong { (setList, song) =>
+      val index = setList.songs.indexOf(song)
+      selectSongAt(index + 1)
+    }
+  }
+
+  private def selectSongAt(index: Int): Unit = {
+    withSetListSong { (setList, song) =>
+      val newSong = setList.songs(wrapIndex(index, setList.songs))
+      onShowSongSelected(newSong)
+      phraseSelect.grabFocus()
+    }
+  }
+
+  private def withSetListSong(f: (SetList, Song) => Unit): Unit = {
+    setListOpt.foreach { setList =>
+      currentSongOpt.foreach { song =>
+        f(setList, song)
+      }
+    }
   }
 
   def setSetList(setList: SetList): Unit = {

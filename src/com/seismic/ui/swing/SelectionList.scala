@@ -1,9 +1,12 @@
 package com.seismic.ui.swing
 
-import java.awt.{Color, Dimension}
-import javax.swing.JPanel
+import java.awt.{Color, ContainerOrderFocusTraversalPolicy, Dimension}
+import javax.swing.{JComponent, JPanel, KeyStroke}
 
+import android.view.KeyEvent
 import com.daveclay.swing.util.Position._
+import com.seismic.utils.ArrayUtils
+import com.seismic.utils.ArrayUtils.wrapIndex
 
 trait Selectable {
   def name: String
@@ -13,6 +16,8 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
                                      onEditItemSelected: (T) => Unit,
                                      onAddItemSelected: () => Unit,
                                      onBackSelected: (T) => Unit,
+                                     onNavigatePrevious: () => Unit,
+                                     onNavigateNext: () => Unit,
                                      backgroundColor: Color) extends JPanel() {
 
   SwingComponents.addBorder(this)
@@ -82,26 +87,24 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   }
 
   private def selectPreviousFrom(selectionItem: SelectionItem[T]): Unit = {
-    selectionItemsOpt.foreach { selectionITems =>
-      val index = selectionITems.indexOf(selectionItem)
-      selectItemAt(wrapIndex(index - 1, selectionITems))
+    selectionItemsOpt.foreach { selectionItems =>
+      val index = selectionItems.indexOf(selectionItem)
+      if (index == 0) {
+        onNavigatePrevious()
+      } else {
+        selectItemAt(wrapIndex(index - 1, selectionItems))
+      }
     }
   }
 
   private def selectNextFrom(selectionItem: SelectionItem[T]): Unit = {
-    selectionItemsOpt.foreach { selectionITems =>
-      val index = selectionITems.indexOf(selectionItem)
-      selectItemAt(wrapIndex(index + 1, selectionITems))
-    }
-  }
-
-  private def wrapIndex(index: Int, array: Seq[Any]) = {
-    if (index < 0) {
-      array.size - 1
-    } else if (index >= array.size) {
-      0
-    } else {
-      index
+    selectionItemsOpt.foreach { selectionItems =>
+      val index = selectionItems.indexOf(selectionItem)
+      if (index == selectionItems.size - 1) {
+        onNavigateNext()
+      } else {
+        selectItemAt(wrapIndex(index + 1, selectionItems))
+      }
     }
   }
 

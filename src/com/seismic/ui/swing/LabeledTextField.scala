@@ -43,4 +43,6 @@ class LabeledTextField(labelText: String,
   override def grabFocus(): Unit = {
     textField.grabFocus()
   }
+
+  def getTextField = textField
 }

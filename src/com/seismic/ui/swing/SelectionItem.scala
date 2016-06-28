@@ -57,7 +57,7 @@ case class SelectionItem[T <: Selectable](item: T,
   addMouseListener(new MouseListener {
     override def mouseExited(e: MouseEvent): Unit = {}
     override def mouseClicked(e: MouseEvent): Unit = {
-      onEditSelected()
+      onShowSelected()
     }
     override def mouseEntered(e: MouseEvent): Unit = {}
     override def mousePressed(e: MouseEvent): Unit = {

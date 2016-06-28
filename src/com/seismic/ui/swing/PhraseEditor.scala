@@ -46,6 +46,7 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
+    // TODO: for some reason I don't need to remove the kick/snare instrument UIs?
     kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
     snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
     position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
