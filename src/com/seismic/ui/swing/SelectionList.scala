@@ -29,7 +29,6 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
       val all = selectionItems :+ selectItem
       selectionItemsOpt = Option(all)
       layoutSelectionItems()
-      indicateSelectedItem(selectItem)
     }
   }
 
@@ -37,6 +36,10 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     val selectItems = items.map { item => createSelectItem(item) }
     selectionItemsOpt = Option(selectItems)
     layoutSelectionItems()
+  }
+
+  def selectItem(item: T): Unit = {
+    findSelectionItemFor(item).foreach { selectionItem => indicateSelectedItem(selectionItem) }
   }
 
   override def grabFocus(): Unit = {
@@ -63,11 +66,9 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     val onSelectNext = applySelectionItemFor(item, { selectionItem => selectNextFrom(selectionItem) })
     val onShowPhrase = () => {
       onItemSelected(item)
-      indicateSelectedItem(item)
     }
     val onEditPhrase = () => {
       onEditItemSelected(item)
-      indicateSelectedItem(item)
     }
     val onSelectBack = () => { onBackSelected(item) }
     new SelectionItem(item, onShowPhrase, onEditPhrase, onSelectPrevious, onSelectNext, onSelectBack)
@@ -124,7 +125,6 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
 
   private def selectItem(item: SelectionItem[T]): Unit = {
     item.grabFocus()
-    indicateSelectedItem(item)
   }
 
   private def findSelectionItemFor(itemToFind: T) = {

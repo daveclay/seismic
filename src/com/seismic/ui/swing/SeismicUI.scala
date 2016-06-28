@@ -140,9 +140,9 @@ class SetlistUI(seismic: Seismic,
   var currentSongOpt: Option[Song] = None
   val nameField = new LabeledTextField("Set List", componentBGColor, 12, onSetListNameChange)
 
-  val songSelect = new SelectionList[Song](onSongSelected,
+  val songSelect = new SelectionList[Song](onShowSongSelected,
                                             onEditSongSelected,
-                                            onAddSong,
+                                            onAddSongSelected,
                                             onSongBackSelected,
                                             componentBGColor)
 
@@ -171,20 +171,25 @@ class SetlistUI(seismic: Seismic,
     setListOpt.foreach { setlist => setlist.write() }
   }
 
-  def onPhraseSelected(phrase: Phrase): Unit = {
+  def onShowPhraseSelected(phrase: Phrase): Unit = {
+    seismic.setCurrentPhrase(phrase)
+    phraseSelect.selectItem(phrase)
     phraseEditor.setPhrase(phrase)
   }
 
-  def onSongSelected(song: Song): Unit = {
-    currentSongOpt = Option(song)
-    onPhraseSelected(song.phrases.head)
-    songEditor.setSong(song)
-    phraseSelect.setItems(song.phrases)
-    seismic.setCurrentSong(song)
+  def onShowSongSelected(song: Song): Unit = {
+    if (!currentSongOpt.contains(song)) {
+      currentSongOpt = Option(song)
+      seismic.setCurrentSong(song)
+      songSelect.selectItem(song)
+      songEditor.setSong(song)
+      phraseSelect.setItems(song.phrases)
+      onShowPhraseSelected(song.phrases.head)
+    }
   }
 
   def onEditSongSelected(song: Song): Unit = {
-    onSongSelected(song)
+    onShowSongSelected(song)
     phraseSelect.grabFocus()
   }
 
@@ -206,12 +211,12 @@ class SetlistUI(seismic: Seismic,
     songSelect.itemWasUpdated(song)
   }
 
-  def onAddSong(): Unit = {
+  def onAddSongSelected(): Unit = {
     setListOpt.foreach { setList =>
       val song = setList.addSong()
       save()
       songSelect.addItem(song)
-      onSongSelected(song)
+      onShowSongSelected(song)
       phraseSelect.grabFocus()
     }
   }
@@ -220,19 +225,13 @@ class SetlistUI(seismic: Seismic,
     currentSongOpt.foreach { song =>
       val phrase = song.addPhrase()
       save()
-      phraseEditor.setPhrase(phrase)
       phraseSelect.addItem(phrase)
-      phraseEditor.grabFocus()
+      onEditPhraseSelected(phrase)
     }
   }
 
-  def onShowPhraseSelected(phrase: Phrase): Unit = {
-    phraseEditor.setPhrase(phrase)
-    seismic.setCurrentPhrase(phrase)
-  }
-
   def onEditPhraseSelected(phrase: Phrase): Unit = {
-    phraseEditor.setPhrase(phrase)
+    onShowPhraseSelected(phrase)
     phraseEditor.grabFocus()
   }
 
@@ -249,7 +248,9 @@ class SetlistUI(seismic: Seismic,
     setListOpt = Option(setList)
     nameField.setText(setList.name)
     songSelect.setItems(setList.songs)
-    onSongSelected(setList.songs.head)
+    val song = setList.songs.head
+    onShowSongSelected(song)
+    onShowPhraseSelected(song.phrases.head)
   }
 }
 
