@@ -81,11 +81,12 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   }
 
   def deselectAll(): Unit = {
-    foreachSelectionItem { selectionItem => selectionItem.indicateUnselect() }
+    indicateAllDeselected()
+    currentSelectedItemOpt = None
   }
 
   def indicateSelectedItem(item: T): Unit = {
-    deselectAll()
+    indicateAllDeselected()
     findSelectionItemFor(item).foreach { selectionItem => indicateSelected(selectionItem) }
   }
 
@@ -94,6 +95,10 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
       onItemSelected(item)
     }
     new SelectionItem(item, itemWasClicked)
+  }
+
+  private def indicateAllDeselected(): Unit = {
+    foreachSelectionItem { selectionItem => selectionItem.indicateUnselect() }
   }
 
   private def selectPrevious(): Unit = {
@@ -139,7 +144,7 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   }
 
   private def indicateSelected(selectionItem: SelectionItem[T]): Unit = {
-    deselectAll()
+    indicateAllDeselected()
     selectionItem.indicateSelected()
   }
 

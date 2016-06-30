@@ -242,7 +242,8 @@ class SetlistUI(seismic: Seismic,
   }
 
   def onPhraseBackSelected(phrase: Phrase): Unit = {
-    phraseSelect.deselectAll() // TODO: leave the selected item in place? what do I show in the editor? keep the editor showing "currently playing" ?
+    // TODO: leave the selected item in place? what do I show in the editor? keep the editor showing "currently playing" ?
+    phraseSelect.deselectAll()
     songSelect.requestFocusInWindow()
   }
 
