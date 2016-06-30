@@ -1,9 +1,9 @@
 package com.seismic.ui.swing
 
+import java.awt.event.{KeyEvent, KeyListener}
 import java.awt.{Color, ContainerOrderFocusTraversalPolicy, Dimension}
 import javax.swing.{JComponent, JPanel, KeyStroke}
 
-import android.view.KeyEvent
 import com.daveclay.swing.util.Position._
 import com.seismic.utils.ArrayUtils
 import com.seismic.utils.ArrayUtils.wrapIndex
@@ -23,10 +23,36 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   SwingComponents.addBorder(this)
   setPreferredSize(new Dimension(250, 400))
   setBackground(backgroundColor)
+  setFocusable(true)
 
   var addItemButton = SwingComponents.button("Add")
   addItemButton.addActionListener(e => {onAddItemSelected() })
+
   var selectionItemsOpt: Option[Seq[SelectionItem[T]]] = None
+  var currentSelectedItemOpt: Option[SelectionItem[T]] = None
+  val onEditSelected = () => {
+    currentSelectedItemOpt.foreach { selectionItem => onEditItemSelected(selectionItem.item) }
+  }
+
+  addKeyListener(new KeyListener {
+    override def keyTyped(e: KeyEvent): Unit = {}
+    override def keyReleased(e: KeyEvent): Unit = {}
+    override def keyPressed(e: KeyEvent): Unit = {
+      val code = e.getKeyCode
+
+      if (code == KeyEvent.VK_UP || code == KeyEvent.VK_KP_UP) {
+        selectPrevious()
+      } else if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_KP_DOWN) {
+        selectNext()
+      } else if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_KP_RIGHT) {
+        onEditSelected()
+      } else if (code == KeyEvent.VK_LEFT || code == KeyEvent.VK_KP_LEFT) {
+        currentSelectedItemOpt.foreach { selectionItem => onBackSelected(selectionItem.item) }
+      } else if (code == KeyEvent.VK_SPACE) {
+        onEditSelected()
+      }
+    }
+  })
 
   def addItem(item: T): Unit = {
     selectionItemsOpt.foreach { selectionItems =>
@@ -43,42 +69,6 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     layoutSelectionItems()
   }
 
-  def selectItem(item: T): Unit = {
-    findSelectionItemFor(item).foreach { selectionItem => indicateSelectedItem(selectionItem) }
-  }
-
-  override def grabFocus(): Unit = {
-    selectionItemsOpt.foreach { selectItems =>
-      selectItems.head.grabFocus()
-    }
-  }
-
-  def applySelectionItemFor(item: T, f: (SelectionItem[T]) => Unit) = {
-    () => findSelectionItemFor(item).foreach { selectionItem => f(selectionItem) }
-  }
-
-  private def indicateSelectedItem(selectionItem: SelectionItem[T]): Unit = {
-    foreachSelectionItem { selectionItem => selectionItem.indicateUnselect() }
-    selectionItem.indicateSelected()
-  }
-
-  private def indicateSelectedItem(item: T): Unit = {
-    findSelectionItemFor(item).foreach { selectionItem => indicateSelectedItem(selectionItem) }
-  }
-
-  private def createSelectItem(item: T) = {
-    val onSelectPrevious = applySelectionItemFor(item, { selectionItem => selectPreviousFrom(selectionItem) })
-    val onSelectNext = applySelectionItemFor(item, { selectionItem => selectNextFrom(selectionItem) })
-    val onShowPhrase = () => {
-      onItemSelected(item)
-    }
-    val onEditPhrase = () => {
-      onEditItemSelected(item)
-    }
-    val onSelectBack = () => { onBackSelected(item) }
-    new SelectionItem(item, onShowPhrase, onEditPhrase, onSelectPrevious, onSelectNext, onSelectBack)
-  }
-
   def itemWasUpdated(updatedItem: T): Unit = {
     findSelectionItemFor(updatedItem) match {
       case Some(selectionItem) => selectionItem.setLabel(updatedItem.name)
@@ -86,9 +76,34 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     }
   }
 
-  private def selectPreviousFrom(selectionItem: SelectionItem[T]): Unit = {
+  def selectItem(item: T): Unit = {
+    findSelectionItemFor(item).foreach { selectionItem => selectSelectionItem(selectionItem) }
+  }
+
+  def deselectAll(): Unit = {
+    foreachSelectionItem { selectionItem => selectionItem.indicateUnselect() }
+  }
+
+  def indicateSelectedItem(item: T): Unit = {
+    deselectAll()
+    findSelectionItemFor(item).foreach { selectionItem => indicateSelected(selectionItem) }
+  }
+
+  private def createSelectItem(item: T) = {
+    val itemWasClicked = () => {
+      onItemSelected(item)
+    }
+    new SelectionItem(item, itemWasClicked)
+  }
+
+  private def selectPrevious(): Unit = {
     selectionItemsOpt.foreach { selectionItems =>
-      val index = selectionItems.indexOf(selectionItem)
+    }
+    for {
+      selectionItems <- selectionItemsOpt
+      currentItem <- currentSelectedItemOpt
+    } yield {
+      val index = selectionItems.indexOf(currentItem)
       if (index == 0) {
         onNavigatePrevious()
       } else {
@@ -97,9 +112,12 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     }
   }
 
-  private def selectNextFrom(selectionItem: SelectionItem[T]): Unit = {
-    selectionItemsOpt.foreach { selectionItems =>
-      val index = selectionItems.indexOf(selectionItem)
+  private def selectNext(): Unit = {
+    for {
+      selectionItems <- selectionItemsOpt
+      currentItem <- currentSelectedItemOpt
+    } yield {
+      val index = selectionItems.indexOf(currentItem)
       if (index == selectionItems.size - 1) {
         onNavigateNext()
       } else {
@@ -108,26 +126,21 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     }
   }
 
-  private def selectFirst(): Unit = {
-    selectionItemsOpt.foreach { selectionITems =>
-      selectionITems.head.grabFocus()
-    }
-  }
-
-  private def selectLast(): Unit = {
-    selectionItemsOpt.foreach { selectionItems =>
-      selectionItems.last.grabFocus()
-    }
-  }
-
   private def selectItemAt(index: Int): Unit = {
     selectionItemsOpt.foreach { selectionItems =>
-      selectItem(selectionItems(index))
+      selectSelectionItem(selectionItems(index))
     }
   }
 
-  private def selectItem(item: SelectionItem[T]): Unit = {
-    item.grabFocus()
+  private def selectSelectionItem(selectionItem: SelectionItem[T]): Unit = {
+    indicateSelected(selectionItem)
+    currentSelectedItemOpt = Option(selectionItem)
+    onItemSelected(selectionItem.item)
+  }
+
+  private def indicateSelected(selectionItem: SelectionItem[T]): Unit = {
+    deselectAll()
+    selectionItem.indicateSelected()
   }
 
   private def findSelectionItemFor(itemToFind: T) = {
