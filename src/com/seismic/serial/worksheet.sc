@@ -1,3 +1,7 @@
+import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.seismic.utils.RandomHelper
 
 import scala.collection.mutable.ArrayBuffer
@@ -18,17 +22,9 @@ x.zipWithIndex.foldLeft("") { (acc, item) =>
 }
 x
 
-val pattern = "([A-Z]{1}#{0,1})([0-9]{1})".r
-pattern.findAllIn("C#3").matchData.toArray
-val NOTE_NAMES = Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
-0.to(127).map { i =>
-  f"\"${NOTE_NAMES(i % 12)}${i / 12}\" -> $i,"
-}.mkString("\n")
+val testing = Array(1, 3)
+testing
 
-
-val foo = (int: Int) => (s: String) => 0 to int map { (i) => s + i }
-
-foo(3)("hi")
 
 4 to 7 map { (i) => i }
 

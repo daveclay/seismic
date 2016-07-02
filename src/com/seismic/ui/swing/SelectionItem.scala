@@ -6,10 +6,15 @@ import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
 
+case class Highlight(foreground: Color, background: Color)
+object HighSelected extends Highlight(Color.BLACK, new Color(230, 190, 0))
+object LowSelected extends Highlight(Color.BLACK, new Color(180, 180, 0))
+object Deselected extends Highlight(new Color(200, 200, 200), Color.BLACK)
+
 case class SelectionItem[T <: Selectable](item: T,
                                           itemWasClicked: () => Unit) extends JPanel {
-
   private val itemSize = new Dimension(248, 20)
+  var highlight: Highlight = Deselected
 
   setPreferredSize(itemSize)
   setBackground(Color.BLACK)
@@ -33,16 +38,12 @@ case class SelectionItem[T <: Selectable](item: T,
     override def mouseReleased(e: MouseEvent): Unit = {}
   })
 
-  // TODO: I really need a way to indicate "navigation focused item" vs "currently playing item"
+  def getHighlight = highlight
 
-  def indicateSelected() = {
-    setBackground(new Color(230, 190, 0))
-    nameLabel.setForeground(Color.BLACK)
-  }
-
-  def indicateUnselect(): Unit = {
-    setBackground(Color.BLACK)
-    nameLabel.setForeground(new Color(200, 200, 200))
+  def setHighlight(highlight: Highlight): Unit = {
+    this.highlight = highlight
+    setBackground(highlight.background)
+    nameLabel.setForeground(highlight.foreground)
   }
 
   def setLabel(text: String): Unit = {

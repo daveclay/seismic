@@ -2,12 +2,14 @@ package com.seismic
 
 import java.io.File
 
-import collection.mutable.ArrayBuffer
+import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
+
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.{MIDIIO, MidiNoteMap}
 import com.seismic.ui.swing.Selectable
 import com.seismic.utils.SetListSerializer
 import com.seismic.utils.ValueMapHelper.map
+import com.seismic.utils.ArrayUtils.wrapIndex
 import processing.core.PApplet.constrain
 
 /**
@@ -31,12 +33,82 @@ class Seismic(midiIO: MIDIIO) {
     setList
   }
 
+  def save(): Unit = {
+    setListOpt.foreach { setlist => setlist.write() }
+  }
+
   def setCurrentSong(song: Song): Unit = {
     currentSongOpt = Option(song)
   }
 
   def setCurrentPhrase(phrase: Phrase): Unit = {
     currentPhraseOpt = Option(phrase)
+  }
+
+  def selectNextPhrase() = {
+    indexOfCurrentPhrase().flatMap { index => selectPhraseAt(index + 1) }
+  }
+
+  def selectPreviousPhrase() = {
+    indexOfCurrentPhrase().flatMap { index => selectPhraseAt(index - 1) }
+  }
+
+  private def selectPhraseAt(index: Int): Option[Phrase] = {
+    currentSongOpt.flatMap { song =>
+      if (song.phrases.length == index) {
+        selectNextSongFromPhrase()
+      } else if (index < 0) {
+        selectPreviousSongFromPhrase()
+      } else {
+        val newPhrase = song.phrases(wrapIndex(index, song.phrases))
+        setCurrentPhrase(newPhrase)
+        Option(newPhrase)
+      }
+    }
+  }
+
+  private def selectPreviousSongFromPhrase(): Option[Phrase] = {
+    selectPreviousSong().flatMap { song => Option(song.phrases.last) }
+  }
+
+  private def selectNextSongFromPhrase(): Option[Phrase] = {
+    selectNextSong().flatMap { song => Option(song.phrases.head) }
+  }
+
+  private def indexOfCurrentSong() = {
+    withCurrentSetListAndSong { (setList, song) => setList.songs.indexOf(song) }
+  }
+
+  private def indexOfCurrentPhrase() = {
+    withCurrentSongAndPhrase { (song, phrase) => song.phrases.indexOf(phrase) }
+  }
+
+  private def withCurrentSongAndPhrase[T](f: (Song, Phrase) => T) = {
+    currentSongOpt.flatMap { song =>
+      currentPhraseOpt.flatMap { phrase => Option(f(song, phrase)) }
+    }
+  }
+
+  private def withCurrentSetListAndSong[T](f: (SetList, Song) => T) = {
+    setListOpt.flatMap { setList =>
+      currentSongOpt.flatMap { song => Option(f(setList, song)) }
+    }
+  }
+
+  def selectPreviousSong(): Option[Song] = {
+    indexOfCurrentSong().flatMap { index => selectSongAt(index - 1) }
+  }
+
+  def selectNextSong() = {
+    indexOfCurrentSong().flatMap { index => selectSongAt(index + 1) }
+  }
+
+  private def selectSongAt(index: Int): Option[Song] = {
+    withCurrentSetListAndSong { (setList, song) =>
+      val newCurrentSong = setList.songs(wrapIndex(index, setList.songs))
+      setCurrentSong(newCurrentSong)
+      newCurrentSong
+    }
   }
 
   def trigger(trigger: TriggerOnMessage): Unit = {
@@ -76,32 +148,136 @@ class Seismic(midiIO: MIDIIO) {
 
 
   def getEmptySetList = {
-    SetList(
-             name = "New Set List",
-             songs = ArrayBuffer(
-                            Song(
-                                  name = "Song A",
-                                  channel = 1,
-                                  phrases = ArrayBuffer(
-                                                   Phrase(
-                                                           name = "Intro",
-                                                           kickInstruments = ArrayBuffer(
-                                                                                    Instrument(ArrayBuffer("C0")),
-                                                                                    Instrument(ArrayBuffer("C#0")),
-                                                                                    Instrument(ArrayBuffer("D0"))
-                                                                                  ),
-                                                           snareInstruments = ArrayBuffer(
-                                                                                     Instrument(ArrayBuffer("D#0"))
-                                                                                   )
-                                                         )
-                                                 )
-                                )
-                          )
-           )
+    val setList = SetList(name = "New Set List")
+    val kickInstruments = Array(
+                               Instrument(Array("C0")),
+                               Instrument(Array("C#0")),
+                               Instrument(Array("D0"))
+                             )
+    val snareInstruments = Array(
+                              Instrument(Array("D#0"))
+                            )
+
+    val phrase = Phrase( name = "Intro")
+    val song = Song(name = "Song A", channel = 1)
+
+    setList.songs = Array(song)
+
+    setList
   }
 }
 
-case class Instrument(var notes: ArrayBuffer[String]) {
+/**
+  * TODO: rotating the handle selects the instrument. To change the number of instruments done by providing a different
+  * array of instruments.
+  *
+  * So what does changing the threshold values do? Allow for a wider range of rotation motion.
+  * Also, to change from a linear mapping of values to a logarithmic mapping requires a different implementation of
+  * TriggerMap with a variety of arguments that might specify a bezier curve or something more radical. In my case,
+  * random will likely be something I decide I want.
+  */
+object Thresholds {
+  val lowHandleThreshold = 100
+  val highHandleThreshold = 800
+}
+
+case class SetList(var name: String) {
+
+  @JsonManagedReference var songs: Array[Song] = null
+
+  def addSong() = {
+    val newPhrase = Phrase("New Phrase")
+    newPhrase.kickInstruments = Array(Instrument(Array("C0")))
+    newPhrase.snareInstruments = Array(Instrument(Array("C0")))
+
+    val newSong = Song("New Song", 0)
+    newSong.phrases = Array[Phrase](newPhrase)
+
+    songs = songs :+ newSong
+    newSong
+  }
+
+  def write(): Unit = {
+    SetListSerializer.write(this)
+  }
+
+  def setName(name: String): Unit = {
+    this.name = name
+  }
+}
+
+case class Song(var name: String,
+                var channel: Int
+               ) extends Selectable {
+
+  @JsonManagedReference var phrases: Array[Phrase] = null
+  @JsonBackReference var setList: SetList = null
+
+  def addPhrase() = {
+    val newPhrase = Phrase("New Phrase")
+    newPhrase.kickInstruments = Array(Instrument(Array("C0")))
+    newPhrase.snareInstruments = Array(Instrument(Array("C0")))
+
+    phrases = phrases :+ newPhrase
+
+    newPhrase
+  }
+
+  def setName(name: String): Unit = {
+    this.name = name
+  }
+
+  def setChannel(channel: Int): Unit = {
+    this.channel = channel
+  }
+}
+
+case class Phrase(var name: String) extends Selectable {
+
+  @JsonManagedReference var kickInstruments: Array[Instrument] = null
+  @JsonManagedReference var snareInstruments: Array[Instrument] = null
+  @JsonBackReference var song: Song = null
+
+  private val instrumentMapByName = Map(
+                                         "KICK" -> instrumentsByValue(kickInstruments),
+                                         "SNARE" -> instrumentsByValue(snareInstruments)
+                                       )
+
+  def addNewKickInstrument(): Unit = {
+    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
+    kickInstruments = kickInstruments :+ new Instrument(Array("C0"))
+  }
+
+  def addNewSnareInstrument(): Unit = {
+    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
+    snareInstruments = snareInstruments :+ new Instrument(Array("C0"))
+  }
+
+  def addSnareInstruments(instrument: Instrument): Unit = {
+    snareInstruments = snareInstruments :+ instrument
+  }
+
+  def instrumentFor(name: String, handleValue: Int) = {
+    instrumentMapByName(name)(handleValue)
+  }
+
+  def setName(name: String) = {
+    this.name = name
+  }
+
+  private def instrumentsByValue(instruments: Array[Instrument]) = {
+    import Thresholds._ // TODO: config this, eh?
+    (value: Int) => {
+      val idx = map(value, lowHandleThreshold, highHandleThreshold, 0, instruments.length - 1)
+      instruments(idx.toInt)
+    }
+  }
+}
+
+
+case class Instrument(var notes: Array[String]) {
+
+  @JsonBackReference var phrase: Phrase = null
 
   private var triggeredOnListener: Option[(Int) => Unit] = None
   private var triggeredOffListener: Option[() => Unit] = None
@@ -116,7 +292,7 @@ case class Instrument(var notes: ArrayBuffer[String]) {
     constrain(map(value, 0, threshold, 0, 127), 0, 127).toInt
   }
 
-  def setNotes(notes: ArrayBuffer[String]) {
+  def setNotes(notes: Array[String]) {
     this.notes = notes
   }
 
@@ -137,101 +313,5 @@ case class Instrument(var notes: ArrayBuffer[String]) {
   }
 }
 
-/**
-  * TODO: rotating the handle selects the instrument. To change the number of instruments done by providing a different
-  * array of instruments.
-  *
-  * So what does changing the threshold values do? Allow for a wider range of rotation motion.
-  * Also, to change from a linear mapping of values to a logarithmic mapping requires a different implementation of
-  * TriggerMap with a variety of arguments that might specify a bezier curve or something more radical. In my case,
-  * random will likely be something I decide I want.
-  */
-object Thresholds {
-  val lowHandleThreshold = 100
-  val highHandleThreshold = 800
-}
-
-case class SetList(var name: String, var songs: ArrayBuffer[Song]) {
-
-  def addSong() = {
-    val newPhrase = Phrase("New Phrase",
-                            ArrayBuffer(Instrument(ArrayBuffer("C0"))),
-                            ArrayBuffer(Instrument(ArrayBuffer("C0"))))
-
-    val newSong = Song("New Song", 0, ArrayBuffer[Phrase](newPhrase))
-    songs += newSong
-    newSong
-  }
-
-  def write(): Unit = {
-    SetListSerializer.write(this)
-  }
-
-  def setName(name: String): Unit = {
-    this.name = name
-  }
-}
-
-case class Song(var name: String,
-                var channel: Int,
-                phrases: ArrayBuffer[Phrase]) extends Selectable {
-
-  def addPhrase() = {
-    val newPhrase = Phrase("New Phrase",
-                            ArrayBuffer(Instrument(ArrayBuffer("C0"))),
-                            ArrayBuffer(Instrument(ArrayBuffer("C0"))))
-    phrases += newPhrase
-
-    newPhrase
-  }
-
-  def setName(name: String): Unit = {
-    this.name = name
-  }
-
-  def setChannel(channel: Int): Unit = {
-    this.channel = channel
-  }
-}
-
-case class Phrase(var name: String,
-                  kickInstruments: ArrayBuffer[Instrument],
-                  snareInstruments: ArrayBuffer[Instrument]) extends Selectable {
-
-  private val instrumentMapByName = Map(
-                                         "KICK" -> instrumentsByValue(kickInstruments),
-                                         "SNARE" -> instrumentsByValue(snareInstruments)
-                                       )
-
-  def addNewKickInstrument(): Unit = {
-    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    kickInstruments += new Instrument(ArrayBuffer("C0"))
-  }
-
-  def addNewSnareInstrument(): Unit = {
-    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    snareInstruments += new Instrument(ArrayBuffer("C0"))
-  }
-
-  def addSnareInstruments(instrument: Instrument): Unit = {
-    snareInstruments += instrument
-  }
-
-  def instrumentFor(name: String, handleValue: Int) = {
-    instrumentMapByName(name)(handleValue)
-  }
-
-  def setName(name: String) = {
-    this.name = name
-  }
-
-  private def instrumentsByValue(instruments: ArrayBuffer[Instrument]) = {
-    import Thresholds._ // TODO: config this, eh?
-    (value: Int) => {
-      val idx = map(value, lowHandleThreshold, highHandleThreshold, 0, instruments.length - 1)
-      instruments(idx.toInt)
-    }
-  }
-}
 
 

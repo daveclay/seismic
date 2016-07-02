@@ -1,23 +1,21 @@
 package com.seismic.ui.swing
 
-import java.awt.event.{KeyEvent, KeyListener}
-import java.awt.{Color, ContainerOrderFocusTraversalPolicy, Dimension}
-import javax.swing.{JComponent, JPanel, KeyStroke}
+import java.awt.event.{FocusEvent, FocusListener, KeyEvent, KeyListener}
+import java.awt.{Color, Dimension}
+import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
-import com.seismic.utils.ArrayUtils
-import com.seismic.utils.ArrayUtils.wrapIndex
 
 trait Selectable {
   def name: String
 }
 
-class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
-                                     onEditItemSelected: (T) => Unit,
-                                     onAddItemSelected: () => Unit,
-                                     onBackSelected: (T) => Unit,
-                                     onNavigatePrevious: () => Unit,
-                                     onNavigateNext: () => Unit,
+class SelectionList[T <: Selectable](onSelectNext: () => Unit,
+                                     onSelectPrevious: () => Unit,
+                                     onClicked: (T) => Unit,
+                                     onAccept: () => Unit,
+                                     onBackout: () => Unit,
+                                     onAddItem: () => Unit,
                                      backgroundColor: Color) extends JPanel() {
 
   SwingComponents.addBorder(this)
@@ -26,30 +24,27 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   setFocusable(true)
 
   var addItemButton = SwingComponents.button("Add")
-  addItemButton.addActionListener(e => {onAddItemSelected() })
+  addItemButton.addActionListener(e => { onAddItem() })
 
   var selectionItemsOpt: Option[Seq[SelectionItem[T]]] = None
-  var currentSelectedItemOpt: Option[SelectionItem[T]] = None
-  val onEditSelected = () => {
-    currentSelectedItemOpt.foreach { selectionItem => onEditItemSelected(selectionItem.item) }
-  }
 
   addKeyListener(new KeyListener {
+
     override def keyTyped(e: KeyEvent): Unit = {}
     override def keyReleased(e: KeyEvent): Unit = {}
     override def keyPressed(e: KeyEvent): Unit = {
       val code = e.getKeyCode
 
       if (code == KeyEvent.VK_UP || code == KeyEvent.VK_KP_UP) {
-        selectPrevious()
+        onSelectPrevious()
       } else if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_KP_DOWN) {
-        selectNext()
+        onSelectNext()
       } else if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_KP_RIGHT) {
-        onEditSelected()
+        onAccept()
       } else if (code == KeyEvent.VK_LEFT || code == KeyEvent.VK_KP_LEFT) {
-        currentSelectedItemOpt.foreach { selectionItem => onBackSelected(selectionItem.item) }
+        onBackout()
       } else if (code == KeyEvent.VK_SPACE) {
-        onEditSelected()
+        onAccept()
       }
     }
   })
@@ -76,76 +71,28 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
     }
   }
 
-  def selectItem(item: T): Unit = {
+  def setCurrentSelectedItem(item: T): Unit = {
     findSelectionItemFor(item).foreach { selectionItem => selectSelectionItem(selectionItem) }
-  }
-
-  def deselectAll(): Unit = {
-    indicateAllDeselected()
-    currentSelectedItemOpt = None
-  }
-
-  def indicateSelectedItem(item: T): Unit = {
-    indicateAllDeselected()
-    findSelectionItemFor(item).foreach { selectionItem => indicateSelected(selectionItem) }
   }
 
   private def createSelectItem(item: T) = {
     val itemWasClicked = () => {
-      onItemSelected(item)
+      onClicked(item)
     }
     new SelectionItem(item, itemWasClicked)
   }
 
-  private def indicateAllDeselected(): Unit = {
-    foreachSelectionItem { selectionItem => selectionItem.indicateUnselect() }
-  }
-
-  private def selectPrevious(): Unit = {
-    selectionItemsOpt.foreach { selectionItems =>
-    }
-    for {
-      selectionItems <- selectionItemsOpt
-      currentItem <- currentSelectedItemOpt
-    } yield {
-      val index = selectionItems.indexOf(currentItem)
-      if (index == 0) {
-        onNavigatePrevious()
-      } else {
-        selectItemAt(wrapIndex(index - 1, selectionItems))
-      }
-    }
-  }
-
-  private def selectNext(): Unit = {
-    for {
-      selectionItems <- selectionItemsOpt
-      currentItem <- currentSelectedItemOpt
-    } yield {
-      val index = selectionItems.indexOf(currentItem)
-      if (index == selectionItems.size - 1) {
-        onNavigateNext()
-      } else {
-        selectItemAt(wrapIndex(index + 1, selectionItems))
-      }
-    }
-  }
-
-  private def selectItemAt(index: Int): Unit = {
-    selectionItemsOpt.foreach { selectionItems =>
-      selectSelectionItem(selectionItems(index))
-    }
+  private def setAllSelectionItemsHighlightTo(highlight: Highlight): Unit = {
+    foreachSelectionItem { selectionItem => selectionItem.setHighlight(highlight) }
   }
 
   private def selectSelectionItem(selectionItem: SelectionItem[T]): Unit = {
     indicateSelected(selectionItem)
-    currentSelectedItemOpt = Option(selectionItem)
-    onItemSelected(selectionItem.item)
   }
 
   private def indicateSelected(selectionItem: SelectionItem[T]): Unit = {
-    indicateAllDeselected()
-    selectionItem.indicateSelected()
+    setAllSelectionItemsHighlightTo(Deselected)
+    selectionItem.setHighlight(HighSelected)
   }
 
   private def findSelectionItemFor(itemToFind: T) = {
@@ -162,8 +109,8 @@ class SelectionList[T <: Selectable](onItemSelected: (T) => Unit,
   }
 
   private def layoutSelectionItems(): Unit = {
+    removeAll()
     selectionItemsOpt.foreach { selectionItems =>
-      removeAll()
       val firstSelectionItem = selectionItems.head
       position(firstSelectionItem).atOrigin().in(this)
 

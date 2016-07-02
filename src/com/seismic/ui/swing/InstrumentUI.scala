@@ -106,7 +106,7 @@ class InstrumentNoteUI(instrument: Instrument,
   }
 
   private def onValueChange(value: String):Unit = {
-    instrument.setNotes(value.split(", ").to[ArrayBuffer])
+    instrument.setNotes(value.split(", "))
     onSongUpdated()
   }
 }

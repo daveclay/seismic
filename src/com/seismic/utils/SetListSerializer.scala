@@ -2,11 +2,20 @@ package com.seismic.utils
 
 import java.io.File
 
-import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
+import com.fasterxml.jackson.core.{JsonParser, Version}
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.{DeserializationContext, JsonDeserializer, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.seismic.SetList
+import com.seismic.{SetList, Song}
+
+import scala.collection.mutable.ArrayBuffer
 
 object SetListSerializer {
+  def main(args: Array[String]): Unit = {
+    val setList = read(new File(Preferences.buildPreferences().lastSetListDir, "Test.json"))
+    println(setList.songs.head.setList)
+  }
 
   object Preferences {
     val homeDir = System.getProperties.getProperty("user.dir")
@@ -46,5 +55,4 @@ object SetListSerializer {
     mapper.registerModule(DefaultScalaModule)
     mapper.enable(SerializationFeature.INDENT_OUTPUT)
   }
-
 }
