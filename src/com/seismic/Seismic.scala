@@ -10,6 +10,7 @@ import com.seismic.ui.swing.Selectable
 import com.seismic.utils.SetListSerializer
 import com.seismic.utils.ValueMapHelper.map
 import com.seismic.utils.ArrayUtils.wrapIndex
+import com.seismic.scala.OptionExtensions._
 import processing.core.PApplet.constrain
 
 /**
@@ -56,22 +57,27 @@ class Seismic(midiIO: MIDIIO) {
   private def selectPhraseAt(index: Int): Option[Phrase] = {
     currentSongOpt.flatMap { song =>
       if (song.phrases.length == index) {
-        selectNextSongFromPhrase()
+        selectFirstPhraseInNextSong()
       } else if (index < 0) {
-        selectPreviousSongFromPhrase()
+        selectLastPhraseFromPreviousSong()
       } else {
         val newPhrase = song.phrases(wrapIndex(index, song.phrases))
         setCurrentPhrase(newPhrase)
         Option(newPhrase)
       }
+    }.tap { phrase =>
+      if ( ! currentSongOpt.contains(phrase.song)) {
+        setCurrentSong(phrase.song)
+      }
+      setCurrentPhrase(phrase)
     }
   }
 
-  private def selectPreviousSongFromPhrase(): Option[Phrase] = {
+  private def selectLastPhraseFromPreviousSong(): Option[Phrase] = {
     selectPreviousSong().flatMap { song => Option(song.phrases.last) }
   }
 
-  private def selectNextSongFromPhrase(): Option[Phrase] = {
+  private def selectFirstPhraseInNextSong(): Option[Phrase] = {
     selectNextSong().flatMap { song => Option(song.phrases.head) }
   }
 

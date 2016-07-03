@@ -226,14 +226,24 @@ class SetlistUI(seismic: Seismic,
   }
 
   def selectPreviousPhrase(): Unit = {
-    seismic.selectPreviousPhrase().foreach { phrase =>
-      phraseWasSelected(phrase)
+    seismic.currentSongOpt.foreach { currentSong =>
+      seismic.selectPreviousPhrase().foreach { phrase =>
+        if (phrase.song != currentSong) {
+          songWasSelected(phrase.song)
+        }
+        phraseWasSelected(phrase)
+      }
     }
   }
 
   def selectNextPhrase(): Unit = {
-    seismic.selectNextPhrase().foreach { phrase =>
-      phraseWasSelected(phrase)
+    seismic.currentSongOpt.foreach { currentSong =>
+      seismic.selectNextPhrase().foreach { phrase =>
+        if (phrase.song != currentSong) {
+          songWasSelected(phrase.song)
+        }
+        phraseWasSelected(phrase)
+      }
     }
   }
 
