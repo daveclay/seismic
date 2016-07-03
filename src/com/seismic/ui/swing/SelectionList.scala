@@ -4,6 +4,7 @@ import java.awt.event.{FocusEvent, FocusListener, KeyEvent, KeyListener}
 import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
+import com.daveclay.swing.color.ColorUtils
 import com.daveclay.swing.util.Position._
 
 trait Selectable {
@@ -16,7 +17,7 @@ class SelectionList[T <: Selectable](onSelectNext: () => Unit,
                                      onAccept: () => Unit,
                                      onBackout: () => Unit,
                                      onAddItem: () => Unit,
-                                     backgroundColor: Color) extends JPanel() {
+                                     val backgroundColor: Color) extends JPanel() with HighlightOnFocus {
 
   SwingComponents.addBorder(this)
   setPreferredSize(new Dimension(250, 400))
@@ -25,11 +26,11 @@ class SelectionList[T <: Selectable](onSelectNext: () => Unit,
 
   var addItemButton = SwingComponents.button("Add")
   addItemButton.addActionListener(e => { onAddItem() })
+  highlight(this).onFocusOf(addItemButton)
 
   var selectionItemsOpt: Option[Seq[SelectionItem[T]]] = None
 
   addKeyListener(new KeyListener {
-
     override def keyTyped(e: KeyEvent): Unit = {}
     override def keyReleased(e: KeyEvent): Unit = {}
     override def keyPressed(e: KeyEvent): Unit = {

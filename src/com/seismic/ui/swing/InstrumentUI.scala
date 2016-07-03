@@ -1,7 +1,7 @@
 package com.seismic.ui.swing
 
 import java.awt.{Color, Container, Dimension}
-import javax.swing.JPanel
+import javax.swing.{JLabel, JPanel, JTextField}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Instrument
@@ -16,7 +16,7 @@ class InstrumentUI(labelValue: String,
                    backgroundColor: Color) extends JPanel {
 
   setPreferredSize(size)
-  setBackground(backgroundColor)
+  setOpaque(false)
 
   val label = SwingComponents.label(labelValue)
   label.setBackground(backgroundColor)
@@ -75,12 +75,39 @@ class InstrumentUI(labelValue: String,
 
   def removeInstrumentUIs(instrumentNoteUIs: Seq[InstrumentNoteUI]): Unit = {
     instrumentNoteUIs.foreach { instrumentNoteUI =>
+      instrumentNoteUI.getFocusListeners.foreach { l => instrumentNoteUI.removeFocusListener(l) }
       remove(instrumentNoteUI)
     }
   }
 
+  override def setBackground(color: Color): Unit = {
+    super.setBackground(color)
+    getLabels.foreach { label => label.setBackground(color) }
+  }
+
   override def grabFocus(): Unit = {
     instrumentNoteUIsOpt.foreach { instrumentNoteUIs => instrumentNoteUIs.head.nameField.grabFocus() }
+  }
+
+  def getLabels: Seq[JLabel] = {
+    instrumentNoteUIsOpt match {
+      case Some(instrumentNoteUIs) =>
+        instrumentNoteUIs.map { instrumentNoteUI =>
+          instrumentNoteUI.nameField.label
+        }
+      case None => Array.empty[JLabel]
+      case null => Array.empty[JLabel]
+    }
+  }
+
+  def getInputFields: Seq[JTextField] = {
+    instrumentNoteUIsOpt match {
+      case Some(instrumentNoteUIs) =>
+        instrumentNoteUIs.map { instrumentNoteUI =>
+          instrumentNoteUI.nameField.inputField
+        }
+      case None => Array.empty[JTextField]
+    }
   }
 }
 
@@ -90,7 +117,7 @@ class InstrumentNoteUI(instrument: Instrument,
                        backgroundColor: Color) extends JPanel {
 
   setPreferredSize(size)
-  setBackground(backgroundColor)
+  setOpaque(false)
 
   val nameField = new LabeledTextField("Note", backgroundColor, 10, onValueChange)
   nameField.setText(instrument.notes.mkString(", "))

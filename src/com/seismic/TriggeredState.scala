@@ -1,10 +1,11 @@
 package com.seismic
 
 class TriggeredState {
-  var lastTriggeredMap = Map[String, Instrument]()
 
-  def triggered(name: String, instrument: Instrument): Unit = {
-    lastTriggeredMap = lastTriggeredMap + (name -> instrument)
+  var lastTriggeredMap = Map[String, (Instrument, Int)]()
+
+  def triggered(name: String, instrument: Instrument, channel: Int): Unit = {
+    lastTriggeredMap = lastTriggeredMap + (name -> (instrument, channel))
   }
 
   def lastTriggered(name: String) = {

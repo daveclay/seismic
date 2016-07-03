@@ -32,22 +32,15 @@ object SeismicApp {
       seismicUIFactory.handleMessage(message)
     }
 
-    new SeismicMessageHandler(serialMonitor, Array(seismicMidiHandler, uiMessageHandler))
+    serialMonitor.setHandler { (message: String) =>
+      TriggerMessageParser.from(message) match {
+        case Some(message: Message) =>
+          Array(seismicMidiHandler, uiMessageHandler).foreach { (handler) => handler(message) }
+
+        case _ => System.out.println("Unknown message: \"" + message + "\"")
+      }
+    }
 
     serialMonitor.start("mock")
-  }
-}
-
-class SeismicMessageHandler(serialMonitor: SerialMonitor,
-                            handlers: Array[(Message => Unit)]) {
-
-
-  serialMonitor.setHandler { (message: String) =>
-    TriggerMessageParser.from(message) match {
-      case Some(message: Message) =>
-        handlers.foreach { (handler) => handler(message) }
-
-      case _ => System.out.println("Unknown message: \"" + message + "\"")
-    }
   }
 }

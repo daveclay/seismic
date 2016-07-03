@@ -10,39 +10,38 @@ class LabeledTextField(labelText: String,
                        size: Int,
                        onValueChange: String => Unit) extends JPanel {
 
+  setOpaque(false)
+
   val label = SwingComponents.label(labelText)
-  label.setBackground(backgroundColor)
   label.setForeground(new Color(200, 200, 200))
 
-  setBackground(backgroundColor)
-
-  val textField = SwingComponents.textField(Color.BLACK, size, onValueChange)
+  val inputField = SwingComponents.textField(Color.BLACK, size, onValueChange)
 
   val labelSize = label.getPreferredSize
-  var textFieldSize = textField.getPreferredSize
+  var textFieldSize = inputField.getPreferredSize
 
   setPreferredSize(new Dimension(labelSize.width + textFieldSize.width, textFieldSize.height))
 
   position(label).atOrigin().in(this)
-  position(textField).toTheRightOf(label).withMargin(10).in(this)
+  position(inputField).toTheRightOf(label).withMargin(10).in(this)
 
   def highlightField(): Unit = {
-    textField.setBackground(new Color(170, 170, 170))
-    textField.setForeground(Color.BLACK)
+    inputField.setBackground(new Color(170, 170, 170))
+    inputField.setForeground(Color.BLACK)
   }
 
   def unhighlightField(): Unit = {
-    textField.setBackground(Color.BLACK)
-    textField.setForeground(new Color(200, 200, 200))
+    inputField.setBackground(Color.BLACK)
+    inputField.setForeground(new Color(200, 200, 200))
   }
 
   def setText(text: String): Unit = {
-    textField.setText(text)
+    inputField.setText(text)
   }
 
   override def grabFocus(): Unit = {
-    textField.grabFocus()
+    inputField.grabFocus()
   }
 
-  def getTextField = textField
+  def getTextField = inputField
 }

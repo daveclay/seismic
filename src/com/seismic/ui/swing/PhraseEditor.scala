@@ -9,11 +9,11 @@ import com.seismic.Phrase
 
 class PhraseEditor(onAddInstrumentClicked: () => Unit,
                    onPhraseUpdated: (Phrase) => Unit,
-                   backgroundColor: Color) extends JPanel {
+                   val backgroundColor: Color) extends JPanel with HighlightOnFocus {
 
   SwingComponents.addBorder(this)
   setPreferredSize(new Dimension(400, 400))
-  setBackground(new Color(70, 70, 70))
+  setBackground(backgroundColor)
 
   var curentPhraseOpt: Option[Phrase] = None
   val instrumentUISize = new Dimension(200, 300)
@@ -46,20 +46,20 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
-    // TODO: for some reason I don't need to remove the kick/snare instrument UIs?
     kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
     snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
     position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
+
+    highlight(this, nameField).onFocusOf(nameField.inputField,
+                                          kickInstrumentUI.addInstrumentButton,
+                                          snareInstrumentUI.addInstrumentButton)
+    .andFocusOf(kickInstrumentUI.getInputFields)
+    .andFocusOf(snareInstrumentUI.getInputFields)
   }
 
   override def grabFocus(): Unit = {
     nameField.grabFocus()
-  }
-
-  private def positionInstrumentUIs() {
-    position(kickInstrumentUI).below(nameField).withMargin(4).in(this)
-    position(snareInstrumentUI).below(kickInstrumentUI).withMargin(4).in(this)
   }
 
   private def onAddKickInstrumentClicked(): Unit = {

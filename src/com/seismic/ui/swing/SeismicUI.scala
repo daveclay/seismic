@@ -6,6 +6,7 @@ import java.io.File
 import java.util
 import javax.swing._
 
+import com.daveclay.swing.color.ColorUtils
 import com.daveclay.swing.util.Position.position
 import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
@@ -138,7 +139,6 @@ class SetlistUI(seismic: Seismic,
   setPreferredSize(size)
 
   val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
-
   val songSelect = new SelectionList[Song](selectNextSong,
                                            selectPreviousSong,
                                            songSelected,
@@ -337,38 +337,7 @@ class Editor(songEditor: SongEditor,
   position(phraseEditor).below(songEditor).withMargin(4).in(this)
 }
 
-class SongEditor(onSongUpdated: (Song) => Unit,
-                 backgroundColor: Color) extends JPanel {
-  setPreferredSize(new Dimension(400, 30))
-  setBackground(backgroundColor)
-  SwingComponents.addBorder(this)
 
-  var songOpt: Option[Song] = None
-  var currentPhraseOpt: Option[Phrase] = None
-
-  val onNameChange = (name: String) => songOpt.foreach { song =>
-    song.setName(name)
-    onSongUpdated(song)
-  }
-
-  val onChannelChange = (channel: String) => songOpt.foreach { song =>
-    song.setChannel(channel.toInt)
-    onSongUpdated(song)
-  }
-
-  val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
-  val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
-
-  position(nameField).at(4, 4).in(this)
-  position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
-
-  def setSong(song: Song): Unit = {
-    this.songOpt = Option(song)
-
-    nameField.setText(song.name)
-    channelField.setText(song.channel.toString)
-  }
-}
 
 class Selector(songSelect: SelectionList[Song],
                phraseSelect: SelectionList[Phrase]) extends JPanel {

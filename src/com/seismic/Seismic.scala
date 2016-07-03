@@ -124,22 +124,20 @@ class Seismic(midiIO: MIDIIO) {
       instrument.notes.foreach { (note) =>
         midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note), velocity)
       }
-      triggeredState.triggered(trigger.name, instrument)
+      triggeredState.triggered(trigger.name, instrument, song.channel)
       instrument.fireTriggerOnListener(velocity)
     }
   }
 
   def off(name: String): Unit = {
-    withCurrentPhraseInSong { (phrase, song) =>
-      triggeredState.lastTriggered(name) match {
-        case Some(instrument) =>
-          instrument.notes.foreach { (note) =>
-            midiIO.sendNoteOff(song.channel, MidiNoteMap.valueForNote(note), 0)
-          }
-          instrument.fireTriggerOffListener()
-        case None =>
-          System.err.println(f"Somehow managed to trigger an off event with no previous on event for $name. Ignoring.")
-      }
+    triggeredState.lastTriggered(name) match {
+      case Some(Tuple2(instrument, channel)) =>
+        instrument.notes.foreach { (note) =>
+          midiIO.sendNoteOff(channel, MidiNoteMap.valueForNote(note), 0)
+        }
+        instrument.fireTriggerOffListener()
+      case None =>
+        System.err.println(f"Somehow managed to trigger an off event with no previous on event for $name. Ignoring.")
     }
   }
 
@@ -244,11 +242,6 @@ case class Phrase(var name: String) extends Selectable {
   @JsonManagedReference var snareInstruments: Array[Instrument] = null
   @JsonBackReference var song: Song = null
 
-  private val instrumentMapByName = Map(
-                                         "KICK" -> instrumentsByValue(kickInstruments),
-                                         "SNARE" -> instrumentsByValue(snareInstruments)
-                                       )
-
   def addNewKickInstrument(): Unit = {
     // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
     kickInstruments = kickInstruments :+ new Instrument(Array("C0"))
@@ -263,20 +256,22 @@ case class Phrase(var name: String) extends Selectable {
     snareInstruments = snareInstruments :+ instrument
   }
 
-  def instrumentFor(name: String, handleValue: Int) = {
-    instrumentMapByName(name)(handleValue)
+  def instrumentFor(name: String, handleValue: Int): Instrument = {
+    name match {
+      case "KICK" => instrumentsByValue(kickInstruments, handleValue)
+      case "SNARE" => instrumentsByValue(snareInstruments, handleValue)
+      case _ => throw new IllegalArgumentException(f"unknown trigger $name")
+    }
   }
 
   def setName(name: String) = {
     this.name = name
   }
 
-  private def instrumentsByValue(instruments: Array[Instrument]) = {
+  private def instrumentsByValue(instruments: Array[Instrument], value: Int) = {
     import Thresholds._ // TODO: config this, eh?
-    (value: Int) => {
-      val idx = map(value, lowHandleThreshold, highHandleThreshold, 0, instruments.length - 1)
-      instruments(idx.toInt)
-    }
+    val idx = map(value, lowHandleThreshold, highHandleThreshold, 0, instruments.length - 1)
+    instruments(idx.toInt)
   }
 }
 

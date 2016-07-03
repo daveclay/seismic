@@ -17,12 +17,10 @@ class SerialMonitor() {
   def start(port: String): Unit = {
     val serialIO = serialIOFor(port)
 
-    serialIO.open(new SerialListener {
-      override def dataAvailable(): Unit = {
-        val message = serialIO.readStringUntil(10)
-        if (message != null) {
-          handleMessage(message)
-        }
+    serialIO.open(() => {
+      val message = serialIO.readStringUntil(10)
+      if (message != null) {
+        handleMessage(message)
       }
     })
   }
@@ -31,7 +29,11 @@ class SerialMonitor() {
     handlerOpt.foreach { handler =>
       Future {
         // handle on some other thread; though at this point that's the midi thread too.
-        handler(message)
+        try {
+          handler(message)
+        } catch {
+          case e: Exception => e.printStackTrace()
+        }
       }
     }
   }
