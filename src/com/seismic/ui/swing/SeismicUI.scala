@@ -255,6 +255,7 @@ class SetlistUI(seismic: Seismic,
   def acceptPhrase(): Unit = {
     seismic.currentPhraseOpt.foreach { phrase =>
       phraseWasSelected(phrase)
+      phraseEditor.grabFocus()
     }
   }
 
