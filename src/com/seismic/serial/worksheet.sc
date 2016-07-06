@@ -12,15 +12,11 @@ RandomHelper.pick("A", "B", "C")
 val hi = (int: Int) => int * 2
 hi(4)
 
-val a = ArrayBuffer(0, 2, 3)
-a += 0
-a
-
-val x = ArrayBuffer("A", "B", "C", "D")
-x.zipWithIndex.foldLeft("") { (acc, item) =>
-  f"$acc, ${item._1} at ${item._2}"
+var a = new ArrayBuffer[Int]
+for (i <- 10 to 0 by -1) {
+  a = a :+ i
 }
-x
+a
 
 val testing = Array(1, 3)
 testing

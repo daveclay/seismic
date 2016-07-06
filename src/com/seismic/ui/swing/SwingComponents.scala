@@ -33,6 +33,16 @@ object SwingComponents {
     panel
   }
 
+  def buttonFocused(button: Component): Unit = {
+    button.setBackground(new Color(250, 200, 0))
+    button.setForeground(Color.BLACK)
+  }
+
+  def buttonBlurred(button: Component): Unit = {
+    button.setBackground(Color.BLACK)
+    button.setForeground(new Color(200, 200, 200))
+  }
+
   def configureButton(button: JButton): Unit = {
     button.setForeground(new Color(200, 200, 200))
     button.setBackground(Color.BLACK)

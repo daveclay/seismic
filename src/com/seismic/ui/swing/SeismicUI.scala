@@ -12,6 +12,7 @@ import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
 import com.seismic.messages._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+import com.seismic.ui.swing.draglist.{CellState, ListCallbacks, OrderableSelectionList}
 
 class SeismicUIFactory {
   var seismicUIOpt: Option[SeismicUI] = None
@@ -139,30 +140,30 @@ class SetlistUI(seismic: Seismic,
   setPreferredSize(size)
 
   val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
-  val songSelect = new SelectionList[Song](selectNextSong,
-                                           selectPreviousSong,
-                                           songSelected,
-                                           acceptSong,
-                                           songBackout,
-                                           addSong,
-                                           componentBGColor)
 
-  val phraseSelect = new SelectionList[Phrase](selectNextPhrase,
-                                               selectPreviousPhrase,
-                                               phraseSelected,
-                                               acceptPhrase,
-                                               phraseBackout,
-                                               addPhrase,
-                                               componentBGColor)
+  val songCallbacks = ListCallbacks(songSelected,
+                                     acceptSong,
+                                     songBackout,
+                                     addSong)
+  val songSelect = new OrderableSelectionList[Song](songCallbacks, Selector.renderSongItem)
+  songSelect.setPreferredSize(new Dimension(250,400))
+  songSelect.setBackground(componentBGColor)
 
-  val songEditor = new SongEditor(onSongUpdated, componentBGColor)
-
-  val phraseEditor = new PhraseEditor(save,
-                                      onPhraseUpdated,
-                                       componentBGColor)
+  val phraseCallbacks = new ListCallbacks(setCurrentPhrase,
+                                           acceptPhrase,
+                                           phraseBackout,
+                                           addPhrase,
+                                           selectFirstPhraseInNextSong,
+                                           selectLastPhraseInPrevSong)
+  val phraseSelect = new OrderableSelectionList[Phrase](phraseCallbacks, Selector.renderPhraseItem)
+  phraseSelect.setPreferredSize(new Dimension(250,400))
+  phraseSelect.setBackground(componentBGColor)
 
   val selector = new Selector(songSelect, phraseSelect)
   selector.setOpaque(false)
+
+  val songEditor = new SongEditor(onSongUpdated, componentBGColor)
+  val phraseEditor = new PhraseEditor(save, onPhraseUpdated, componentBGColor)
 
   val editor = new Editor(songEditor, phraseEditor)
   editor.setOpaque(false)
@@ -201,7 +202,7 @@ class SetlistUI(seismic: Seismic,
       save()
       songSelect.addItem(song)
       setCurrentSong(song)
-      phraseSelect.requestFocusInWindow()
+      phraseSelect.grabFocus()
     }
   }
 
@@ -221,30 +222,24 @@ class SetlistUI(seismic: Seismic,
       phraseSelect.addItem(phrase)
       setCurrentPhrase(phrase)
       phraseSelect.setCurrentSelectedItem(phrase)
-      phraseEditor.requestFocusInWindow()
+      phraseEditor.grabFocus()
     }
   }
 
-  def selectPreviousPhrase(): Unit = {
-    seismic.currentSongOpt.foreach { currentSong =>
-      seismic.selectPreviousPhrase().foreach { phrase =>
-        if (phrase.song != currentSong) {
-          songWasSelected(phrase.song)
-        }
-        phraseWasSelected(phrase)
-      }
+  def selectFirstPhraseInNextSong(): Unit = {
+    seismic.selectNextPhrase().foreach { phrase =>
+      indicateSelectedPhrase(phrase)
+      indicateSelectedSong(phrase.song)
     }
+    phraseSelect.grabFocus()
   }
 
-  def selectNextPhrase(): Unit = {
-    seismic.currentSongOpt.foreach { currentSong =>
-      seismic.selectNextPhrase().foreach { phrase =>
-        if (phrase.song != currentSong) {
-          songWasSelected(phrase.song)
-        }
-        phraseWasSelected(phrase)
-      }
+  def selectLastPhraseInPrevSong(): Unit = {
+    seismic.selectPreviousPhrase().foreach { phrase =>
+      indicateSelectedPhrase(phrase)
+      indicateSelectedSong(phrase.song)
     }
+    phraseSelect.grabFocus()
   }
 
   def onPhraseUpdated(phrase: Phrase): Unit = {
@@ -260,31 +255,21 @@ class SetlistUI(seismic: Seismic,
   }
 
   def phraseBackout(): Unit = {
-    songSelect.requestFocusInWindow()
-  }
-
-  private def phraseSelected(phrase: Phrase): Unit = {
-    phraseSelect.setCurrentSelectedItem(phrase)
-  }
-
-  def acceptSong(): Unit = {
-    seismic.currentSongOpt.foreach { song =>
-      val phrase = song.phrases.head
-      seismic.setCurrentPhrase(phrase)
-      phraseWasSelected(phrase)
-      phraseSelect.requestFocusInWindow()
-    }
-  }
-
-  private def songSelected(song: Song): Unit = {
-    seismic.setCurrentSong(song)
+    songSelect.grabFocus()
   }
 
   private def setCurrentPhrase(phrase: Phrase): Unit = {
     seismic.currentPhraseOpt = Option(phrase)
     seismic.setCurrentPhrase(phrase)
-    phraseSelect.setCurrentSelectedItem(phrase)
     phraseEditor.setPhrase(phrase)
+  }
+
+  def acceptSong(): Unit = {
+    phraseSelect.grabFocus()
+  }
+
+  private def songSelected(song: Song): Unit = {
+    setCurrentSong(song)
   }
 
   private def setCurrentSong(song: Song): Unit = {
@@ -293,30 +278,19 @@ class SetlistUI(seismic: Seismic,
     songWasSelected(song)
   }
 
-  private def setCurrentPhraseToFirstPhraseInCurrentSong(): Unit = {
-    seismic.currentSongOpt.foreach { song =>
-      val phrase = song.phrases.head
-      phraseSelect.setCurrentSelectedItem(phrase)
-    }
-  }
-
-  private def setCurrentPhraseToLastPhraseInCurrentSong(): Unit = {
-    seismic.currentSongOpt.foreach { song =>
-      val phrase = song.phrases.last
-      phraseSelect.setCurrentSelectedItem(phrase)
-    }
-  }
-
   private def songWasSelected(song: Song): Unit = {
     println(s"song was selected ${song.name}")
-    songSelect.setCurrentSelectedItem(song)
-    phraseSelect.setItems(song.phrases)
     songEditor.setSong(song)
+    val phrases = song.phrases
+    phraseSelect.setItems(phrases)
+    val phrase = phrases.head
+    phraseSelect.setCurrentSelectedItem(phrase)
+    phraseWasSelected(phrase)
   }
 
   private def phraseWasSelected(phrase: Phrase): Unit = {
     println(s"phrase was selected ${phrase.name}")
-    phraseSelect.setCurrentSelectedItem(phrase)
+    seismic.setCurrentPhrase(phrase)
     phraseEditor.setPhrase(phrase)
   }
 
@@ -328,6 +302,16 @@ class SetlistUI(seismic: Seismic,
     setCurrentSong(song)
     setCurrentPhrase(song.phrases.head)
   }
+
+  private def indicateSelectedSong(song: Song): Unit = {
+    songSelect.setCurrentSelectedItem(song)
+    songEditor.setSong(song)
+  }
+
+  private def indicateSelectedPhrase(phrase: Phrase): Unit = {
+    phraseSelect.setCurrentSelectedItem(phrase)
+    phraseEditor.setPhrase(phrase)
+  }
 }
 
 class Editor(songEditor: SongEditor,
@@ -336,15 +320,4 @@ class Editor(songEditor: SongEditor,
 
   position(songEditor).atOrigin().in(this)
   position(phraseEditor).below(songEditor).withMargin(4).in(this)
-}
-
-
-
-class Selector(songSelect: SelectionList[Song],
-               phraseSelect: SelectionList[Phrase]) extends JPanel {
-
-  setPreferredSize(new Dimension(Sizing.fitWidth(songSelect, phraseSelect) + 4, 600))
-
-  position(songSelect).atOrigin().withMargin(4).in(this)
-  position(phraseSelect).toTheRightOf(songSelect).withMargin(4).in(this)
 }

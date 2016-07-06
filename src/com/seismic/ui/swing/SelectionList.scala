@@ -1,10 +1,9 @@
 package com.seismic.ui.swing
 
 import java.awt.event.{FocusEvent, FocusListener, KeyEvent, KeyListener}
-import java.awt.{Color, Dimension}
-import javax.swing.JPanel
+import java.awt.{BorderLayout, Color, Component, Dimension}
+import javax.swing._
 
-import com.daveclay.swing.color.ColorUtils
 import com.daveclay.swing.util.Position._
 
 trait Selectable {

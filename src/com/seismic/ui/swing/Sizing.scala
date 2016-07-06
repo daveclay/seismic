@@ -15,6 +15,10 @@ object Sizing {
 
   class ExtendedDimension(dimension: Dimension) {
 
+    def decreaseSize(amount: Int) = {
+      new Dimension(dimension.getWidth.toInt - amount, dimension.getHeight.toInt - amount)
+    }
+
     def increaseSize(amount: Int) = {
       new Dimension(dimension.getWidth.toInt + amount, dimension.getHeight.toInt + amount)
     }
