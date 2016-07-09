@@ -201,6 +201,10 @@ case class SetList(var name: String) {
     newSong
   }
 
+  def updateSongs(songs: Seq[Song]): Unit = {
+    this.songs = songs.toArray
+  }
+
   def write(): Unit = {
     SetListSerializer.write(this)
   }
@@ -225,6 +229,10 @@ case class Song(var name: String,
     phrases = phrases :+ newPhrase
 
     newPhrase
+  }
+
+  def updatePhrases(phrases: Seq[Phrase]) = {
+    this.phrases = phrases.toArray
   }
 
   def setName(name: String): Unit = {

@@ -12,18 +12,20 @@ case class ListCallbacks[T](onSelected: (T) => Unit,
                             onAccept: () => Unit,
                             onBackout: () => Unit,
                             onAddItem: () => Unit,
+                            onReordered: (Seq[T]) => Unit,
                             onSelectAfterLast: () => Unit = null,
                             onSelectBeforeFirst: () => Unit = null)
 
-class OrderableSelectionList[T](callbacks: ListCallbacks[T], renderItem: (T, CellState) => Component) extends JPanel {
+class OrderableSelectionList[T](callbacks: ListCallbacks[T],
+                                renderItem: (T, CellState) => Component) extends JPanel {
 
-  trait SelectionItem {
+  trait SelectionItem[T] {
     def triggerSelected(): Unit
     def triggerAccept()
     def renderCell(cellState: CellState): Component
   }
 
-  case class ValueSelectionItem(value: T) extends SelectionItem {
+  case class ValueSelectionItem(value: T) extends SelectionItem[T] {
     def renderCell(cellState: CellState) = {
       renderItem(value, cellState)
     }
@@ -35,7 +37,7 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T], renderItem: (T, Cel
     }
   }
 
-  class AddButtonItem extends SelectionItem {
+  case class AddButtonItem() extends SelectionItem[T] {
     val button = SwingComponents.button("Add")
     def renderCell(cellState: CellState) = {
       if (cellState.cellHasFocus) {
@@ -56,9 +58,9 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T], renderItem: (T, Cel
   SwingComponents.addBorder(this)
   setFocusable(true)
 
-  var lastSelectedOpt: Option[SelectionItem] = None
-  val listModel = new DefaultListModel[SelectionItem]
-  val jlist = new NotFuckingStupidJList[SelectionItem](listModel)
+  var lastSelectedOpt: Option[SelectionItem[T]] = None
+  val listModel = new DefaultListModel[SelectionItem[T]]
+  val jlist = new NotFuckingStupidJList[SelectionItem[T]](listModel)
   val addButtonItem = new AddButtonItem
   jlist.getSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
   jlist.setDropMode(DropMode.INSERT)
@@ -76,8 +78,15 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T], renderItem: (T, Cel
   // TODO: configurable ui
   jlist.setVisibleRowCount(0)
 
+  val onReorderedItems = (selectionItems: Seq[SelectionItem[T]]) => {
+    val values = selectionItems.flatMap {
+      case ValueSelectionItem(value) => Some(value)
+      case _ => None
+    }
+    callbacks.onReordered(values)
+  }
   // Apparently, the magic bullshit happens here.
-  jlist.setTransferHandler(new ListItemTransferHandler())
+  jlist.setTransferHandler(new ListItemTransferHandler[SelectionItem[T]](onReorderedItems))
 
   val scrollPane = new JScrollPane(jlist)
   scrollPane.setOpaque(false)
@@ -149,9 +158,9 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T], renderItem: (T, Cel
     }
   }
 
-  class SelectionListItemRenderer extends ListCellRenderer[SelectionItem]() {
-    override def getListCellRendererComponent(list: JList[_ <: SelectionItem],
-                                              selectionItem: SelectionItem,
+  class SelectionListItemRenderer extends ListCellRenderer[SelectionItem[T]]() {
+    override def getListCellRendererComponent(list: JList[_ <: SelectionItem[T]],
+                                              selectionItem: SelectionItem[T],
                                               index: Int,
                                               isSelected: Boolean,
                                               cellHasFocus: Boolean): Component = {

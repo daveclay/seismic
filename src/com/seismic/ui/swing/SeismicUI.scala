@@ -144,7 +144,8 @@ class SetlistUI(seismic: Seismic,
   val songCallbacks = ListCallbacks(songSelected,
                                      acceptSong,
                                      songBackout,
-                                     addSong)
+                                     addSong,
+                                     songsReordered)
   val songSelect = new OrderableSelectionList[Song](songCallbacks, Selector.renderSongItem)
   songSelect.setPreferredSize(new Dimension(250,400))
   songSelect.setBackground(componentBGColor)
@@ -153,6 +154,7 @@ class SetlistUI(seismic: Seismic,
                                            acceptPhrase,
                                            phraseBackout,
                                            addPhrase,
+                                           phrasesReordered,
                                            selectFirstPhraseInNextSong,
                                            selectLastPhraseInPrevSong)
   val phraseSelect = new OrderableSelectionList[Phrase](phraseCallbacks, Selector.renderPhraseItem)
@@ -196,6 +198,10 @@ class SetlistUI(seismic: Seismic,
     }
   }
 
+  def acceptSong(): Unit = {
+    phraseSelect.grabFocus()
+  }
+
   def addSong(): Unit = {
     seismic.setListOpt.foreach { setList =>
       val song = setList.addSong()
@@ -213,6 +219,13 @@ class SetlistUI(seismic: Seismic,
   def onSongUpdated(song: Song): Unit = {
     save()
     songSelect.itemWasUpdated(song)
+  }
+
+  def songsReordered(songs: Seq[Song]): Unit = {
+    seismic.setListOpt.foreach { setList =>
+      setList.updateSongs(songs)
+      seismic.save()
+    }
   }
 
   def addPhrase(): Unit = {
@@ -258,14 +271,18 @@ class SetlistUI(seismic: Seismic,
     songSelect.grabFocus()
   }
 
+  def phrasesReordered(phrases: Seq[Phrase]): Unit = {
+    println(s"phrases reordered: $phrases")
+    seismic.currentSongOpt.foreach { song =>
+      song.updatePhrases(phrases)
+      seismic.save()
+    }
+  }
+
   private def setCurrentPhrase(phrase: Phrase): Unit = {
     seismic.currentPhraseOpt = Option(phrase)
     seismic.setCurrentPhrase(phrase)
     phraseEditor.setPhrase(phrase)
-  }
-
-  def acceptSong(): Unit = {
-    phraseSelect.grabFocus()
   }
 
   private def songSelected(song: Song): Unit = {

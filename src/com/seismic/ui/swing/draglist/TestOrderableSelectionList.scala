@@ -32,7 +32,11 @@ object TestOrderableSelectionList {
         p
       }
 
-      val callbacks = ListCallbacks(onSelected, onAccept, onBackout, onAddItem)
+      val onReordered = (strings: Seq[String]) => {
+        println("reordered")
+      }
+
+      val callbacks = ListCallbacks(onSelected, onAccept, onBackout, onAddItem, onReordered)
       val list = new OrderableSelectionList[String](callbacks, renderItem)
       list.setItems(Array("Thing A", "Thing B", "Thing C", "D", "Bullshit"))
       list.setPreferredSize(new Dimension(320, 240))
