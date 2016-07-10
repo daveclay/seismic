@@ -78,15 +78,18 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   // TODO: configurable ui
   jlist.setVisibleRowCount(0)
 
-  val onReorderedItems = (selectionItems: Seq[SelectionItem[T]]) => {
+  private val onReorderedItems = (selectionItems: Seq[SelectionItem[T]]) => {
     val values = selectionItems.flatMap {
       case ValueSelectionItem(value) => Some(value)
       case _ => None
     }
     callbacks.onReordered(values)
   }
+
+  val isReorderable = (item: SelectionItem[T]) => { item != addButtonItem }
   // Apparently, the magic bullshit happens here.
-  jlist.setTransferHandler(new ListItemTransferHandler[SelectionItem[T]](onReorderedItems))
+  private val transferHandler = new ListItemTransferHandler[SelectionItem[T]](onReorderedItems, isReorderable)
+  jlist.setTransferHandler(transferHandler)
 
   val scrollPane = new JScrollPane(jlist)
   scrollPane.setOpaque(false)

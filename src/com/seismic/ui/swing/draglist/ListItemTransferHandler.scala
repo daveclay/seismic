@@ -8,7 +8,8 @@ import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
 import java.io.IOException
 
-class ListItemTransferHandler[T](onReorder: (Seq[T]) => Unit) extends TransferHandler {
+class ListItemTransferHandler[T](onReorder: (Seq[T]) => Unit,
+                                 isReorderable: (T) => Boolean) extends TransferHandler {
 
   private val localObjectFlavor = new ActivationDataFlavor(classOf[Array[AnyRef]],
                                                             DataFlavor.javaJVMLocalObjectMimeType,
@@ -28,7 +29,7 @@ class ListItemTransferHandler[T](onReorder: (Seq[T]) => Unit) extends TransferHa
     if (!info.isDrop || !info.isDataFlavorSupported(localObjectFlavor)) {
       false
     } else {
-      true
+      getValues(info).forall { value => isReorderable(value) }
     }
   }
 
