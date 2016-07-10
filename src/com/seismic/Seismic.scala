@@ -3,14 +3,14 @@ package com.seismic
 import java.io.File
 
 import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
-
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.{MIDIIO, MidiNoteMap}
 import com.seismic.ui.swing.Selectable
-import com.seismic.utils.SetListSerializer
+import com.seismic.utils.{Next, SetListSerializer}
 import com.seismic.utils.ValueMapHelper.map
 import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._
+import com.seismic.utils.Next.next
 import processing.core.PApplet.constrain
 
 /**
@@ -151,21 +151,11 @@ class Seismic(midiIO: MIDIIO) {
   }
 
 
-  def getEmptySetList = {
+  def newSetList = {
     val setList = SetList(name = "New Set List")
-    val kickInstruments = Array(
-                               Instrument(Array("C0")),
-                               Instrument(Array("C#0")),
-                               Instrument(Array("D0"))
-                             )
-    val snareInstruments = Array(
-                              Instrument(Array("D#0"))
-                            )
+    setList.addSong()
 
-    val phrase = Phrase( name = "Intro")
-    val song = Song(name = "Song A", channel = 1)
-
-    setList.songs = Array(song)
+    this.setListOpt = Option(setList)
 
     setList
   }
@@ -187,15 +177,19 @@ object Thresholds {
 
 case class SetList(var name: String) {
 
-  @JsonManagedReference var songs: Array[Song] = null
+  @JsonManagedReference var songs: Array[Song] = Array.empty
 
   def addSong() = {
-    val newPhrase = Phrase("New Phrase")
-    newPhrase.kickInstruments = Array(Instrument(Array("C0")))
-    newPhrase.snareInstruments = Array(Instrument(Array("C0")))
+    val newPhrase = Phrase("Phrase 1", 1)
+    newPhrase.addNewKickInstrument()
+    newPhrase.addNewSnareInstrument()
 
-    val newSong = Song("New Song", 0)
+    val channel = next(songs, (s: Song) => { s.channel })
+
+    // TODO: change song name, can't dup names.
+    val newSong = Song(s"Song $channel", channel)
     newSong.phrases = Array[Phrase](newPhrase)
+    newSong.setList = this
 
     songs = songs :+ newSong
     newSong
@@ -218,13 +212,16 @@ case class Song(var name: String,
                 var channel: Int
                ) extends Selectable {
 
-  @JsonManagedReference var phrases: Array[Phrase] = null
+  @JsonManagedReference var phrases: Array[Phrase] = Array.empty
   @JsonBackReference var setList: SetList = null
 
   def addPhrase() = {
-    val newPhrase = Phrase("New Phrase")
+    val nextPatch = next(phrases, (p: Phrase) => {p.patch })
+
+    val newPhrase = Phrase(s"Phrase $nextPatch", nextPatch)
     newPhrase.kickInstruments = Array(Instrument(Array("C0")))
     newPhrase.snareInstruments = Array(Instrument(Array("C0")))
+    newPhrase.song = this
 
     phrases = phrases :+ newPhrase
 
@@ -244,24 +241,18 @@ case class Song(var name: String,
   }
 }
 
-case class Phrase(var name: String) extends Selectable {
+case class Phrase(var name: String, var patch: Int) extends Selectable {
 
-  @JsonManagedReference var kickInstruments: Array[Instrument] = null
-  @JsonManagedReference var snareInstruments: Array[Instrument] = null
+  @JsonManagedReference var kickInstruments: Array[Instrument] = Array.empty
+  @JsonManagedReference var snareInstruments: Array[Instrument] = Array.empty
   @JsonBackReference var song: Song = null
 
   def addNewKickInstrument(): Unit = {
-    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    kickInstruments = kickInstruments :+ new Instrument(Array("C0"))
+    kickInstruments = kickInstruments :+ newInstrument
   }
 
   def addNewSnareInstrument(): Unit = {
-    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    snareInstruments = snareInstruments :+ new Instrument(Array("C0"))
-  }
-
-  def addSnareInstruments(instrument: Instrument): Unit = {
-    snareInstruments = snareInstruments :+ instrument
+    snareInstruments = snareInstruments :+ newInstrument
   }
 
   def instrumentFor(name: String, handleValue: Int): Instrument = {
@@ -272,8 +263,11 @@ case class Phrase(var name: String) extends Selectable {
     }
   }
 
-  def setName(name: String) = {
-    this.name = name
+  private def newInstrument = {
+    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
+    val newInstrument = new Instrument(Array("C0"))
+    newInstrument.phrase = this
+    newInstrument
   }
 
   private def instrumentsByValue(instruments: Array[Instrument], value: Int) = {
@@ -321,6 +315,5 @@ case class Instrument(var notes: Array[String]) {
     triggeredOffListener.foreach { listener => listener() }
   }
 }
-
 
 

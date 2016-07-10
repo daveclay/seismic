@@ -30,22 +30,29 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
                                             instrumentUISize,
                                             backgroundColor)
 
-  val onNameChange = (name: String) => curentPhraseOpt.foreach {
-    phrase => {
-      if ( ! phrase.name.equals(name)) {
-        kickInstrumentUI.grabFocus()
-      }
-      phrase.setName(name)
-      onPhraseUpdated(phrase)
+  val onNameChange = (name: String) => curentPhraseOpt.foreach { phrase =>
+    if ( ! phrase.name.equals(name)) {
+      kickInstrumentUI.grabFocus()
     }
+    phrase.name = name
+    onPhraseUpdated(phrase)
+  }
+
+  val onPatchChange = (patch: String) => curentPhraseOpt.foreach { phrase =>
+    phrase.patch = Integer.valueOf(patch)
+    onPhraseUpdated(phrase)
   }
 
   val nameField = new LabeledTextField("Phrase", backgroundColor, 12, onNameChange)
+  val patchField = new LabeledTextField("Patch", backgroundColor, 3, onPatchChange)
+
   position(nameField).at(4, 4).in(this)
+  position(patchField).toTheRightOf(nameField).withMargin(4).in(this)
 
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
+    patchField.setText(phrase.patch.toString)
     kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
     snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
     position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
