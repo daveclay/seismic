@@ -13,7 +13,7 @@ object TestOrderableSelectionList {
 
     class RunShit {
       val onSelected = (s: String) => println(f"selected: $s")
-      val onAccept = () => println(f"accepted")
+      val onAccept = (value: String) => println(f"accepted $value")
       val onBackout = () => println(f"backout")
       val renderItem = (value: String, cellState: CellState) => {
         val label = new JLabel
@@ -36,7 +36,7 @@ object TestOrderableSelectionList {
         println("reordered")
       }
 
-      val callbacks = ListCallbacks(onSelected, onAccept, onBackout, onAddItem, onReordered)
+      val callbacks = ListCallbacks(onAccept, onBackout, onAddItem, onReordered)
       val list = new OrderableSelectionList[String](callbacks, renderItem)
       list.setItems(Array("Thing A", "Thing B", "Thing C", "D", "Bullshit"))
       list.setPreferredSize(new Dimension(320, 240))

@@ -1,5 +1,6 @@
 package com.seismic.ui.swing
 
+import java.awt.event.KeyListener
 import java.awt.{Color, Dimension}
 import javax.swing.border.CompoundBorder
 import javax.swing.{BorderFactory, JPanel}
@@ -67,6 +68,12 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
 
   override def grabFocus(): Unit = {
     nameField.grabFocus()
+  }
+
+  override def addKeyListener(keyListener: KeyListener): Unit = {
+    super.addKeyListener(keyListener)
+    nameField.addKeyListener(keyListener)
+    patchField.addKeyListener(keyListener)
   }
 
   private def onAddKickInstrumentClicked(): Unit = {

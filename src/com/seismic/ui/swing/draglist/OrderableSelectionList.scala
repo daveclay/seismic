@@ -8,19 +8,15 @@ import javax.swing.event.{ListDataEvent, ListDataListener, ListSelectionEvent, L
 import com.daveclay.swing.util.Position.position
 import com.seismic.ui.swing.{Sizing, SwingComponents}
 
-case class ListCallbacks[T](onSelected: (T) => Unit,
-                            onAccept: () => Unit,
+case class ListCallbacks[T](onAccept: (T) => Unit,
                             onBackout: () => Unit,
                             onAddItem: () => Unit,
-                            onReordered: (Seq[T]) => Unit,
-                            onSelectAfterLast: () => Unit = null,
-                            onSelectBeforeFirst: () => Unit = null)
+                            onReordered: (Seq[T]) => Unit)
 
 class OrderableSelectionList[T](callbacks: ListCallbacks[T],
                                 renderItem: (T, CellState) => Component) extends JPanel {
 
   trait SelectionItem[T] {
-    def triggerSelected(): Unit
     def triggerAccept()
     def renderCell(cellState: CellState): Component
   }
@@ -29,11 +25,8 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     def renderCell(cellState: CellState) = {
       renderItem(value, cellState)
     }
-    def triggerSelected(): Unit = {
-      callbacks.onSelected(value)
-    }
     def triggerAccept(): Unit = {
-      callbacks.onAccept()
+      callbacks.onAccept(value)
     }
   }
 
@@ -56,7 +49,7 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   }
 
   SwingComponents.addBorder(this)
-  setFocusable(true)
+  setFocusable(false)
 
   var lastSelectedOpt: Option[SelectionItem[T]] = None
   val listModel = new DefaultListModel[SelectionItem[T]]
@@ -68,13 +61,6 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   jlist.setLayoutOrientation(JList.VERTICAL)
   jlist.setCellRenderer(new SelectionListItemRenderer)
   jlist.addMouseListener(new SelectionListMouseListener)
-  jlist.addKeyListener(new SelectionListKeyAdapter)
-  jlist.addListSelectionListener((e: ListSelectionEvent) => {
-    if (jlist.getSelectedValue != null) {
-      println(f"list selection event ====> ${jlist.getSelectedValue}")
-      fireCurrentSelection(fromMouse = false)
-    }
-  })
   // TODO: configurable ui
   jlist.setVisibleRowCount(0)
 
@@ -118,6 +104,11 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     }
   }
 
+  override def addKeyListener(keyListener: KeyListener): Unit = {
+    super.addKeyListener(keyListener)
+    jlist.addKeyListener(keyListener)
+  }
+
   def setItems(values: Seq[T]): Unit = {
     listModel.removeAllElements()
     values.map { value => new ValueSelectionItem(value) }.foreach { item => listModel.addElement(item) }
@@ -141,24 +132,9 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     jlist.repaint()
   }
 
-  private def fireCurrentSelection(fromMouse: Boolean): Unit = {
+  private def fireCurrentSelection(): Unit = {
     val selectedValue = jlist.getSelectedValue
-    if (selectedValue == addButtonItem && fromMouse) {
-      selectedValue.triggerAccept()
-    } else {
-      if (!lastSelectedOpt.contains(selectedValue)) {
-        lastSelectedOpt = Option(selectedValue)
-        selectedValue.triggerSelected()
-      }
-    }
-  }
-
-  private def fireAccept(): Unit = {
-    val selectedValue = jlist.getSelectedValue
-    if (selectedValue != null) {
-      // ugh, the fuck?
-      selectedValue.triggerAccept()
-    }
+    selectedValue.triggerAccept()
   }
 
   class SelectionListItemRenderer extends ListCellRenderer[SelectionItem[T]]() {
@@ -176,7 +152,6 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     override def mousePressed(e: MouseEvent): Unit = {
       val selectedValue = jlist.getSelectedValue
       if (selectedValue == addButtonItem) {
-        val button = addButtonItem.button
         SwingComponents.buttonFocused(addButtonItem.button)
       }
     }
@@ -190,8 +165,7 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
         if (selectedValue == addButtonItem) {
           SwingComponents.buttonBlurred(addButtonItem.button)
         }
-        println(f"mouse clicked event ====> ${jlist.getSelectedValue}")
-        fireCurrentSelection(fromMouse = true)
+        fireCurrentSelection()
       }
     }
 
@@ -200,39 +174,9 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     }
   }
 
-  class SelectionListKeyAdapter extends KeyAdapter {
-
-    override def keyPressed(e: KeyEvent){
-      val code = e.getKeyCode
-      if (code == KeyEvent.VK_ENTER
-        || code == KeyEvent.VK_SPACE
-        || code == KeyEvent.VK_RIGHT
-        || code == KeyEvent.VK_KP_RIGHT) {
-        fireAccept()
-      } else if (code == KeyEvent.VK_LEFT
-        || code == KeyEvent.VK_KP_LEFT) {
-        callbacks.onBackout()
-      } else if (code == KeyEvent.VK_UP
-        || code == KeyEvent.VK_KP_UP) {
-        if (jlist.getSelectedIndex == 0) {
-          e.consume()
-          if (callbacks.onSelectBeforeFirst != null) {
-            callbacks.onSelectBeforeFirst()
-          } else {
-            jlist.setSelectedIndex(listModel.getSize - 1)
-          }
-        }
-      } else if (code == KeyEvent.VK_DOWN
-        || code == KeyEvent.VK_KP_DOWN) {
-        if (jlist.getSelectedIndex == listModel.getSize - 1) {
-          e.consume()
-          if (callbacks.onSelectAfterLast != null) {
-            callbacks.onSelectAfterLast()
-          } else {
-            jlist.setSelectedIndex(0)
-          }
-        }
-      }
+  class DisablingKeyAdapter extends KeyAdapter {
+    override def keyPressed(e: KeyEvent): Unit ={
+      e.consume()
     }
   }
 }
@@ -258,4 +202,5 @@ class NotFuckingStupidJList[T](listModel: ListModel[T]) extends JList[T](listMod
     }
   }
 }
+
 

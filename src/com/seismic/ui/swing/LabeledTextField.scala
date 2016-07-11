@@ -1,5 +1,6 @@
 package com.seismic.ui.swing
 
+import java.awt.event.KeyListener
 import java.awt.{Color, Dimension}
 import javax.swing.{JLabel, JPanel}
 
@@ -41,6 +42,10 @@ class LabeledTextField(labelText: String,
 
   override def grabFocus(): Unit = {
     inputField.grabFocus()
+  }
+
+  override def addKeyListener(keyListener: KeyListener): Unit = {
+    inputField.addKeyListener(keyListener)
   }
 
   def getTextField = inputField
