@@ -26,96 +26,7 @@ class Seismic(midiIO: MIDIIO) {
   var currentSongOpt: Option[Song] = None
   var currentPhraseOpt: Option[Phrase] = None
 
-  def openSetList(file: File) = {
-    val setList = SetListSerializer.read(file)
-    setListOpt = Option(setList)
-    currentSongOpt = Option(setList.songs.head)
-    currentPhraseOpt = Option(setList.songs.head.phrases.head)
-    setList
-  }
-
-  def save(): Unit = {
-    setListOpt.foreach { setlist => setlist.write() }
-  }
-
-  def setCurrentSong(song: Song): Unit = {
-    currentSongOpt = Option(song)
-  }
-
-  def setCurrentPhrase(phrase: Phrase): Unit = {
-    currentPhraseOpt = Option(phrase)
-  }
-
-  def selectNextPhrase() = {
-    indexOfCurrentPhrase().flatMap { index => selectPhraseAt(index + 1) }
-  }
-
-  def selectPreviousPhrase() = {
-    indexOfCurrentPhrase().flatMap { index => selectPhraseAt(index - 1) }
-  }
-
-  private def selectPhraseAt(index: Int): Option[Phrase] = {
-    currentSongOpt.flatMap { song =>
-      if (song.phrases.length == index) {
-        selectFirstPhraseInNextSong()
-      } else if (index < 0) {
-        selectLastPhraseFromPreviousSong()
-      } else {
-        val newPhrase = song.phrases(wrapIndex(index, song.phrases))
-        setCurrentPhrase(newPhrase)
-        Option(newPhrase)
-      }
-    }.tap { phrase =>
-      if ( ! currentSongOpt.contains(phrase.song)) {
-        setCurrentSong(phrase.song)
-      }
-      setCurrentPhrase(phrase)
-    }
-  }
-
-  private def selectLastPhraseFromPreviousSong(): Option[Phrase] = {
-    selectPreviousSong().flatMap { song => Option(song.phrases.last) }
-  }
-
-  private def selectFirstPhraseInNextSong(): Option[Phrase] = {
-    selectNextSong().flatMap { song => Option(song.phrases.head) }
-  }
-
-  private def indexOfCurrentSong() = {
-    withCurrentSetListAndSong { (setList, song) => setList.songs.indexOf(song) }
-  }
-
-  private def indexOfCurrentPhrase() = {
-    withCurrentSongAndPhrase { (song, phrase) => song.phrases.indexOf(phrase) }
-  }
-
-  private def withCurrentSongAndPhrase[T](f: (Song, Phrase) => T) = {
-    currentSongOpt.flatMap { song =>
-      currentPhraseOpt.flatMap { phrase => Option(f(song, phrase)) }
-    }
-  }
-
-  private def withCurrentSetListAndSong[T](f: (SetList, Song) => T) = {
-    setListOpt.flatMap { setList =>
-      currentSongOpt.flatMap { song => Option(f(setList, song)) }
-    }
-  }
-
-  def selectPreviousSong(): Option[Song] = {
-    indexOfCurrentSong().flatMap { index => selectSongAt(index - 1) }
-  }
-
-  def selectNextSong() = {
-    indexOfCurrentSong().flatMap { index => selectSongAt(index + 1) }
-  }
-
-  private def selectSongAt(index: Int): Option[Song] = {
-    withCurrentSetListAndSong { (setList, song) =>
-      val newCurrentSong = setList.songs(wrapIndex(index, setList.songs))
-      setCurrentSong(newCurrentSong)
-      newCurrentSong
-    }
-  }
+  var onPhraseChangeHandlerOpt: Option[(Phrase) => Unit] = None
 
   def trigger(trigger: TriggerOnMessage): Unit = {
     withCurrentPhraseInSong { (phrase, song) =>
@@ -141,6 +52,118 @@ class Seismic(midiIO: MIDIIO) {
     }
   }
 
+  def patch(patch: Int): Unit = {
+    currentSongOpt.foreach { song =>
+      song.phrases.find { phrase =>
+        phrase.patch == patch
+      } match {
+        case Some(phrase) => setCurrentPhrase(phrase)
+        case None => System.out.println(s"No phrase in $currentSongOpt with patch $patch")
+      }
+    }
+  }
+
+  def selectNextPhrase(): Unit = {
+    indexOfCurrentPhrase().flatMap { index => selectPhraseAt(index + 1) }
+  }
+
+  def selectPreviousPhrase(): Unit = {
+    indexOfCurrentPhrase().flatMap { index => selectPhraseAt(index - 1) }
+  }
+
+  def newSetList = {
+    val setList = SetList(name = "New Set List")
+    setList.addSong()
+
+    this.setListOpt = Option(setList)
+    this.setCurrentSong(setList.songs.head)
+
+    setList
+  }
+
+  def openSetList(file: File) = {
+    val setList = SetListSerializer.read(file)
+    setListOpt = Option(setList)
+    currentSongOpt = Option(setList.songs.head)
+    currentPhraseOpt = Option(setList.songs.head.phrases.head)
+    setList
+  }
+
+  def save(): Unit = {
+    setListOpt.foreach { setlist => setlist.write() }
+  }
+
+  def setCurrentSong(song: Song): Unit = {
+    currentSongOpt = Option(song)
+    setCurrentPhrase(song.phrases.head)
+  }
+
+  def setCurrentPhrase(phrase: Phrase): Unit = {
+    currentPhraseOpt = Option(phrase)
+    onPhraseChangeHandlerOpt.foreach { handler => handler(phrase) }
+  }
+
+  def onPhraseChange(handler: (Phrase) => Unit): Unit = {
+    onPhraseChangeHandlerOpt = Option(handler)
+  }
+
+  private def getPreviousSong = {
+    indexOfCurrentSong().flatMap { index => getSongAt(index - 1) }
+  }
+
+  private def getNextSong = {
+    indexOfCurrentSong().flatMap { index => getSongAt(index + 1) }
+  }
+
+  private def selectPhraseAt(index: Int): Option[Phrase] = {
+    currentSongOpt.flatMap { song =>
+      if (song.phrases.length == index) {
+        getFirstPhraseInNextSong
+      } else if (index < 0) {
+        getLastPhraseFromPreviousSong
+      } else {
+        Option(song.phrases(wrapIndex(index, song.phrases)))
+      }
+    }.tap { phrase =>
+      currentSongOpt = Option(phrase.song)
+      setCurrentPhrase(phrase)
+    }
+  }
+
+  private def getLastPhraseFromPreviousSong: Option[Phrase] = {
+    getPreviousSong.flatMap { song => Option(song.phrases.last) }
+  }
+
+  private def getFirstPhraseInNextSong: Option[Phrase] = {
+    getNextSong.flatMap { song => Option(song.phrases.head) }
+  }
+
+  private def indexOfCurrentSong() = {
+    withCurrentSetListAndSong { (setList, song) => setList.songs.indexOf(song) }
+  }
+
+  private def indexOfCurrentPhrase() = {
+    withCurrentSongAndPhrase { (song, phrase) => song.phrases.indexOf(phrase) }
+  }
+
+  private def withCurrentSongAndPhrase[T](f: (Song, Phrase) => T) = {
+    currentSongOpt.flatMap { song =>
+      currentPhraseOpt.flatMap { phrase => Option(f(song, phrase)) }
+    }
+  }
+
+  private def withCurrentSetListAndSong[T](f: (SetList, Song) => T) = {
+    setListOpt.flatMap { setList =>
+      currentSongOpt.flatMap { song => Option(f(setList, song)) }
+    }
+  }
+
+  private def getSongAt(index: Int): Option[Song] = {
+    withCurrentSetListAndSong { (setList, song) =>
+      setList.songs(wrapIndex(index, setList.songs))
+    }
+  }
+
   private def withCurrentPhraseInSong(f: (Phrase, Song) => Unit): Unit = {
     for {
       song <- currentSongOpt
@@ -148,16 +171,6 @@ class Seismic(midiIO: MIDIIO) {
     } yield {
       f(phrase, song)
     }
-  }
-
-
-  def newSetList = {
-    val setList = SetList(name = "New Set List")
-    setList.addSong()
-
-    this.setListOpt = Option(setList)
-
-    setList
   }
 }
 

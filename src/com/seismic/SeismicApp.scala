@@ -6,7 +6,7 @@ import java.util.concurrent.locks.LockSupport
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
 import com.seismic.serial.SerialMonitor
-import com.seismic.ui.swing.{SeismicUI, SeismicUIFactory}
+import com.seismic.ui.swing.{SeismicSerialCallbacks, SeismicUI, SeismicUIFactory}
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
 object SeismicApp {
@@ -22,28 +22,45 @@ object SeismicApp {
       message match {
         case triggerOn: TriggerOnMessage => seismic.trigger(triggerOn)
         case TriggerOffMessage(name) => seismic.off(name)
+        case patchMessage: PatchMessage => seismic.patch(patchMessage.patch)
+        case nextPhrase: NextPhraseMessage => seismic.selectNextPhrase()
+        case previousPhrase: PreviousPhraseMessage => seismic.selectPreviousPhrase()
+        case _ => System.out.println(s"Ignoring unknown message $message")
       }
     }
 
     invokeLater { () =>
-      val seismicUI = seismicUIFactory.build(seismic)
-    }
-
-    val uiMessageHandler = (message: Message) => {
-      seismicUIFactory.handleMessage(message)
-    }
-
-    val handlers = Array(seismicMidiHandler, uiMessageHandler)
-
-    serialMonitor.setHandler { (value: String) =>
-      try {
-        val message = TriggerMessageParser.from(value)
-        handlers.foreach { (handler) => handler(message) }
-      } catch {
-        case iae: IllegalArgumentException => iae.printStackTrace()
+      val nextPhrase = () => {
+        serialMonitor.fireSerialMessage("PHRASE,NEXT")
       }
-    }
+      val prevPhrase = () => {
+        serialMonitor.fireSerialMessage("PHRASE,PREV")
+      }
+      val patch = (patch: Int) => {
+        serialMonitor.fireSerialMessage(s"PATCH,$patch")
+      }
 
-    serialMonitor.start("mock")
+      val callbacks = SeismicSerialCallbacks(prevPhrase, nextPhrase, patch)
+
+      // TODO: fuck the factory, just build the goddamned UI and don't do shit until it's (Graphics2D) loaded.
+      val seismicUI = seismicUIFactory.build(seismic, callbacks)
+
+      val uiMessageHandler = (message: Message) => {
+        seismicUI.handleMessage(message)
+      }
+
+      val handlers = Array(seismicMidiHandler, uiMessageHandler)
+
+      serialMonitor.setHandler { (value: String) =>
+        try {
+          val message = TriggerMessageParser.from(value)
+          handlers.foreach { (handler) => handler(message) }
+        } catch {
+          case iae: IllegalArgumentException => iae.printStackTrace()
+        }
+      }
+
+      serialMonitor.start("mock")
+    }
   }
 }

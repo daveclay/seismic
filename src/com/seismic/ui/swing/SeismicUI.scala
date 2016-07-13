@@ -14,16 +14,20 @@ import com.seismic.messages._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 import com.seismic.ui.swing.draglist.{CellState, ListCallbacks, OrderableSelectionList}
 
+case class SeismicSerialCallbacks(prevPhrase: () => Unit,
+                                  nextPhrase: () => Unit,
+                                  patch: (Int) => Unit)
+
 class SeismicUIFactory {
   var seismicUIOpt: Option[SeismicUI] = None
 
-  def build(seismic: Seismic) = {
+  def build(seismic: Seismic, callbacks: SeismicSerialCallbacks) = {
     val frame = new JFrame("Seismic")
 
     System.setProperty("apple.laf.useScreenMenuBar", "true")
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
 
-    val seismicUI = new SeismicUI(seismic, frame, frame.getGraphics)
+    val seismicUI = new SeismicUI(seismic, callbacks, frame, frame.getGraphics)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
     frame.setVisible(true)
@@ -45,6 +49,7 @@ class SeismicUIFactory {
 }
 
 class SeismicUI(seismic: Seismic,
+                callbacks: SeismicSerialCallbacks,
                 frame: JFrame,
                 graphics: Graphics) {
 
@@ -59,25 +64,14 @@ class SeismicUI(seismic: Seismic,
   val titleFont = new Font("Arial", Font.PLAIN, 23)
   val monoFont = new Font("PT Mono", Font.PLAIN, 11)
   val title = SwingComponents.label("SEISMIC")
-
-  mainPanel.setBackground(backgroundColor)
-
-  val kickMonitor = new Meter("KICK", monoFont, new Dimension(300, 30))
-  val snareMonitor = new Meter("SNARE", monoFont, new Dimension(300, 30))
-  val triggerMonitors = Map(
-    "KICK" -> kickMonitor,
-    "SNARE" -> snareMonitor)
+  val setlistUI = new SetlistUI(seismic,
+                                 callbacks,
+                                 new Dimension(1020, 600),
+                                 backgroundColor,
+                                 componentBGColor)
 
   val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80))
   handleMeter.setBackground(backgroundColor)
-
-  val setlistUI = new SetlistUI(seismic, new Dimension(1020, 600), backgroundColor, componentBGColor)
-
-  setPreferredSize(frame, 1024, 800)
-  setlistUI.setBackground(backgroundColor)
-
-  title.setFont(titleFont)
-  title.setForeground(new Color(200, 200, 210))
 
   val onFileSelected = (file: File) => setlistUI.setSetList(seismic.openSetList(file))
   val fileChooser = new JSONFileChooser(frame, onFileSelected)
@@ -89,6 +83,19 @@ class SeismicUI(seismic: Seismic,
   val menuBar = new JMenuBar
   val fileMenu = new SMenu("File")
   menuBar.add(fileMenu)
+
+  val kickMonitor = new Meter("KICK", monoFont, new Dimension(300, 30))
+  val snareMonitor = new Meter("SNARE", monoFont, new Dimension(300, 30))
+  val triggerMonitors = Map(
+    "KICK" -> kickMonitor,
+    "SNARE" -> snareMonitor)
+
+  setPreferredSize(frame, 1024, 800)
+  setlistUI.setBackground(backgroundColor)
+  mainPanel.setBackground(backgroundColor)
+
+  title.setFont(titleFont)
+  title.setForeground(new Color(200, 200, 210))
 
   fileMenu.addItem("New Set List", acceleratorMnemonicKey = KeyEvent.VK_N, newSetList)
   fileMenu.addItem("Open", acceleratorMnemonicKey = KeyEvent.VK_O, openSetList)
@@ -103,12 +110,13 @@ class SeismicUI(seismic: Seismic,
   position(setlistUI).below(kickMonitor).withMargin(60).in(mainPanel)
 
   def handleMessage(message: Message): Unit = {
+    // TODO: shouldn't this just listen to Seismic, not for raw messages?
     invokeLater { () =>
       // System.out.println(Thread.currentThread().getName + " with message " + message)
       message match {
         case triggerOn: TriggerOnMessage => handleTriggerOn(triggerOn)
         case triggerOff: TriggerOffMessage => handleTriggerOff(triggerOff)
-        case _ => System.out.println(f"Unknown message: $message")
+        case _ =>
       }
     }
   }
@@ -130,205 +138,4 @@ class SeismicUI(seismic: Seismic,
       case None =>
     }
   }
-}
-
-class PhraseNavigationKeyListener(onUp: () => Unit,
-                                  onDown: () => Unit) extends KeyAdapter {
-  override def keyPressed(e: KeyEvent): Unit = {
-    val code = e.getKeyCode
-    if (code == KeyEvent.VK_UP || code == KeyEvent.VK_KP_UP) {
-      onUp()
-      e.consume()
-    } else if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_KP_DOWN) {
-      onDown()
-      e.consume()
-    }
-  }
-}
-
-class SetlistUI(seismic: Seismic,
-                size: Dimension,
-                backgroundColor: Color,
-                componentBGColor: Color) extends JPanel {
-
-  setPreferredSize(size)
-
-  // TODO: the arrow keys should mimic a serial event coming in, which should tell seismic to switch phrases, and the UI should respond via callback.
-  val phraseNavigationKeyListener = new PhraseNavigationKeyListener(selectPreviousPhrase,
-                                                                     selectNextPhrase)
-  val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
-
-  val songCallbacks = ListCallbacks(acceptSong,
-                                    songBackout,
-                                    addSong,
-                                    songsReordered)
-  val songSelect = new OrderableSelectionList[Song](songCallbacks, Selector.renderSongItem)
-  songSelect.setPreferredSize(new Dimension(250,400))
-  songSelect.setBackground(componentBGColor)
-  songSelect.addKeyListener(phraseNavigationKeyListener)
-
-  val phraseCallbacks = new ListCallbacks(acceptPhrase,
-                                          phraseBackout,
-                                          addPhrase,
-                                          phrasesReordered)
-  val phraseSelect = new OrderableSelectionList[Phrase](phraseCallbacks, Selector.renderPhraseItem)
-  phraseSelect.setPreferredSize(new Dimension(250,400))
-  phraseSelect.setBackground(componentBGColor)
-  phraseSelect.addKeyListener(phraseNavigationKeyListener)
-
-  val selector = new Selector(songSelect, phraseSelect)
-  selector.addKeyListener(phraseNavigationKeyListener)
-  selector.setOpaque(false)
-
-  val songEditor = new SongEditor(onSongUpdated, componentBGColor)
-  val phraseEditor = new PhraseEditor(save, onPhraseUpdated, componentBGColor)
-
-  val editor = new Editor(songEditor, phraseEditor)
-  editor.setOpaque(false)
-
-  position(nameField).atOrigin().in(this)
-  position(selector).below(nameField).withMargin(4).in(this)
-  position(editor).toTheRightOf(selector).withMargin(4).in(this)
-
-  def save(): Unit = {
-    seismic.save()
-  }
-
-  def onSetListNameChange(name: String): Unit = {
-    seismic.setListOpt.foreach {
-      setList => {
-        setList.setName(name)
-      }
-    }
-  }
-
-  def selectPreviousSong(): Unit = {
-    seismic.selectPreviousSong().foreach { song =>
-      songWasSelected(song)
-    }
-  }
-
-  def selectNextSong(): Unit = {
-    seismic.selectNextSong().foreach { song =>
-      songWasSelected(song)
-    }
-  }
-
-  def selectPreviousPhrase(): Unit = {
-    seismic.selectPreviousPhrase().foreach { phrase =>
-      songWasSelected(phrase.song)
-      phraseWasSelected(phrase)
-    }
-  }
-
-  def selectNextPhrase(): Unit = {
-    seismic.selectNextPhrase().foreach { phrase =>
-      songWasSelected(phrase.song)
-      phraseWasSelected(phrase)
-    }
-  }
-
-  def acceptSong(song: Song): Unit = {
-    songWasSelected(song)
-  }
-
-  def addSong(): Unit = {
-    seismic.setListOpt.foreach { setList =>
-      val song = setList.addSong()
-      seismic.setCurrentSong(song)
-      save()
-      songSelect.addItem(song)
-      phraseSelect.grabFocus()
-    }
-  }
-
-  def songBackout(): Unit = {
-    //TODO?
-  }
-
-  def onSongUpdated(song: Song): Unit = {
-    save()
-    songSelect.itemWasUpdated(song)
-  }
-
-  def songsReordered(songs: Seq[Song]): Unit = {
-    seismic.setListOpt.foreach { setList =>
-      setList.updateSongs(songs)
-      seismic.save()
-    }
-  }
-
-  def addPhrase(): Unit = {
-    seismic.currentSongOpt.foreach { song =>
-      val phrase = song.addPhrase()
-      seismic.setCurrentPhrase(phrase)
-      save()
-      phraseSelect.addItem(phrase)
-      phraseWasSelected(phrase)
-      phraseEditor.grabFocus()
-    }
-  }
-
-  def onPhraseUpdated(phrase: Phrase): Unit = {
-    save()
-    phraseSelect.itemWasUpdated(phrase)
-  }
-
-  def acceptPhrase(phrase: Phrase): Unit = {
-    seismic.setCurrentPhrase(phrase)
-    phraseWasSelected(phrase)
-    phraseEditor.grabFocus()
-  }
-
-  def phraseBackout(): Unit = {
-    songSelect.grabFocus()
-  }
-
-  def phrasesReordered(phrases: Seq[Phrase]): Unit = {
-    println(s"phrases reordered: $phrases")
-    seismic.currentSongOpt.foreach { song =>
-      song.updatePhrases(phrases)
-      seismic.save()
-    }
-  }
-
-  private def setCurrentPhrase(phrase: Phrase): Unit = {
-    seismic.setCurrentPhrase(phrase)
-    phraseSelect.setCurrentSelectedItem(phrase)
-    phraseEditor.setPhrase(phrase)
-  }
-
-  private def songWasSelected(song: Song): Unit = {
-    println(s"song was selected ${song.name}")
-    val phrases = song.phrases
-    val phrase = phrases.head
-
-    songSelect.setCurrentSelectedItem(song)
-    songEditor.setSong(song)
-    phraseSelect.setItems(phrases)
-    phraseWasSelected(phrase)
-  }
-
-  private def phraseWasSelected(phrase: Phrase): Unit = {
-    println(s"phrase was selected ${phrase.name} in ${phrase.song.name}")
-    phraseEditor.setPhrase(phrase)
-    phraseSelect.setCurrentSelectedItem(phrase)
-  }
-
-  def setSetList(setList: SetList): Unit = {
-    nameField.setText(setList.name)
-    songSelect.setItems(setList.songs)
-    val song = setList.songs.head
-    seismic.setCurrentSong(song)
-    songWasSelected(song)
-    setCurrentPhrase(song.phrases.head)
-  }
-}
-
-class Editor(songEditor: SongEditor,
-             phraseEditor: PhraseEditor) extends JPanel {
-  setPreferredSize(new Dimension(Sizing.fitWidth(phraseEditor), 600))
-
-  position(songEditor).atOrigin().in(this)
-  position(phraseEditor).below(songEditor).withMargin(4).in(this)
 }

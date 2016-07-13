@@ -36,8 +36,8 @@ object TriggerMessageParser {
     */
   private def parsePhrase(dir: String) = {
     dir match {
-      case "PREV" => PhrasePreviousMessage()
-      case "NEXT" => PhraseNextMessage()
+      case "PREV" => PreviousPhraseMessage()
+      case "NEXT" => NextPhraseMessage()
       case _ => throw new IllegalArgumentException(s"Unknown phrase message $dir")
     }
   }

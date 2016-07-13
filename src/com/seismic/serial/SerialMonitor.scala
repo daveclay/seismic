@@ -2,8 +2,6 @@ package com.seismic.serial
 
 import java.util.concurrent._
 
-import com.seismic.messages.Message
-
 import scala.concurrent.{ExecutionContext, Future}
 import com.seismic.utils.RandomHelper._
 
@@ -14,6 +12,10 @@ class SerialMonitor() {
 
   def setHandler(handler: (String) => Unit): Unit = {
     handlerOpt = Option(handler)
+  }
+
+  def fireSerialMessage(message: String): Unit = {
+    handleMessage(message)
   }
 
   def start(port: String): Unit = {
@@ -92,7 +94,8 @@ class MockSerialIO extends SerialIO {
     io.readStringUntil(byte)
   }
 
-  def trigger(message: Message): Unit = {
+  def trigger(message: String): Unit = {
+    io.trigger(message)
   }
 
   override def open(serialListener: SerialListener): Unit = {

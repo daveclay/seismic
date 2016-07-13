@@ -8,7 +8,7 @@ import javax.swing.event.{ListDataEvent, ListDataListener, ListSelectionEvent, L
 import com.daveclay.swing.util.Position.position
 import com.seismic.ui.swing.{Sizing, SwingComponents}
 
-case class ListCallbacks[T](onAccept: (T) => Unit,
+case class ListCallbacks[T](onClick: (T) => Unit,
                             onBackout: () => Unit,
                             onAddItem: () => Unit,
                             onReordered: (Seq[T]) => Unit)
@@ -16,8 +16,8 @@ case class ListCallbacks[T](onAccept: (T) => Unit,
 class OrderableSelectionList[T](callbacks: ListCallbacks[T],
                                 renderItem: (T, CellState) => Component) extends JPanel {
 
-  trait SelectionItem[T] {
-    def triggerAccept()
+  trait SelectionItem[E] {
+    def triggerClicked()
     def renderCell(cellState: CellState): Component
   }
 
@@ -25,8 +25,8 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     def renderCell(cellState: CellState) = {
       renderItem(value, cellState)
     }
-    def triggerAccept(): Unit = {
-      callbacks.onAccept(value)
+    def triggerClicked(): Unit = {
+      callbacks.onClick(value)
     }
   }
 
@@ -40,10 +40,8 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
       }
       button
     }
-    def triggerSelected(): Unit = {
-      // TODO: goddamnit, this happens from navigation OR click. fucking swing.
-    }
-    def triggerAccept(): Unit = {
+    def triggerSelected(): Unit = {}
+    def triggerClicked(): Unit = {
       callbacks.onAddItem()
     }
   }
@@ -132,11 +130,6 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
     jlist.repaint()
   }
 
-  private def fireCurrentSelection(): Unit = {
-    val selectedValue = jlist.getSelectedValue
-    selectedValue.triggerAccept()
-  }
-
   class SelectionListItemRenderer extends ListCellRenderer[SelectionItem[T]]() {
     override def getListCellRendererComponent(list: JList[_ <: SelectionItem[T]],
                                               selectionItem: SelectionItem[T],
@@ -165,7 +158,7 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
         if (selectedValue == addButtonItem) {
           SwingComponents.buttonBlurred(addButtonItem.button)
         }
-        fireCurrentSelection()
+        selectedValue.triggerClicked()
       }
     }
 
