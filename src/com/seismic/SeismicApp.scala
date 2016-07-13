@@ -46,7 +46,8 @@ object SeismicApp {
       val seismicUI = seismicUIFactory.build(seismic, callbacks)
 
       val uiMessageHandler = (message: Message) => {
-        seismicUI.handleMessage(message)
+        // TODO: seismicUI.getMessageHandlers()
+        seismicUI.triggerMonitorUI.handleMessage(message)
       }
 
       val handlers = Array(seismicMidiHandler, uiMessageHandler)

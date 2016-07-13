@@ -45,7 +45,7 @@ class Meter(title: String,
   label.setPreferredSize(new Dimension(140, 21))
 
   position(linearIndicator).at(0, 0).in(this)
-  position(label).toTheRightOf(linearIndicator).in(this)
+  position(label).toTheRightOf(linearIndicator).withMargin(4).in(this)
 
   addMouseListener(new MouseListener() {
     override def mouseExited(e: MouseEvent): Unit = {}

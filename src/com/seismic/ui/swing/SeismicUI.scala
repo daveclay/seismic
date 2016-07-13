@@ -36,16 +36,6 @@ class SeismicUIFactory {
 
     seismicUI
   }
-
-  def handleMessage(message: Message): Unit = {
-    seismicUIOpt match {
-      case Some(seismicUI) =>
-        invokeLater { () =>
-          seismicUI.handleMessage(message)
-        }
-      case None => System.out.println("UI Not loaded yet...")
-    }
-  }
 }
 
 class SeismicUI(seismic: Seismic,
@@ -64,14 +54,14 @@ class SeismicUI(seismic: Seismic,
   val titleFont = new Font("Arial", Font.PLAIN, 23)
   val monoFont = new Font("PT Mono", Font.PLAIN, 11)
   val title = SwingComponents.label("SEISMIC")
+  val triggerMonitorUI = new TriggerMonitorUI(monoFont)
+  triggerMonitorUI.setBackground(componentBGColor)
+
   val setlistUI = new SetlistUI(seismic,
                                  callbacks,
                                  new Dimension(1020, 600),
                                  backgroundColor,
                                  componentBGColor)
-
-  val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80))
-  handleMeter.setBackground(backgroundColor)
 
   val onFileSelected = (file: File) => setlistUI.setSetList(seismic.openSetList(file))
   val fileChooser = new JSONFileChooser(frame, onFileSelected)
@@ -83,12 +73,6 @@ class SeismicUI(seismic: Seismic,
   val menuBar = new JMenuBar
   val fileMenu = new SMenu("File")
   menuBar.add(fileMenu)
-
-  val kickMonitor = new Meter("KICK", monoFont, new Dimension(300, 30))
-  val snareMonitor = new Meter("SNARE", monoFont, new Dimension(300, 30))
-  val triggerMonitors = Map(
-    "KICK" -> kickMonitor,
-    "SNARE" -> snareMonitor)
 
   setPreferredSize(frame, 1024, 800)
   setlistUI.setBackground(backgroundColor)
@@ -103,16 +87,39 @@ class SeismicUI(seismic: Seismic,
 
   frame.setJMenuBar( menuBar )
 
+  SwingComponents.addBorder(triggerMonitorUI)
+
   position(title).at(4, 4).in(mainPanel)
-  position(kickMonitor).below(title).withMargin(5).in(mainPanel)
-  position(snareMonitor).toTheRightOf(kickMonitor).withMargin(5).in(mainPanel)
-  position(handleMeter).toTheRightOf(snareMonitor).withMargin(4).in(mainPanel)
-  position(setlistUI).below(kickMonitor).withMargin(60).in(mainPanel)
+  position(triggerMonitorUI).below(title).in(mainPanel)
+  position(setlistUI).below(triggerMonitorUI).withMargin(8).in(mainPanel)
+}
+
+class TriggerMonitorUI(monoFont: Font) extends JPanel {
+  setFocusable(false)
+  setPreferredSize(new Dimension(908, 88))
+
+  val kickMonitor = new Meter("KICK", monoFont, new Dimension(400, 80))
+  val snareMonitor = new Meter("SNARE", monoFont, new Dimension(400, 80))
+  val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80))
+
+  val triggerMonitors = Map(
+                             "KICK" -> kickMonitor,
+                             "SNARE" -> snareMonitor)
+
+  position(kickMonitor).at(4, 4).in(this)
+  position(snareMonitor).toTheRightOf(kickMonitor).withMargin(4).in(this)
+  position(handleMeter).toTheRightOf(snareMonitor).withMargin(10).in(this)
+
+  override def setBackground(color: Color): Unit = {
+    super.setBackground(color)
+    if (handleMeter != null) {
+      handleMeter.setBackground(color)
+    }
+  }
 
   def handleMessage(message: Message): Unit = {
     // TODO: shouldn't this just listen to Seismic, not for raw messages?
     invokeLater { () =>
-      // System.out.println(Thread.currentThread().getName + " with message " + message)
       message match {
         case triggerOn: TriggerOnMessage => handleTriggerOn(triggerOn)
         case triggerOff: TriggerOffMessage => handleTriggerOff(triggerOff)
