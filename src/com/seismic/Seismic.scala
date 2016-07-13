@@ -278,6 +278,10 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 }
 
 
+/**
+  * TODO: Toggle ability to send midi note off from a trigger on message  instead of the original trigger off message.
+  * @param notes
+  */
 case class Instrument(var notes: Array[String]) {
 
   @JsonBackReference var phrase: Phrase = null

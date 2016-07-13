@@ -10,6 +10,7 @@ import com.seismic.ui.swing.{SeismicUI, SeismicUIFactory}
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
 object SeismicApp {
+
   def main(args: Array[String]): Unit = {
     System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Seismic")
     val serialMonitor = new SerialMonitor
@@ -32,12 +33,14 @@ object SeismicApp {
       seismicUIFactory.handleMessage(message)
     }
 
-    serialMonitor.setHandler { (message: String) =>
-      TriggerMessageParser.from(message) match {
-        case Some(message: Message) =>
-          Array(seismicMidiHandler, uiMessageHandler).foreach { (handler) => handler(message) }
+    val handlers = Array(seismicMidiHandler, uiMessageHandler)
 
-        case _ => System.out.println("Unknown message: \"" + message + "\"")
+    serialMonitor.setHandler { (value: String) =>
+      try {
+        val message = TriggerMessageParser.from(value)
+        handlers.foreach { (handler) => handler(message) }
+      } catch {
+        case iae: IllegalArgumentException => iae.printStackTrace()
       }
     }
 

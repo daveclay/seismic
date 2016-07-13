@@ -153,6 +153,7 @@ class SetlistUI(seismic: Seismic,
 
   setPreferredSize(size)
 
+  // TODO: the arrow keys should mimic a serial event coming in, which should tell seismic to switch phrases, and the UI should respond via callback.
   val phraseNavigationKeyListener = new PhraseNavigationKeyListener(selectPreviousPhrase,
                                                                      selectNextPhrase)
   val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
