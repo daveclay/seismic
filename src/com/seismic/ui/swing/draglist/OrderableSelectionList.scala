@@ -77,6 +77,7 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
 
   val scrollPane = new JScrollPane(jlist)
   scrollPane.setOpaque(false)
+  scrollPane.setBorder(BorderFactory.createEmptyBorder())
 
   override def setPreferredSize(size: Dimension): Unit = {
     import Sizing._
