@@ -24,6 +24,10 @@ class SetlistUI(seismic: Seismic,
                                                                      callbacks.nextPhrase,
                                                                      callbacks.patch)
 
+  val namePanel = new JPanel
+  namePanel.setPreferredSize(new Dimension(908, 30))
+  namePanel.setBackground(componentBGColor)
+  SwingComponents.addBorder(namePanel)
   val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
 
   val songCallbacks = ListCallbacks(songClicked,
@@ -54,8 +58,9 @@ class SetlistUI(seismic: Seismic,
   val editor = new Editor(songEditor, phraseEditor)
   editor.setOpaque(false)
 
-  position(nameField).atOrigin().in(this)
-  position(selector).below(nameField).withMargin(4).in(this)
+  position(nameField).at(4, 4).in(namePanel)
+  position(namePanel).at(0, 4).in(this)
+  position(selector).below(namePanel).withMargin(4).in(this)
   position(editor).toTheRightOf(selector).withMargin(4).in(this)
 
   def save(): Unit = {
