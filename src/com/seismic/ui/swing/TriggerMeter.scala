@@ -8,9 +8,9 @@ import javax.swing.{JLabel, JPanel}
 import com.daveclay.swing.util.Position._
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
-class Meter(title: String,
-            font: Font,
-            size: Dimension) extends JPanel {
+class TriggerMeter(title: String,
+                   font: Font,
+                   size: Dimension) extends JPanel {
 
   var decayCounter = 30
   val decayTick = 10
