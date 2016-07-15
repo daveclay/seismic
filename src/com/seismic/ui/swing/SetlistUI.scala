@@ -160,6 +160,8 @@ class SetlistUI(seismic: Seismic,
 
     indicateSelectedSong(song)
     indicateSelectedPhrase(phrase)
+    
+    phraseSelect.grabFocus()
   }
 }
 
