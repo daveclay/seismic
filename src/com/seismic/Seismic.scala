@@ -193,15 +193,12 @@ case class SetList(var name: String) {
   @JsonManagedReference var songs: Array[Song] = Array.empty
 
   def addSong() = {
-    val newPhrase = Phrase("Phrase 1", 1)
-    newPhrase.addNewKickInstrument()
-    newPhrase.addNewSnareInstrument()
 
     val channel = next(songs, (s: Song) => { s.channel })
 
     // TODO: change song name, can't dup names.
     val newSong = Song(s"Song $channel", channel)
-    newSong.phrases = Array[Phrase](newPhrase)
+    newSong.addPhrase()
     newSong.setList = this
 
     songs = songs :+ newSong

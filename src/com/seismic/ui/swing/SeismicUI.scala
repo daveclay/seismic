@@ -62,10 +62,10 @@ class SeismicUI(seismic: Seismic,
                                  backgroundColor,
                                  componentBGColor)
 
-  val onFileSelected = (file: File) => setlistUI.setSetList(seismic.openSetList(file))
+  val onFileSelected = (file: File) => setlistUI.openSetList(seismic.openSetList(file))
   val fileChooser = new JSONFileChooser(frame, onFileSelected)
 
-  val newSetList = () => setlistUI.setSetList(seismic.newSetList)
+  val newSetList = () => setlistUI.newSetList()
   val saveSetList = () => setlistUI.save()
   val openSetList = () => fileChooser.show()
 

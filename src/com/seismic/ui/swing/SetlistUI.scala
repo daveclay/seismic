@@ -15,10 +15,10 @@ class SetlistUI(seismic: Seismic,
 
   setPreferredSize(size)
 
-  seismic.onPhraseChange((phrase: Phrase) => {
+  seismic.onPhraseChange { (phrase: Phrase) =>
     indicateSelectedSong(phrase.song)
     indicateSelectedPhrase(phrase)
-  })
+  }
 
   val phraseNavigationKeyListener = new PhraseNavigationKeyListener(callbacks.prevPhrase,
                                                                      callbacks.nextPhrase,
@@ -151,6 +151,15 @@ class SetlistUI(seismic: Seismic,
     phraseSelect.setCurrentSelectedItem(phrase)
   }
 
+  def newSetList(): Unit = {
+    setSetList(seismic.newSetList)
+  }
+
+  def openSetList(setList: SetList): Unit = {
+    setSetList(setList)
+    phraseSelect.grabFocus()
+  }
+
   def setSetList(setList: SetList): Unit = {
     val song = setList.songs.head
     val phrase = song.phrases.head
@@ -160,8 +169,6 @@ class SetlistUI(seismic: Seismic,
 
     indicateSelectedSong(song)
     indicateSelectedPhrase(phrase)
-    
-    phraseSelect.grabFocus()
   }
 }
 
