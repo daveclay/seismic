@@ -27,7 +27,7 @@ class SeismicUIFactory {
     System.setProperty("apple.laf.useScreenMenuBar", "true")
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
 
-    val seismicUI = new SeismicUI(seismic, callbacks, frame, frame.getGraphics)
+    val seismicUI = new SeismicUI(seismic, callbacks, frame)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
     frame.setVisible(true)
@@ -40,8 +40,7 @@ class SeismicUIFactory {
 
 class SeismicUI(seismic: Seismic,
                 callbacks: SeismicSerialCallbacks,
-                frame: JFrame,
-                graphics: Graphics) {
+                frame: JFrame) {
 
   val mainPanel = frame.getContentPane
   val backgroundColor = new Color(50, 50, 60)
