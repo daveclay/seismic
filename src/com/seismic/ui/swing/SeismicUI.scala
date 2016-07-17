@@ -3,14 +3,11 @@ package com.seismic.ui.swing
 import java.awt._
 import java.awt.event._
 import java.io.File
-import java.util
 import javax.swing._
 
-import com.daveclay.swing.color.ColorUtils
+import com.seismic.ui.swing.SwingComponents.{monoFont11, titleFont}
 import com.daveclay.swing.util.Position.position
-import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
-import com.sun.javafx.scene.control.skin.LabeledText
 
 case class SeismicSerialCallbacks(triggerOn: (String, Int, Int) => Unit,
                                   triggerOff: (String) => Unit,
@@ -57,10 +54,8 @@ class SeismicUI(seismic: Seismic,
   // then ask the factory to create components, the factory sets the styling
   // remove all the styling from this layout and state handling.
 
-  val titleFont = new Font("Arial", Font.PLAIN, titleSize)
-  val monoFont = new Font("PT Mono", Font.PLAIN, 11)
   val title = SwingComponents.label("SEISMIC")
-  val triggerMonitorUI = new TriggerMonitorUI(monoFont, triggerSize)
+  val triggerMonitorUI = new TriggerMonitorUI(monoFont11, triggerSize)
   triggerMonitorUI.setBackground(componentBGColor)
 
   // TODO: settings textbox that sets the value of a "t" keypress
@@ -79,10 +74,10 @@ class SeismicUI(seismic: Seismic,
   setlistUI.addKeyListener(phraseNavigationKeyListener)
   setlistUI.setOpaque(false)
 
-  val kickTriggerConfig = new ManualTriggerConfig("Kick", triggerConfigSize)
+  val kickTriggerConfig = new ManualTriggerConfig("KICK", callbacks.triggerOn, callbacks.triggerOff, triggerConfigSize)
   kickTriggerConfig.setBackground(componentBGColor)
 
-  val snareTriggerConfig = new ManualTriggerConfig("Snare", triggerConfigSize)
+  val snareTriggerConfig = new ManualTriggerConfig("SNARE", callbacks.triggerOn, callbacks.triggerOff, triggerConfigSize)
   snareTriggerConfig.setBackground(componentBGColor)
 
   val onFileSelected = (file: File) => setlistUI.openSetList(seismic.openSetList(file))
