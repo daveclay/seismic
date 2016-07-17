@@ -8,9 +8,10 @@ import com.daveclay.swing.util.Position._
 import com.seismic.{Phrase, Song}
 
 class SongEditor(onSongUpdated: (Song) => Unit,
+                 size: Dimension,
                  val backgroundColor: Color) extends JPanel with HighlightOnFocus {
 
-  setPreferredSize(new Dimension(400, 30))
+  setPreferredSize(size)
   setBackground(backgroundColor)
   SwingComponents.addBorder(this)
 
@@ -27,8 +28,8 @@ class SongEditor(onSongUpdated: (Song) => Unit,
     onSongUpdated(song)
   }
 
-  val nameField = new LabeledTextField("Song", backgroundColor, 12, onNameChange)
-  val channelField = new LabeledTextField("MIDI Channel", backgroundColor, 3, onChannelChange)
+  val nameField = new LabeledTextField("Song", 12, onNameChange)
+  val channelField = new LabeledTextField("MIDI Channel", 3, onChannelChange)
 
   highlight(this, nameField, channelField).onFocusOf(nameField.inputField, channelField.inputField)
 

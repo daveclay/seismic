@@ -8,6 +8,11 @@ package com.seismic.messages
   * Phrase Next:  "PHRASE,NEXT"
   */
 object TriggerMessageParser {
+  def nextPhrase = "PHRASE,NEXT"
+  def prevPhrase = "PHRASE,PREV"
+  def patch(patch: Int) = "PATCH,$patch"
+  def triggerOn(name: String, triggerValue: Int, handleValue: Int) = s"T,ON,$name,$triggerValue,$handleValue"
+  def triggerOff(name: String) = s"T,OFF,$name"
 
   def from(message: String): Message = {
     val values = message.trim().split(",")

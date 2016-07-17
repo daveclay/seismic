@@ -7,13 +7,16 @@ import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 import com.daveclay.swing.util.Position._
 import com.seismic.messages.{Message, TriggerOffMessage, TriggerOnMessage}
 
-class TriggerMonitorUI(monoFont: Font) extends JPanel {
+class TriggerMonitorUI(monoFont: Font, size: Dimension) extends JPanel {
+  SwingComponents.addBorder(this)
   setFocusable(false)
-  setPreferredSize(new Dimension(908, 88))
+  setPreferredSize(size)
 
-  val kickMonitor = new TriggerMeter("KICK", monoFont, new Dimension(400, 80))
-  val snareMonitor = new TriggerMeter("SNARE", monoFont, new Dimension(400, 80))
-  val handleMeter = new HandleMeter(monoFont, new Dimension(80, 80))
+  val monitorSize = new Dimension(size.width / 2 - 80, size.height - 8)
+
+  val kickMonitor = new TriggerMeter("KICK", monoFont, monitorSize)
+  val snareMonitor = new TriggerMeter("SNARE", monoFont, monitorSize)
+  val handleMeter = new HandleMeter(monoFont, new Dimension(80, size.height - 8))
 
   val triggerMonitors = Map(
                              "KICK" -> kickMonitor,

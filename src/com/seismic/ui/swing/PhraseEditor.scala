@@ -10,10 +10,11 @@ import com.seismic.Phrase
 
 class PhraseEditor(onAddInstrumentClicked: () => Unit,
                    onPhraseUpdated: (Phrase) => Unit,
+                   size: Dimension,
                    val backgroundColor: Color) extends JPanel with HighlightOnFocus {
 
   SwingComponents.addBorder(this)
-  setPreferredSize(new Dimension(400, 400))
+  setPreferredSize(size)
   setBackground(backgroundColor)
 
   var curentPhraseOpt: Option[Phrase] = None
@@ -44,8 +45,8 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     onPhraseUpdated(phrase)
   }
 
-  val nameField = new LabeledTextField("Phrase", backgroundColor, 12, onNameChange)
-  val patchField = new LabeledTextField("Patch", backgroundColor, 3, onPatchChange)
+  val nameField = new LabeledTextField("Phrase", 12, onNameChange)
+  val patchField = new LabeledTextField("Patch", 3, onPatchChange)
 
   position(nameField).at(4, 4).in(this)
   position(patchField).toTheRightOf(nameField).withMargin(4).in(this)

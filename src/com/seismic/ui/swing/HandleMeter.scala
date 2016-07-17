@@ -1,6 +1,6 @@
 package com.seismic.ui.swing
 
-import java.awt.event.{MouseEvent, MouseListener}
+import java.awt.event.{MouseAdapter, MouseEvent, MouseListener}
 import java.awt.{Color, Dimension, Font, Graphics}
 import javax.swing.{JLabel, JLayeredPane}
 
@@ -41,23 +41,18 @@ class HandleMeter(font: Font,
     repaint()
   }
 
+  def setRandomAngle(): Unit = {
+    indicator.setAngle((Math.random() * (2 * Math.PI)).toFloat)
+  }
+
   override def setBackground(color: Color): Unit = {
     indicator.setBackground(color)
     label.setBackground(color)
   }
 
-  addMouseListener(new MouseListener() {
-    override def mouseExited(e: MouseEvent): Unit = {}
-
-    override def mouseClicked(e: MouseEvent): Unit = {}
-
-    override def mouseEntered(e: MouseEvent): Unit = {}
-
+  addMouseListener(new MouseAdapter() {
     override def mousePressed(e: MouseEvent): Unit = {
-      indicator.setAngle((Math.random() * (2 * Math.PI)).toFloat)
-      repaint()
+      // TODO: calibrate! A click indicates that the last value is "centered" up/down. Remember that value, use it to calc new values via map().
     }
-
-    override def mouseReleased(e: MouseEvent): Unit = {}
   })
 }

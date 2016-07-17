@@ -64,7 +64,7 @@ class InstrumentUI(labelValue: String,
     instruments.map { instrument =>
       new InstrumentNoteUI(instrument,
                             onSongUpdated,
-                            new Dimension(size.width, 20),
+                            new Dimension(getPreferredSize.width, 20),
                             backgroundColor)
     }
   }
@@ -119,7 +119,7 @@ class InstrumentNoteUI(instrument: Instrument,
   setPreferredSize(size)
   setOpaque(false)
 
-  val nameField = new LabeledTextField("Note", backgroundColor, 10, onValueChange)
+  val nameField = new LabeledTextField("Note", 10, onValueChange)
   nameField.setText(instrument.notes.mkString(", "))
 
   position(nameField).atOrigin().in(this)

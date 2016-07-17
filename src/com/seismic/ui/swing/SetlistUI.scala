@@ -1,5 +1,6 @@
 package com.seismic.ui.swing
 
+import java.awt.event.KeyListener
 import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
@@ -20,40 +21,35 @@ class SetlistUI(seismic: Seismic,
     indicateSelectedPhrase(phrase)
   }
 
-  val phraseNavigationKeyListener = new PhraseNavigationKeyListener(callbacks.prevPhrase,
-                                                                     callbacks.nextPhrase,
-                                                                     callbacks.patch)
-
   val namePanel = new JPanel
-  namePanel.setPreferredSize(new Dimension(908, 30))
+  namePanel.setPreferredSize(new Dimension(size.width - 4, 30))
   namePanel.setBackground(componentBGColor)
   SwingComponents.addBorder(namePanel)
-  val nameField = new LabeledTextField("Set List", backgroundColor, 12, onSetListNameChange)
+  val nameField = new LabeledTextField("Set List", 12, onSetListNameChange)
 
   val songCallbacks = ListCallbacks(songClicked,
                                     songBackout,
                                     addSong,
                                     songsReordered)
   val songSelect = new OrderableSelectionList[Song](songCallbacks, Selector.renderSongItem)
-  songSelect.setPreferredSize(new Dimension(250,400))
+  songSelect.setPreferredSize(new Dimension(250, size.height - 4))
   songSelect.setBackground(componentBGColor)
-  songSelect.addKeyListener(phraseNavigationKeyListener)
 
   val phraseCallbacks = new ListCallbacks(phraseClicked,
                                           phraseBackout,
                                           addPhrase,
                                           phrasesReordered)
   val phraseSelect = new OrderableSelectionList[Phrase](phraseCallbacks, Selector.renderPhraseItem)
-  phraseSelect.setPreferredSize(new Dimension(250,400))
+  phraseSelect.setPreferredSize(new Dimension(250, size.height - 4))
   phraseSelect.setBackground(componentBGColor)
-  phraseSelect.addKeyListener(phraseNavigationKeyListener)
 
   val selector = new Selector(songSelect, phraseSelect)
-  selector.addKeyListener(phraseNavigationKeyListener)
   selector.setOpaque(false)
 
-  val songEditor = new SongEditor(onSongUpdated, componentBGColor)
-  val phraseEditor = new PhraseEditor(save, onPhraseUpdated, componentBGColor)
+  private val editorWidth = size.width - songSelect.getPreferredSize.width - phraseSelect.getPreferredSize.width - 12
+
+  val songEditor = new SongEditor(onSongUpdated, new Dimension(editorWidth, 40), componentBGColor)
+  val phraseEditor = new PhraseEditor(save, onPhraseUpdated, new Dimension(editorWidth, size.height - 40), componentBGColor)
 
   val editor = new Editor(songEditor, phraseEditor)
   editor.setOpaque(false)
@@ -65,6 +61,13 @@ class SetlistUI(seismic: Seismic,
 
   def save(): Unit = {
     seismic.save()
+  }
+
+  override def addKeyListener(keyListener: KeyListener): Unit = {
+    super.addKeyListener(keyListener)
+    songSelect.addKeyListener(keyListener)
+    phraseSelect.addKeyListener(keyListener)
+    selector.addKeyListener(keyListener)
   }
 
   def onSetListNameChange(name: String): Unit = {
@@ -175,7 +178,8 @@ class SetlistUI(seismic: Seismic,
 
 class Editor(songEditor: SongEditor,
              phraseEditor: PhraseEditor) extends JPanel {
-  setPreferredSize(new Dimension(Sizing.fitWidth(phraseEditor), 600))
+
+  setPreferredSize(new Dimension(Sizing.fitWidth(songEditor), Sizing.fitHeight(songEditor, phraseEditor)))
 
   position(songEditor).atOrigin().in(this)
   position(phraseEditor).below(songEditor).withMargin(4).in(this)

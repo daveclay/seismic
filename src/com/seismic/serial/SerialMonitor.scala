@@ -131,7 +131,6 @@ class MockSerialIO extends SerialIO {
 
     /**
       * called by another thread after being notified to read serial data.
- *
       * @param byte
       * @return
       */

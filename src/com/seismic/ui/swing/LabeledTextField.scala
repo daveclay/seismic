@@ -7,7 +7,6 @@ import javax.swing.{JLabel, JPanel}
 import com.daveclay.swing.util.Position._
 
 class LabeledTextField(labelText: String,
-                       backgroundColor: Color,
                        size: Int,
                        onValueChange: String => Unit) extends JPanel {
 

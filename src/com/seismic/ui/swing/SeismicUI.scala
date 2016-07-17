@@ -10,11 +10,11 @@ import com.daveclay.swing.color.ColorUtils
 import com.daveclay.swing.util.Position.position
 import com.daveclay.swing.util.Size.setPreferredSize
 import com.seismic._
-import com.seismic.messages._
-import com.seismic.ui.swing.SwingThreadHelper.invokeLater
-import com.seismic.ui.swing.draglist.{CellState, ListCallbacks, OrderableSelectionList}
+import com.sun.javafx.scene.control.skin.LabeledText
 
-case class SeismicSerialCallbacks(prevPhrase: () => Unit,
+case class SeismicSerialCallbacks(triggerOn: (String, Int, Int) => Unit,
+                                  triggerOff: (String) => Unit,
+                                  prevPhrase: () => Unit,
                                   nextPhrase: () => Unit,
                                   patch: (Int) => Unit)
 
@@ -42,25 +42,48 @@ class SeismicUI(seismic: Seismic,
                 callbacks: SeismicSerialCallbacks,
                 frame: JFrame) {
 
+  val titleSize = 23
+  val contentSize = new Dimension(1024, 700)
+  val triggerSize = new Dimension(contentSize.width - 12, 88)
+  val triggerConfigSize = new Dimension(contentSize.width / 2 - 8, 40)
+  val setListSize = new Dimension(contentSize.width - 8, contentSize.height - 50 - titleSize - triggerSize.height - triggerConfigSize.height)
+  frame.setPreferredSize(contentSize)
+
   val mainPanel = frame.getContentPane
-  val backgroundColor = new Color(50, 50, 60)
-  val componentBGColor = new Color(70, 70, 70)
+  val backgroundColor = new Color(30, 30, 43)
+  val componentBGColor = new Color(50, 50, 50)
 
   // TODO: build a factory that knows about all this shared styling
   // then ask the factory to create components, the factory sets the styling
   // remove all the styling from this layout and state handling.
 
-  val titleFont = new Font("Arial", Font.PLAIN, 23)
+  val titleFont = new Font("Arial", Font.PLAIN, titleSize)
   val monoFont = new Font("PT Mono", Font.PLAIN, 11)
   val title = SwingComponents.label("SEISMIC")
-  val triggerMonitorUI = new TriggerMonitorUI(monoFont)
+  val triggerMonitorUI = new TriggerMonitorUI(monoFont, triggerSize)
   triggerMonitorUI.setBackground(componentBGColor)
+
+  // TODO: settings textbox that sets the value of a "t" keypress
+  val phraseNavigationKeyListener = new PhraseNavigationKeyListener(callbacks.prevPhrase,
+                                                                     callbacks.nextPhrase,
+                                                                     callbacks.patch,
+                                                                     () => {
+                                                                       println(s"pressed some letter, I think")
+                                                                     })
 
   val setlistUI = new SetlistUI(seismic,
                                  callbacks,
-                                 new Dimension(1020, 600),
+                                 setListSize,
                                  backgroundColor,
                                  componentBGColor)
+  setlistUI.addKeyListener(phraseNavigationKeyListener)
+  setlistUI.setOpaque(false)
+
+  val kickTriggerConfig = new ManualTriggerConfig("Kick", triggerConfigSize)
+  kickTriggerConfig.setBackground(componentBGColor)
+
+  val snareTriggerConfig = new ManualTriggerConfig("Snare", triggerConfigSize)
+  snareTriggerConfig.setBackground(componentBGColor)
 
   val onFileSelected = (file: File) => setlistUI.openSetList(seismic.openSetList(file))
   val fileChooser = new JSONFileChooser(frame, onFileSelected)
@@ -73,8 +96,6 @@ class SeismicUI(seismic: Seismic,
   val fileMenu = new SMenu("File")
   menuBar.add(fileMenu)
 
-  setPreferredSize(frame, 1024, 800)
-  setlistUI.setBackground(backgroundColor)
   mainPanel.setBackground(backgroundColor)
 
   title.setFont(titleFont)
@@ -90,7 +111,25 @@ class SeismicUI(seismic: Seismic,
 
   position(title).at(4, 4).in(mainPanel)
   position(triggerMonitorUI).below(title).in(mainPanel)
-  position(setlistUI).below(triggerMonitorUI).withMargin(4).in(mainPanel)
+  position(setlistUI).below(triggerMonitorUI).in(mainPanel)
+  position(kickTriggerConfig).below(setlistUI).withMargin(4).in(mainPanel)
+  position(snareTriggerConfig).toTheRightOf(kickTriggerConfig).withMargin(4).in(mainPanel)
 }
 
+class ManualTriggerConfig(triggerName: String, size: Dimension) extends JPanel {
+  SwingComponents.addBorder(this)
+  setPreferredSize(size)
+
+  val label = new JLabel(triggerName)
+  val triggerValueField = new LabeledTextField("Trigger Value", 5, onChange)
+  val handleValueField = new LabeledTextField("Handle Value", 5, onChange)
+
+  position(label).at(4, 4).in(this)
+  position(triggerValueField).toTheRightOf(label).withMargin(4).in(this)
+  position(handleValueField).toTheRightOf(triggerValueField).withMargin(4).in(this)
+
+  def onChange(value: String): Unit = {
+    println(s"ok $value")
+  }
+}
 
