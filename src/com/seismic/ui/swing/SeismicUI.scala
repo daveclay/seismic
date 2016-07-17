@@ -41,9 +41,9 @@ class SeismicUI(seismic: Seismic,
 
   val titleSize = 23
   val contentSize = new Dimension(1024, 700)
-  val triggerSize = new Dimension(contentSize.width - 12, 88)
+  val triggerMonitorSize = new Dimension(contentSize.width - 12, 88)
   val triggerConfigSize = new Dimension(contentSize.width / 2 - 8, 40)
-  val setListSize = new Dimension(contentSize.width - 8, contentSize.height - 50 - titleSize - triggerSize.height - triggerConfigSize.height)
+  val setListSize = new Dimension(contentSize.width - 8, contentSize.height - 50 - titleSize - triggerMonitorSize.height - triggerConfigSize.height)
   frame.setPreferredSize(contentSize)
 
   val mainPanel = frame.getContentPane
@@ -55,7 +55,7 @@ class SeismicUI(seismic: Seismic,
   // remove all the styling from this layout and state handling.
 
   val title = SwingComponents.label("SEISMIC")
-  val triggerMonitorUI = new TriggerMonitorUI(monoFont11, triggerSize)
+  val triggerMonitorUI = new TriggerMonitorUI(monoFont11, triggerMonitorSize)
   triggerMonitorUI.setBackground(componentBGColor)
 
   // TODO: settings textbox that sets the value of a "t" keypress

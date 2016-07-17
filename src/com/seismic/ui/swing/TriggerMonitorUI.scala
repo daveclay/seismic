@@ -12,11 +12,11 @@ class TriggerMonitorUI(monoFont: Font, size: Dimension) extends JPanel {
   setFocusable(false)
   setPreferredSize(size)
 
-  val monitorSize = new Dimension(size.width / 2 - 80, size.height - 8)
+  val monitorSize = new Dimension(size.width / 2 - 100, size.height - 8)
 
   val kickMonitor = new TriggerMeter("KICK", monoFont, monitorSize)
   val snareMonitor = new TriggerMeter("SNARE", monoFont, monitorSize)
-  val handleMeter = new HandleMeter(monoFont, new Dimension(80, size.height - 8))
+  val handleMeter = new HandleMeter(new Dimension(140, size.height - 8))
 
   val triggerMonitors = Map(
                              "KICK" -> kickMonitor,

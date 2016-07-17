@@ -8,34 +8,46 @@ import com.seismic.ui.swing.FontHelper._
 import com.daveclay.swing.util.Position._
 import com.seismic.utils.ValueMapHelper._
 
-class HandleMeter(font: Font,
-                  size: Dimension) extends JLayeredPane {
+class HandleMeter(size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
 
-  var value = 0
+  private val indicatorSize = new Dimension(size.height, size.height)
+  private val centerX = indicatorSize.getWidth / 2f
+  private val centerY = indicatorSize.getHeight / 2f
 
-  val centerX = size.getWidth / 2f
-  val centerY = size.getHeight / 2f
+  private var lastValue = 0
+  private var calibrationMinValue = 0
+  private var calibrationMaxValue = 1023
 
-  val label = new JLabel("10234")
-  label.setFont(font)
-  label.setForeground(new Color(200, 200, 200))
+  private val label = SwingComponents.label("----", SwingComponents.monoFont11)
   label.setOpaque(true)
 
-  val indicator = new MeterCircleIndicator(size)
+  private val minField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, (s: String) => println(s))
+  private val maxField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, (s: String) => println(s))
+
+  private val indicator = new MeterCircleIndicator(indicatorSize)
 
   position(indicator).at(0, 0).in(this)
   setLayer(indicator, 1)
 
-  val labelDimensions = new Dimension(36, 18)
-  val labelX = centerX.toInt - labelDimensions.getWidth / 2f
-  val labelY = centerY.toInt - labelDimensions.getHeight / 2f
+  private val labelDimensions = new Dimension(36, 18)
+  private val labelX = centerX.toInt - labelDimensions.getWidth / 2f + 2 // I don't know, nudging...
+  private val labelY = centerY.toInt - labelDimensions.getHeight / 2f + 2
 
   position(label).at(labelX.toInt, labelY.toInt).in(this)
   setLayer(label, 2)
 
+  position(minField).toTheRightOf(indicator).withMargin(4).in(this)
+  position(maxField).below(minField).withMargin(4).in(this)
+
   def setValue(value: Int): Unit = {
-    this.value = value
+    this.lastValue = value
+    // TODO: calibrate!
+    /*
+    If the lastValue sent was 512, and I click the meter, that means 512 should be 0, indicating the first sample should be triggered at 512.
+    instead of the raw value being 0 to 1023, it should be 512 to the next rotation angle.
+     */
+
     indicator.setAngle(map(value, 0, 1023, 0, (2f * Math.PI).toFloat))
     label.setText(f"$value%4s")
     repaint()
@@ -52,7 +64,6 @@ class HandleMeter(font: Font,
 
   addMouseListener(new MouseAdapter() {
     override def mousePressed(e: MouseEvent): Unit = {
-      // TODO: calibrate! A click indicates that the last value is "centered" up/down. Remember that value, use it to calc new values via map().
     }
   })
 }

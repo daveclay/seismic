@@ -6,9 +6,21 @@ import javax.swing.{JLabel, JPanel}
 
 import com.daveclay.swing.util.Position._
 
+object LabeledTextField {
+  trait Orientation
+  object Vertical extends Orientation
+  object Horizontal extends Orientation
+}
+
 class LabeledTextField(labelText: String,
                        size: Int,
+                       orientation: LabeledTextField.Orientation,
+                       margin: Int,
                        onValueChange: String => Unit) extends JPanel {
+
+  def this(labelText: String, size: Int, onValueChange: String => Unit) {
+    this(labelText, size, LabeledTextField.Horizontal, margin = 10, onValueChange)
+  }
 
   setOpaque(false)
 
@@ -20,10 +32,15 @@ class LabeledTextField(labelText: String,
   val labelSize = label.getPreferredSize
   var textFieldSize = inputField.getPreferredSize
 
-  setPreferredSize(new Dimension(labelSize.width + textFieldSize.width, textFieldSize.height))
-
   position(label).atOrigin().in(this)
-  position(inputField).toTheRightOf(label).withMargin(10).in(this)
+
+  if (orientation == LabeledTextField.Horizontal) {
+    setPreferredSize(new Dimension(labelSize.width + textFieldSize.width, textFieldSize.height))
+    position(inputField).toTheRightOf(label).withMargin(margin).in(this)
+  } else {
+    setPreferredSize(new Dimension(Math.max(labelSize.width, textFieldSize.width), textFieldSize.height + labelSize.height))
+    position(inputField).below(label).withMargin(margin).in(this)
+  }
 
   def highlightField(): Unit = {
     inputField.setBackground(new Color(170, 170, 170))
