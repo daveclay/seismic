@@ -1,14 +1,15 @@
 package com.seismic.ui.swing
 
 import java.awt.event.{MouseAdapter, MouseEvent, MouseListener}
-import java.awt.{Color, Dimension, Font, Graphics}
+import java.awt.{Color, Dimension}
 import javax.swing.{JLabel, JLayeredPane}
 
-import com.seismic.ui.swing.FontHelper._
 import com.daveclay.swing.util.Position._
+import com.seismic.Seismic
 import com.seismic.utils.ValueMapHelper._
 
-class HandleMeter(size: Dimension) extends JLayeredPane {
+class HandleMeter(seismic: Seismic,
+                  size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
 
   private val indicatorSize = new Dimension(size.height, size.height)
@@ -16,8 +17,6 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   private val centerY = indicatorSize.getHeight / 2f
 
   private var lastValue = 0
-  private var calibrationMinValue = 0
-  private var calibrationMaxValue = 1023
 
   private val label = SwingComponents.label("----", SwingComponents.monoFont11)
   label.setOpaque(true)

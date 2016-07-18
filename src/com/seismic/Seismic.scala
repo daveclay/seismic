@@ -3,10 +3,12 @@ package com.seismic
 import java.io.File
 
 import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
+import com.seismic.io.{Preferences, SetListSerializer}
+import com.seismic.io.Preferences.getPreferences
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.{MIDIIO, MidiNoteMap}
 import com.seismic.ui.swing.Selectable
-import com.seismic.utils.{Next, SetListSerializer}
+import com.seismic.utils.Next
 import com.seismic.utils.ValueMapHelper.map
 import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._
@@ -174,20 +176,6 @@ class Seismic(midiIO: MIDIIO) {
   }
 }
 
-/**
-  * TODO: rotating the handle selects the instrument. To change the number of instruments done by providing a different
-  * array of instruments.
-  *
-  * So what does changing the threshold values do? Allow for a wider range of rotation motion.
-  * Also, to change from a linear mapping of values to a logarithmic mapping requires a different implementation of
-  * TriggerMap with a variety of arguments that might specify a bezier curve or something more radical. In my case,
-  * random will likely be something I decide I want.
-  */
-object Thresholds {
-  val lowHandleThreshold = 100
-  val highHandleThreshold = 800
-}
-
 case class SetList(var name: String) {
 
   @JsonManagedReference var songs: Array[Song] = Array.empty
@@ -267,8 +255,8 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
   def instrumentFor(name: String, handleValue: Int): Instrument = {
     name match {
-      case "KICK" => instrumentsByValue(kickInstruments, handleValue)
-      case "SNARE" => instrumentsByValue(snareInstruments, handleValue)
+      case "KICK" => selectInstrumentForValue(kickInstruments, handleValue)
+      case "SNARE" => selectInstrumentForValue(snareInstruments, handleValue)
       case _ => throw new IllegalArgumentException(f"unknown trigger $name")
     }
   }
@@ -280,10 +268,8 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
     newInstrument
   }
 
-  private def instrumentsByValue(instruments: Array[Instrument], value: Int) = {
-    import Thresholds._ // TODO: config this, eh?
-    val idx = map(value, lowHandleThreshold, highHandleThreshold, 0, instruments.length - 1)
-    instruments(idx.toInt)
+  private def selectInstrumentForValue(instruments: Array[Instrument], value: Int) = {
+    getPreferences.handleCalibration.select(value, instruments)
   }
 }
 
