@@ -100,7 +100,7 @@ class MockSerialIO extends SerialIO {
 
   override def open(serialListener: SerialListener): Unit = {
     io = new ActiveMockSerialIO(serialListener)
-    io.scheduleSerialEvent()
+    //io.scheduleSerialEvent()
   }
 
   class ActiveMockSerialIO(serialListener: SerialListener) {

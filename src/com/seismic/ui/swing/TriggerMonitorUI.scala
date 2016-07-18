@@ -51,7 +51,7 @@ class TriggerMonitorUI(monoFont: Font, size: Dimension) extends JPanel {
         monitor.setValue(value)
       case None =>
     }
-    handleMeter.setValue(triggerOn.handleValue)
+    handleMeter.setRawValue(triggerOn.handleValue)
   }
 
   private def handleTriggerOff(triggerOff: TriggerOffMessage): Unit = {

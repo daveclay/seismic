@@ -8,14 +8,30 @@ import com.daveclay.swing.util.Position._
 import com.seismic.io.Preferences.getPreferences
 import com.seismic.utils.ValueMapHelper._
 
+object Blah {
+  def main(args: Array[String]): Unit = {
+    for (i <- 0 to 1023) {
+      val radians = map(i, 0, 1023, 0, (2f * Math.PI).toFloat)
+      println(f"$i -> $radians or ${Math.toDegrees(radians)}")
+    }
+
+    // 90º is 1.5708f)
+    println(map(4.71239f, 0, (2f * Math.PI).toFloat, 0, 1023)) // = 767.2501
+  }
+}
+
 class HandleMeter(size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
+
+  private val valueFor270Degrees = 768 // println(map(4.71239f, 0, (2f * Math.PI).toFloat, 0, 1023)) // = 767.2501
 
   private val indicatorSize = new Dimension(size.height, size.height)
   private val centerX = indicatorSize.getWidth / 2f
   private val centerY = indicatorSize.getHeight / 2f
 
-  private var lastValue = 0
+  private var lastRawValue = 0
+  private var adjustDirection = true
+  private var adjustValueForAlignment = 0
 
   private val label = SwingComponents.label("----", SwingComponents.monoFont11)
   label.setOpaque(true)
@@ -53,15 +69,9 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   position(minField).toTheRightOf(indicator).withMargin(4).in(this)
   position(maxField).below(minField).withMargin(4).in(this)
 
-  def setValue(value: Int): Unit = {
-    this.lastValue = value
-    // TODO: calibrate!
-    /*
-    If the lastValue sent was 512, and I click the meter, that means 512 should be 0, indicating the first sample should be triggered at 512.
-    instead of the raw value being 0 to 1023, it should be 512 to the next rotation angle.
-     */
-
-    indicator.setAngle(map(value, 0, 1023, 0, (2f * Math.PI).toFloat))
+  def setRawValue(value: Int): Unit = {
+    this.lastRawValue = value
+    indicator.setAngle(radiansForValue(value - adjustValueForAlignment))
     label.setText(f"$value%4s")
     repaint()
   }
@@ -77,6 +87,11 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
 
   addMouseListener(new MouseAdapter() {
     override def mousePressed(e: MouseEvent): Unit = {
+      adjustValueForAlignment = lastRawValue - valueFor270Degrees
     }
   })
+
+  private def radiansForValue(value: Int) = {
+    map(value, 0, 1023, 0, (2f * Math.PI).toFloat)
+  }
 }
