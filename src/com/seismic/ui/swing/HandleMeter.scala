@@ -5,11 +5,10 @@ import java.awt.{Color, Dimension}
 import javax.swing.{JLabel, JLayeredPane}
 
 import com.daveclay.swing.util.Position._
-import com.seismic.Seismic
+import com.seismic.io.Preferences.getPreferences
 import com.seismic.utils.ValueMapHelper._
 
-class HandleMeter(seismic: Seismic,
-                  size: Dimension) extends JLayeredPane {
+class HandleMeter(size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
 
   private val indicatorSize = new Dimension(size.height, size.height)
@@ -21,8 +20,23 @@ class HandleMeter(seismic: Seismic,
   private val label = SwingComponents.label("----", SwingComponents.monoFont11)
   label.setOpaque(true)
 
-  private val minField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, (s: String) => println(s))
-  private val maxField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, (s: String) => println(s))
+  private val preferences = getPreferences
+  private val calibration = preferences.handleCalibration
+  private val onMinSet = (s: String) => {
+    calibration.calibrationMinValue = s.toInt
+    preferences.save()
+  }
+
+  private val onMaxSet = (s: String) => {
+    calibration.calibrationMaxValue = s.toInt
+    preferences.save()
+  }
+
+  private val minField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, onMinSet)
+  minField.setText(calibration.calibrationMinValue.toString)
+
+  private val maxField = new LabeledTextField("max", 4, LabeledTextField.Vertical, 0, onMaxSet)
+  maxField.setText(calibration.calibrationMaxValue.toString)
 
   private val indicator = new MeterCircleIndicator(indicatorSize)
 

@@ -55,7 +55,7 @@ class SeismicUI(seismic: Seismic,
   // remove all the styling from this layout and state handling.
 
   val title = SwingComponents.label("SEISMIC")
-  val triggerMonitorUI = new TriggerMonitorUI(seismic, monoFont11, triggerMonitorSize)
+  val triggerMonitorUI = new TriggerMonitorUI(monoFont11, triggerMonitorSize)
   triggerMonitorUI.setBackground(componentBGColor)
 
   // TODO: settings textbox that sets the value of a "t" keypress

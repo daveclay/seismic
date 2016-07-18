@@ -30,6 +30,7 @@ object Preferences {
 
 case class Preferences(var lastSetListDir: String,
                        var handleCalibration: HandleCalibration = HandleCalibration()) {
+
   def save() {
     objectMapper.writeValue(Preferences.preferencesFile, this)
   }
