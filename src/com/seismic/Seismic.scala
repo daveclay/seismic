@@ -239,6 +239,10 @@ case class Song(var name: String,
     this.phrases = phrases.toArray
   }
 
+  def removePhrase(phrase: Phrase): Unit = {
+    phrases = phrases.remove(phrase)
+  }
+
   def setName(name: String): Unit = {
     this.name = name
   }

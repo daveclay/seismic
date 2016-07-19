@@ -49,7 +49,11 @@ class SetlistUI(seismic: Seismic,
   private val editorWidth = size.width - songSelect.getPreferredSize.width - phraseSelect.getPreferredSize.width - 12
 
   val songEditor = new SongEditor(onSongUpdated, new Dimension(editorWidth, 40), componentBGColor)
-  val phraseEditor = new PhraseEditor(save, onPhraseUpdated, new Dimension(editorWidth, size.height - 40), componentBGColor)
+  val phraseEditor = new PhraseEditor(save,
+                                       onPhraseUpdated,
+                                       onPhraseDeleted,
+                                       new Dimension(editorWidth, size.height - 40),
+                                       componentBGColor)
 
   val editor = new Editor(songEditor, phraseEditor)
   editor.setOpaque(false)
@@ -117,6 +121,20 @@ class SetlistUI(seismic: Seismic,
       phraseSelect.addItem(phrase)
       seismic.setCurrentPhrase(phrase)
       phraseEditor.grabFocus()
+    }
+  }
+
+  def onPhraseDeleted(phrase: Phrase): Unit = {
+    seismic.currentSongOpt.foreach { song =>
+      val phraseIdx = song.phrases.indexOf(phrase)
+      val phraseToSelect = if (phraseIdx < 1) song.phrases(0) else song.phrases(phraseIdx - 1)
+
+      song.removePhrase(phrase)
+      save()
+      seismic.setCurrentPhrase(phraseToSelect)
+      phraseSelect.setItems(song.phrases)
+      phraseSelect.setCurrentSelectedItem(phraseToSelect)
+      phraseEditor.setPhrase(phraseToSelect)
     }
   }
 
