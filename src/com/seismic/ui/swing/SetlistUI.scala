@@ -22,7 +22,7 @@ class SetlistUI(seismic: Seismic,
   }
 
   val namePanel = new JPanel
-  namePanel.setPreferredSize(new Dimension(size.width - 4, 30))
+  namePanel.setPreferredSize(new Dimension(size.width - 8, 30))
   namePanel.setBackground(componentBGColor)
   SwingComponents.addBorder(namePanel)
   val nameField = new LabeledTextField("Set List", 12, onSetListNameChange)

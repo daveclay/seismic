@@ -8,12 +8,11 @@ import com.seismic.io.Preferences.getPreferences
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.{MIDIIO, MidiNoteMap}
 import com.seismic.ui.swing.Selectable
-import com.seismic.utils.Next
 import com.seismic.utils.ValueMapHelper.map
 import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._
 import com.seismic.utils.Next.{highest, next}
-import processing.core.PApplet.constrain
+import com.seismic.scala.ArrayExtensions._
 
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
@@ -263,6 +262,14 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
     snareInstruments = snareInstruments :+ newInstrument
   }
 
+  def removeKickInstrument(instrument: Instrument): Unit = {
+    kickInstruments = kickInstruments.remove(instrument)
+  }
+
+  def removeSnareInstrument(instrument: Instrument): Unit = {
+    snareInstruments = snareInstruments.remove(instrument)
+  }
+
   def instrumentFor(name: String, handleValue: Int): Instrument = {
     name match {
       case "KICK" => selectInstrumentForValue(kickInstruments, handleValue)
@@ -310,8 +317,9 @@ case class Instrument(var notes: Array[String]) {
     this
   }
 
-  def mapValueToVelocity(value: Int) = {
-    constrain(map(value, 0, threshold, 0, 127), 0, 127).toInt
+  def mapValueToVelocity(value: Int): Int = {
+    val mappedValue = map(value, 0, threshold, 0, 127)
+    Math.max(Math.min(mappedValue, 127), 0).toInt
   }
 
   def setNotes(notes: Array[String]) {

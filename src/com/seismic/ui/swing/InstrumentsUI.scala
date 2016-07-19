@@ -1,19 +1,18 @@
 package com.seismic.ui.swing
 
-import java.awt.{Color, Container, Dimension}
+import java.awt.{Color, Component, Container, Dimension}
 import javax.swing.{JLabel, JPanel, JTextField}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Instrument
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
-import scala.collection.mutable.ArrayBuffer
-
-class InstrumentUI(labelValue: String,
-                   onAddInstrumentClicked: () => Unit,
-                   onSongUpdated: () => Unit,
-                   size: Dimension,
-                   backgroundColor: Color) extends JPanel {
+class InstrumentsUI(labelValue: String,
+                    onAddInstrumentClicked: () => Unit,
+                    onDeleteInstrumentClicked: (Instrument) => Unit,
+                    onInstrumentUpdated: () => Unit,
+                    size: Dimension,
+                    backgroundColor: Color) extends JPanel {
 
   setPreferredSize(size)
   setOpaque(false)
@@ -28,15 +27,15 @@ class InstrumentUI(labelValue: String,
     onAddInstrumentClicked()
   })
 
-  var instrumentNoteUIsOpt: Option[Seq[InstrumentNoteUI]] = None
+  var instrumentNoteUIsOpt: Option[Seq[InstrumentUI]] = None
 
-  def setInstrumentNotes(instruments: Seq[Instrument]): Unit = {
+  def setInstruments(instruments: Seq[Instrument]): Unit = {
     removeCurrentInstrumentNoteUIs()
     instrumentNoteUIsOpt = Option(buildInstrumentNoteUIs(instruments))
     positionInstrumentUIs()
   }
 
-  def positionInstrumentUIs() {
+  private def positionInstrumentUIs() {
     instrumentNoteUIsOpt.foreach { instrumentUIs =>
       addInstrumentUIs(label, instrumentUIs)
       position(addInstrumentButton).below(instrumentUIs.last).withMargin(4).in(this)
@@ -53,7 +52,7 @@ class InstrumentUI(labelValue: String,
     setBackground(backgroundColor)
   }
 
-  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentNoteUI]): Unit = {
+  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentUI]): Unit = {
     instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
       position(instrumentUI).below(previousComponent).withMargin(4).in(this)
       instrumentUI
@@ -62,8 +61,14 @@ class InstrumentUI(labelValue: String,
 
   def buildInstrumentNoteUIs(instruments: Seq[Instrument]) = {
     instruments.map { instrument =>
-      new InstrumentNoteUI(instrument,
-                            onSongUpdated,
+
+      val deleteInstrument = () => {
+        onDeleteInstrumentClicked(instrument)
+      }
+
+      new InstrumentUI(instrument,
+                        onInstrumentUpdated,
+                            deleteInstrument,
                             new Dimension(getPreferredSize.width, 20),
                             backgroundColor)
     }
@@ -73,7 +78,7 @@ class InstrumentUI(labelValue: String,
     instrumentNoteUIsOpt.foreach { kickInstrumentUIs => removeInstrumentUIs(kickInstrumentUIs) }
   }
 
-  def removeInstrumentUIs(instrumentNoteUIs: Seq[InstrumentNoteUI]): Unit = {
+  def removeInstrumentUIs(instrumentNoteUIs: Seq[InstrumentUI]): Unit = {
     instrumentNoteUIs.foreach { instrumentNoteUI =>
       instrumentNoteUI.getFocusListeners.foreach { l => instrumentNoteUI.removeFocusListener(l) }
       remove(instrumentNoteUI)
@@ -86,56 +91,62 @@ class InstrumentUI(labelValue: String,
   }
 
   override def grabFocus(): Unit = {
-    instrumentNoteUIsOpt.foreach { instrumentNoteUIs => instrumentNoteUIs.head.nameField.grabFocus() }
+    instrumentNoteUIsOpt.foreach { instrumentNoteUIs => instrumentNoteUIs.head.noteField.grabFocus() }
   }
 
   def getLabels: Seq[JLabel] = {
     instrumentNoteUIsOpt match {
       case Some(instrumentNoteUIs) =>
         instrumentNoteUIs.map { instrumentNoteUI =>
-          instrumentNoteUI.nameField.label
+          instrumentNoteUI.noteField.label
         }
       case None => Array.empty[JLabel]
       case null => Array.empty[JLabel]
     }
   }
 
-  def getInputFields: Seq[JTextField] = {
+  def getFocusableFields: Seq[Component] = {
     instrumentNoteUIsOpt match {
       case Some(instrumentNoteUIs) =>
-        instrumentNoteUIs.map { instrumentNoteUI =>
-          instrumentNoteUI.nameField.inputField
+        instrumentNoteUIs.flatMap { instrumentNoteUI =>
+          Array(instrumentNoteUI.noteField.inputField, instrumentNoteUI.deleteButton)
         }
-      case None => Array.empty[JTextField]
+      case None => Array.empty[Component]
     }
   }
 }
 
-class InstrumentNoteUI(instrument: Instrument,
-                       onSongUpdated: () => Unit,
-                       size: Dimension,
-                       backgroundColor: Color) extends JPanel {
+class InstrumentUI(instrument: Instrument,
+                   instrumentWasUpdated: () => Unit,
+                   onDeleteInstrument: () => Unit,
+                   size: Dimension,
+                   backgroundColor: Color) extends JPanel {
 
   setPreferredSize(size)
   setOpaque(false)
 
-  val nameField = new LabeledTextField("Note", 10, onValueChange)
-  nameField.setText(instrument.notes.mkString(", "))
+  val noteField = new LabeledTextField("Note", 10, onValueChange)
+  noteField.setText(instrument.notes.mkString(", "))
 
-  position(nameField).atOrigin().in(this)
+  val deleteButton = SwingComponents.button("DELETE")
+  deleteButton.addActionListener(e => onDeleteInstrument())
+
+  position(noteField).atOrigin().in(this)
+  position(deleteButton).toTheRightOf(noteField).withMargin(10).in(this)
 
   instrument.wasTriggeredOn { (pitch) =>
-    invokeLater { () => nameField.highlightField() }
+    invokeLater { () => noteField.highlightField() }
   }
 
   instrument.wasTriggeredOff { () =>
-    invokeLater { () => nameField.unhighlightField() }
+    invokeLater { () => noteField.unhighlightField() }
   }
 
   private def onValueChange(value: String):Unit = {
     instrument.setNotes(value.split(", "))
-    onSongUpdated()
+    instrumentWasUpdated()
   }
+
 }
 
 

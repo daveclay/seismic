@@ -11,6 +11,7 @@ trait HighlightOnFocus extends Component {
   val highlightThisComponentOnFocusListener = highlightComponentFocusListener(this)
 
   def highlight(components: Component*) = {
+    removeHighlightFocusListeners(components)
     HighlightOnFocusBuilder(components)
   }
 
@@ -34,15 +35,29 @@ trait HighlightOnFocus extends Component {
 
   addFocusListener(highlightThisComponentOnFocusListener)
 
-  private def highlightComponentFocusListener(componentToHighlight: Component) = {
-    new FocusListener {
-      override def focusGained(e: FocusEvent): Unit = {
-        componentToHighlight.setBackground(ColorUtils.lighten(backgroundColor).by(30))
-      }
+  private def getHighlightFocusListeners(component: Component)  = {
+    component.getFocusListeners.filter { listener => listener.isInstanceOf[HighlightingFocusListener]}
+  }
 
-      override def focusLost(e: FocusEvent): Unit = {
-        componentToHighlight.setBackground(backgroundColor)
+  private def removeHighlightFocusListeners(components: Seq[Component]): Unit = {
+    components.foreach { component =>
+      getHighlightFocusListeners(component).foreach { focusListener =>
+        component.removeFocusListener(focusListener)
       }
+    }
+  }
+
+  private def highlightComponentFocusListener(componentToHighlight: Component) = {
+    new HighlightingFocusListener(componentToHighlight)
+  }
+
+  class HighlightingFocusListener(componentToHighlight: Component) extends FocusListener {
+    override def focusGained(e: FocusEvent): Unit = {
+      componentToHighlight.setBackground(ColorUtils.lighten(backgroundColor).by(30))
+    }
+
+    override def focusLost(e: FocusEvent): Unit = {
+      componentToHighlight.setBackground(backgroundColor)
     }
   }
 

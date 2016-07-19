@@ -2,13 +2,12 @@ package com.seismic.ui.swing
 
 import java.awt.event.KeyListener
 import java.awt.{Color, Dimension}
-import javax.swing.border.CompoundBorder
-import javax.swing.{BorderFactory, JPanel}
+import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
-import com.seismic.Phrase
+import com.seismic.{Instrument, Phrase}
 
-class PhraseEditor(onAddInstrumentClicked: () => Unit,
+class PhraseEditor(onSongUpdated: () => Unit,
                    onPhraseUpdated: (Phrase) => Unit,
                    size: Dimension,
                    val backgroundColor: Color) extends JPanel with HighlightOnFocus {
@@ -20,17 +19,19 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
   var curentPhraseOpt: Option[Phrase] = None
   val instrumentUISize = new Dimension(200, 300)
 
-  val kickInstrumentUI = new InstrumentUI("Kick",
-                                           onAddKickInstrumentClicked,
-                                           onAddInstrumentClicked,
-                                           instrumentUISize,
-                                           backgroundColor)
-
-  val snareInstrumentUI = new InstrumentUI("Snare",
-                                            onAddSnareInstrumentClicked,
-                                            onAddInstrumentClicked,
+  val kickInstrumentUI = new InstrumentsUI("Kick",
+                                            onAddKickInstrumentClicked,
+                                            onDeleteKickInstrumentClicked,
+                                            onInstrumentUpdated,
                                             instrumentUISize,
                                             backgroundColor)
+
+  val snareInstrumentUI = new InstrumentsUI("Snare",
+                                             onAddSnareInstrumentClicked,
+                                             onDeleteSnareInstrumentClicked,
+                                             onInstrumentUpdated,
+                                             instrumentUISize,
+                                             backgroundColor)
 
   val onNameChange = (name: String) => curentPhraseOpt.foreach { phrase =>
     if ( ! phrase.name.equals(name)) {
@@ -57,17 +58,20 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
     patchField.setText(phrase.patch.toString)
-    kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
-    snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
+    kickInstrumentUI.setInstruments(phrase.kickInstruments)
+    snareInstrumentUI.setInstruments(phrase.snareInstruments)
     position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
+    configureHighlighting()
+  }
 
+  private def configureHighlighting(): Unit = {
     highlight(this).onFocusOf(nameField,
                                patchField.inputField,
                                kickInstrumentUI.addInstrumentButton,
                                snareInstrumentUI.addInstrumentButton)
-    .andFocusOf(kickInstrumentUI.getInputFields)
-    .andFocusOf(snareInstrumentUI.getInputFields)
+    .andFocusOf(kickInstrumentUI.getFocusableFields)
+    .andFocusOf(snareInstrumentUI.getFocusableFields)
   }
 
   override def grabFocus(): Unit = {
@@ -83,16 +87,38 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
   private def onAddKickInstrumentClicked(): Unit = {
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewKickInstrument()
-      kickInstrumentUI.setInstrumentNotes(phrase.kickInstruments)
-      onAddInstrumentClicked()
+      kickInstrumentUI.setInstruments(phrase.kickInstruments)
+      configureHighlighting()
+      onSongUpdated()
+    }
+  }
+
+  private def onDeleteKickInstrumentClicked(instrument: Instrument): Unit = {
+    curentPhraseOpt.foreach { phrase =>
+      phrase.removeKickInstrument(instrument)
+      kickInstrumentUI.setInstruments(phrase.kickInstruments)
+      configureHighlighting()
+      onSongUpdated()
     }
   }
 
   private def onAddSnareInstrumentClicked(): Unit = {
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewSnareInstrument()
-      snareInstrumentUI.setInstrumentNotes(phrase.snareInstruments)
-      onAddInstrumentClicked()
+      snareInstrumentUI.setInstruments(phrase.snareInstruments)
+      configureHighlighting()
+      onSongUpdated()
     }
   }
+
+  private def onDeleteSnareInstrumentClicked(instrument: Instrument): Unit = {
+    curentPhraseOpt.foreach { phrase =>
+      phrase.removeSnareInstrument(instrument)
+      snareInstrumentUI.setInstruments(phrase.snareInstruments)
+      configureHighlighting()
+      onSongUpdated()
+    }
+  }
+
+  private def onInstrumentUpdated(): Unit = onSongUpdated()
 }
