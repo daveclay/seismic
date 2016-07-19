@@ -38,7 +38,6 @@ class ManualTriggerConfig(triggerName: String,
   position(triggerButton).toTheRightOf(handleValueField).withMargin(4).in(this)
 
   def onChange(value: String): Unit = {
-    println(s"ok $value")
   }
 
   private def getTriggerValue = triggerValueField.inputField.getText.toInt
