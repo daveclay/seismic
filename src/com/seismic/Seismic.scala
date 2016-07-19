@@ -227,8 +227,8 @@ case class Song(var name: String,
     val nextPatch = next(phrases, (p: Phrase) => {p.patch })
 
     val newPhrase = Phrase(s"Phrase $nextPatch", nextPatch)
-    newPhrase.kickInstruments = Array(Instrument(Array("C0")))
-    newPhrase.snareInstruments = Array(Instrument(Array("C0")))
+    newPhrase.addNewKickInstrument()
+    newPhrase.addNewSnareInstrument()
     newPhrase.song = this
 
     phrases = phrases :+ newPhrase
@@ -271,9 +271,21 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
     }
   }
 
+  private def nextNote() = {
+    MidiNoteMap.noteForValue(nextNoteForInstruments( kickInstruments ++ snareInstruments ))
+  }
+
+  private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
+    next(instruments, (instrument: Instrument) => nextNoteForInstrument(instrument) )
+  }
+
+  private def nextNoteForInstrument(instrument: Instrument) = {
+    next(instrument.notes, (note: String) => MidiNoteMap.valueForNote(note))
+  }
+
   private def newInstrument = {
-    // TODO: default midi note 0? Shrug. maybe next one after the last instrument?
-    val newInstrument = new Instrument(Array("C0"))
+    val note = nextNote()
+    val newInstrument = new Instrument(Array(note))
     newInstrument.phrase = this
     newInstrument
   }
