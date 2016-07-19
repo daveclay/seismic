@@ -651,7 +651,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
      */
     @Override
     public void sendNoteOn(int channel, int pitch, int velocity) {
-        // System.out.println(String.format("sendNoteOn c: %s p: %s v: %s", channel, pitch, velocity));
+        System.out.println(String.format("sendNoteOn c: %s p: %s v: %s", channel, pitch, velocity));
         ShortMessage message = new ShortMessage();
         try {
             message.setMessage(ShortMessage.NOTE_ON, constrain(channel, 0, 15), constrain(pitch, 0, 127), constrain(velocity, 0, 127));
@@ -702,7 +702,7 @@ public class StupidMonkeyMIDI implements MIDIIO {
      */
     @Override
     public void sendNoteOff(int channel, int pitch, int velocity) {
-        //System.out.println(String.format("sendNoteOff c: %s p: %s v: %s", channel, pitch, velocity));
+        System.out.println(String.format("sendNoteOff c: %s p: %s v: %s", channel, pitch, velocity));
         ShortMessage message = new ShortMessage();
         try {
             message.setMessage(ShortMessage.NOTE_OFF, constrain(channel, 0, 15), constrain(pitch, 0, 127), constrain(velocity, 0, 127));

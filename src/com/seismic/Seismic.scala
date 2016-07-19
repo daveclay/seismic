@@ -35,7 +35,13 @@ class Seismic(midiIO: MIDIIO) {
       val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
       val velocity = instrument.mapValueToVelocity(trigger.triggerValue)
       instrument.notes.foreach { (note) =>
-        midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note), velocity)
+        if (note.startsWith("N")) {
+          midiIO.sendNoteOff(song.channel, MidiNoteMap.valueForNote(note.drop(1)), 0)
+        } else if (note.startsWith("X")) {
+          midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note.drop(1)), velocity)
+        } else if ( ! note.startsWith("T")) {
+          midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note), velocity)
+        }
       }
       triggeredState.triggered(trigger.name, instrument, song.channel)
       instrument.fireTriggerOnListener(velocity)
@@ -46,7 +52,11 @@ class Seismic(midiIO: MIDIIO) {
     triggeredState.lastTriggered(name) match {
       case Some(Tuple2(instrument, channel)) =>
         instrument.notes.foreach { (note) =>
-          midiIO.sendNoteOff(channel, MidiNoteMap.valueForNote(note), 0)
+          if (note.startsWith("T")) {
+            midiIO.sendNoteOff(channel, MidiNoteMap.valueForNote(note.drop(1)), 0)
+          } else if (!note.startsWith("X") && !note.startsWith("N")) {
+            midiIO.sendNoteOff(channel, MidiNoteMap.valueForNote(note), 0)
+          }
         }
         instrument.fireTriggerOffListener()
       case None =>
@@ -276,6 +286,7 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
 /**
   * TODO: Toggle ability to send midi note off from a trigger on message  instead of the original trigger off message.
+  *
   * @param notes
   */
 case class Instrument(var notes: Array[String]) {

@@ -7,11 +7,6 @@ import com.seismic.utils.RandomHelper
 import scala.collection.mutable.ArrayBuffer
 import scala.util.matching.Regex
 
+"TC3".drop(1)
 
-val s = "T,ON,KICK,205,1234"
-val a = s.split(",")
 
-a.head match {
-  case "T" => s"hi ${a.drop(1).mkString(",")}"
-  case _ => None
-}
