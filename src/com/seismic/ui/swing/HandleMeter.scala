@@ -23,41 +23,35 @@ object Angles {
 class HandleMeter(size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
 
-  trait State
-  object Running extends State
-  object InitiatingCalibration extends State
-  object Calibrate270 extends State
-  object Calibrate180 extends State
-
   private val indicatorSize = new Dimension(size.height, size.height)
   private val centerX = indicatorSize.getWidth / 2f
   private val centerY = indicatorSize.getHeight / 2f
 
   private var lastRawValue = 0
-  private var valueAt270 = 1023
-  private var valueAt180 = 0
   private var calibrateWhich = true
 
   private val label = SwingComponents.label("----", SwingComponents.monoFont11)
   label.setOpaque(true)
 
   private val preferences = getPreferences
-  private val calibration = preferences.handleCalibration
+  private val handleCalibration = preferences.handleCalibration
+  private val handleMeterCalibration = preferences.handleMeterCalibration
+
   private val onMinSet = (s: String) => {
-    calibration.calibrationMinValue = s.toInt
+    handleCalibration.calibrationMinValue = s.toInt
     preferences.save()
   }
 
   private val onMaxSet = (s: String) => {
-    calibration.calibrationMaxValue = s.toInt
+    handleCalibration.calibrationMaxValue = s.toInt
     preferences.save()
   }
 
   private val minField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, onMinSet)
-  minField.setText(calibration.calibrationMinValue.toString)
+  minField.setText(handleCalibration.calibrationMinValue.toString)
 
   private val maxField = new LabeledTextField("max", 4, LabeledTextField.Vertical, 0, onMaxSet)
-  maxField.setText(calibration.calibrationMaxValue.toString)
+  maxField.setText(handleCalibration.calibrationMaxValue.toString)
 
   private val indicator = new MeterCircleIndicator(indicatorSize)
 
@@ -77,7 +71,11 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   def setRawValue(value: Int): Unit = {
     this.lastRawValue = value
 
-    val radians = map(value, valueAt180, valueAt270, Math.PI.toFloat, 4.71239f)
+    val radians = map(value,
+                       handleMeterCalibration.valueAt180,
+                       handleMeterCalibration.valueAt270,
+                       Math.PI.toFloat,
+                       4.71239f)
 
     indicator.setAngle(radians)
     label.setText(f"$value%4s")
@@ -111,10 +109,12 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   }
 
   private def calibrate270() {
-    valueAt270 = lastRawValue
+    handleMeterCalibration.valueAt270 = lastRawValue
+    preferences.save()
   }
 
   private def calibrate180() {
-    valueAt180 = lastRawValue
+    handleMeterCalibration.valueAt180 = lastRawValue
+    preferences.save()
   }
 }

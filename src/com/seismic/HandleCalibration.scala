@@ -11,3 +11,7 @@ case class HandleCalibration(var calibrationMinValue: Int = 0,
     items(Math.round(map(constrained, calibrationMinValue, calibrationMaxValue, 0, items.size - 1)))
   }
 }
+
+case class HandleMeterCalibration(var valueAt270: Int = 1023,
+                                  var valueAt180: Int = 0)
+

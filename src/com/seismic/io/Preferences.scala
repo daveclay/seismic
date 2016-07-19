@@ -2,7 +2,7 @@ package com.seismic.io
 
 import java.io.File
 
-import com.seismic.{HandleCalibration, SetList}
+import com.seismic.{HandleCalibration, HandleMeterCalibration, SetList}
 import com.seismic.io.ObjectMapperFactory.objectMapper
 
 object Preferences {
@@ -29,7 +29,8 @@ object Preferences {
 }
 
 case class Preferences(var lastSetListDir: String,
-                       var handleCalibration: HandleCalibration = HandleCalibration()) {
+                       var handleCalibration: HandleCalibration = HandleCalibration(),
+                       var handleMeterCalibration: HandleMeterCalibration = HandleMeterCalibration()) {
 
   def save() {
     objectMapper.writeValue(Preferences.preferencesFile, this)
