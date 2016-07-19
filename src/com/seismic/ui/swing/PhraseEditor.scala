@@ -56,10 +56,17 @@ class PhraseEditor(onSongUpdated: () => Unit,
     curentPhraseOpt.foreach { phrase => onDeletePhrase(phrase) }
   })
 
-  position(label).at(4, 4).in(this)
-  position(nameField).toTheRightOf(label).withMargin(10).in(this)
-  position(patchField).toTheRightOf(nameField).withMargin(10).in(this)
-  position(deleteButton).toTheRightOf(patchField).withMargin(10).in(this)
+  val phraseEditPanel = new JPanel() {
+    setPreferredSize(new Dimension(PhraseEditor.this.size.width - 8, 30))
+    setOpaque(false)
+
+    position(label).atOrigin().in(this)
+    position(nameField).toTheRightOf(label).withMargin(10).in(this)
+    position(patchField).toTheRightOf(nameField).withMargin(10).in(this)
+    position(deleteButton).toTheRightOf(patchField).withMargin(10).in(this)
+  }
+
+  position(phraseEditPanel).at(4, 4).in(this)
 
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
@@ -67,7 +74,8 @@ class PhraseEditor(onSongUpdated: () => Unit,
     patchField.setText(phrase.patch.toString)
     kickInstrumentUI.setInstruments(phrase.kickInstruments)
     snareInstrumentUI.setInstruments(phrase.snareInstruments)
-    position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
+
+    position(kickInstrumentUI).below(phraseEditPanel).withMargin(10).in(this)
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
     configureHighlighting()
   }

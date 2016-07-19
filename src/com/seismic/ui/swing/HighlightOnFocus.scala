@@ -53,7 +53,7 @@ trait HighlightOnFocus extends Component {
 
   class HighlightingFocusListener(componentToHighlight: Component) extends FocusListener {
     override def focusGained(e: FocusEvent): Unit = {
-      componentToHighlight.setBackground(ColorUtils.lighten(backgroundColor).by(30))
+      componentToHighlight.setBackground(ColorUtils.lighten(backgroundColor).by(10))
     }
 
     override def focusLost(e: FocusEvent): Unit = {

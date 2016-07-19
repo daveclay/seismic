@@ -17,9 +17,8 @@ class InstrumentsUI(labelValue: String,
   setPreferredSize(size)
   setOpaque(false)
 
-  val label = SwingComponents.label(labelValue)
-  label.setBackground(backgroundColor)
-  label.setForeground(new Color(200, 200, 200))
+  val label = SwingComponents.label(labelValue.toUpperCase, SwingComponents.monoFont18)
+  label.setOpaque(false)
   position(label).atOrigin().in(this)
 
   val addInstrumentButton = SwingComponents.button("Add")
