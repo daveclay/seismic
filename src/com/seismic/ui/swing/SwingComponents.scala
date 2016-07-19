@@ -103,8 +103,11 @@ object SwingComponents {
 
   val titleSize = 23
   val titleFont = new Font("Arial", Font.PLAIN, titleSize)
-  val monoFont18 = new Font("PT Mono", Font.PLAIN, 18)
-  val monoFont11 = new Font("PT Mono", Font.PLAIN, 11)
+  //val monoFont18 = new Font("PT Mono", Font.PLAIN, 18)
+  // val monoFont11 = new Font("PT Mono", Font.PLAIN, 11)
+  val fontName = "PT Mono"
+  val monoFont11 = new Font(fontName, Font.PLAIN, 11)
+  val monoFont18 = new Font(fontName, Font.PLAIN, 18)
   val foregroundFontColor = new Color(200, 200, 210)
   val buttonActiveColor = new Color(250, 200, 0)
   val buttonActiveFontColor = Color.BLACK

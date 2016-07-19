@@ -12,7 +12,7 @@ import com.seismic.utils.Next
 import com.seismic.utils.ValueMapHelper.map
 import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._
-import com.seismic.utils.Next.next
+import com.seismic.utils.Next.{highest, next}
 import processing.core.PApplet.constrain
 
 /**
@@ -276,11 +276,7 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   }
 
   private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
-    next(instruments, (instrument: Instrument) => nextNoteForInstrument(instrument) )
-  }
-
-  private def nextNoteForInstrument(instrument: Instrument) = {
-    next(instrument.notes, (note: String) => MidiNoteMap.valueForNote(note))
+    next(instruments, (instrument: Instrument) => instrument.highestNote() )
   }
 
   private def newInstrument = {
@@ -320,6 +316,10 @@ case class Instrument(var notes: Array[String]) {
 
   def setNotes(notes: Array[String]) {
     this.notes = notes
+  }
+
+  def highestNote() = {
+    highest(notes, (note: String) => MidiNoteMap.valueForNote(note))
   }
 
   def wasTriggeredOn(f: (Int) => Unit): Unit = {
