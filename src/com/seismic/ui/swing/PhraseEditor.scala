@@ -51,7 +51,7 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
 
   position(label).at(4, 4).in(this)
   position(nameField).toTheRightOf(label).withMargin(10).in(this)
-  position(patchField).toTheRightOf(nameField).withMargin(4).in(this)
+  position(patchField).toTheRightOf(nameField).withMargin(10).in(this)
 
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
@@ -62,9 +62,10 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
 
-    highlight(this, nameField).onFocusOf(nameField,
-                                          kickInstrumentUI.addInstrumentButton,
-                                          snareInstrumentUI.addInstrumentButton)
+    highlight(this).onFocusOf(nameField,
+                               patchField.inputField,
+                               kickInstrumentUI.addInstrumentButton,
+                               snareInstrumentUI.addInstrumentButton)
     .andFocusOf(kickInstrumentUI.getInputFields)
     .andFocusOf(snareInstrumentUI.getInputFields)
   }

@@ -54,7 +54,7 @@ class SeismicUI(seismic: Seismic,
   // then ask the factory to create components, the factory sets the styling
   // remove all the styling from this layout and state handling.
 
-  val title = SwingComponents.label("SEISMIC")
+  val title = SwingComponents.label("SEISMIC.", SwingComponents.monoFont18)
   val triggerMonitorUI = new TriggerMonitorUI(monoFont11, triggerMonitorSize)
   triggerMonitorUI.setBackground(componentBGColor)
 
@@ -92,9 +92,6 @@ class SeismicUI(seismic: Seismic,
   menuBar.add(fileMenu)
 
   mainPanel.setBackground(backgroundColor)
-
-  title.setFont(titleFont)
-  title.setForeground(new Color(200, 200, 210))
 
   fileMenu.addItem("New Set List", acceleratorMnemonicKey = KeyEvent.VK_N, newSetList)
   fileMenu.addItem("Open", acceleratorMnemonicKey = KeyEvent.VK_O, openSetList)
