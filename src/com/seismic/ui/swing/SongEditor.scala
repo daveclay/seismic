@@ -28,12 +28,14 @@ class SongEditor(onSongUpdated: (Song) => Unit,
     onSongUpdated(song)
   }
 
-  val nameField = new LabeledTextField("Song", 12, onNameChange)
+  val label = SwingComponents.label("SONG", SwingComponents.monoFont18)
+  val nameField = SwingComponents.textField(Color.BLACK, 12, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", 3, onChannelChange)
 
-  highlight(this, nameField, channelField).onFocusOf(nameField.inputField, channelField.inputField)
+  highlight(this, nameField, channelField).onFocusOf(nameField, channelField.inputField)
 
-  position(nameField).at(4, 4).in(this)
+  position(label).at(4, 4).in(this)
+  position(nameField).toTheRightOf(label).withMargin(10).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(4).in(this)
 
   def setSong(song: Song): Unit = {

@@ -48,6 +48,7 @@ object SwingComponents {
     button.setForeground(new Color(200, 200, 200))
     button.setBackground(Color.BLACK)
     button.setOpaque(true)
+    button.setFont(monoFont11)
     button.addFocusListener(new FocusListener {
       override def focusGained(e: FocusEvent): Unit = buttonFocused(button)
       override def focusLost(e: FocusEvent): Unit = buttonBlurred(button)
@@ -130,6 +131,7 @@ object SwingComponents {
     field.setOpaque(true)
     // field.setEditable(false)
     field.setCaretColor(new Color(250, 250, 20))
+    field.setFont(monoFont11)
 
     val triggerValueChange = () => {
       field.setEditable(false)

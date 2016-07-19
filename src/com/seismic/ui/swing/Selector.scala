@@ -44,7 +44,7 @@ object Selector {
   def renderSelectable(selectable: Selectable, cellState: CellState) = {
     val panel = new JPanel
     panel.setBorder(BorderFactory.createLineBorder(Color.GRAY))
-    val label = new JLabel(selectable.label)
+    val label = SwingComponents.label(selectable.label, SwingComponents.monoFont18)
     if (cellState.isSelected) {
       SwingComponents.buttonFocused(panel)
       label.setForeground(panel.getForeground)

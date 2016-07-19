@@ -45,10 +45,12 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     onPhraseUpdated(phrase)
   }
 
-  val nameField = new LabeledTextField("Phrase", 12, onNameChange)
+  val label = SwingComponents.label("PHRASE", SwingComponents.monoFont18)
+  val nameField = SwingComponents.textField(Color.BLACK, 12, onNameChange)
   val patchField = new LabeledTextField("Patch", 3, onPatchChange)
 
-  position(nameField).at(4, 4).in(this)
+  position(label).at(4, 4).in(this)
+  position(nameField).toTheRightOf(label).withMargin(10).in(this)
   position(patchField).toTheRightOf(nameField).withMargin(4).in(this)
 
   def setPhrase(phrase: Phrase): Unit = {
@@ -60,7 +62,7 @@ class PhraseEditor(onAddInstrumentClicked: () => Unit,
     position(kickInstrumentUI).below(nameField).withMargin(10).in(this)
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
 
-    highlight(this, nameField).onFocusOf(nameField.inputField,
+    highlight(this, nameField).onFocusOf(nameField,
                                           kickInstrumentUI.addInstrumentButton,
                                           snareInstrumentUI.addInstrumentButton)
     .andFocusOf(kickInstrumentUI.getInputFields)
