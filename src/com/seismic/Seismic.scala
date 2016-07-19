@@ -226,9 +226,9 @@ case class Song(var name: String,
     val nextPatch = next(phrases, (p: Phrase) => {p.patch })
 
     val newPhrase = Phrase(s"Phrase $nextPatch", nextPatch)
+    newPhrase.song = this
     newPhrase.addNewKickInstrument()
     newPhrase.addNewSnareInstrument()
-    newPhrase.song = this
 
     phrases = phrases :+ newPhrase
 
@@ -279,11 +279,15 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   }
 
   private def nextNote() = {
-    MidiNoteMap.noteForValue(nextNoteForInstruments( kickInstruments ++ snareInstruments ))
+    MidiNoteMap.noteForValue(nextNoteForInstruments( allInstruments() ))
+  }
+
+  private def allInstruments(): Seq[Instrument] = {
+    song.phrases.flatMap { phrase => phrase.kickInstruments ++ phrase.snareInstruments } ++ kickInstruments ++ snareInstruments
   }
 
   private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
-    next(instruments, (instrument: Instrument) => instrument.highestNote() )
+    next(instruments, (instrument: Instrument) => instrument.highestNote(), -1)
   }
 
   private def newInstrument = {
