@@ -7,7 +7,7 @@ import com.daveclay.swing.color.ColorUtils
 
 trait HighlightOnFocus extends Component {
 
-  val backgroundColor: Color
+  def highlightBackgroundColor: Color
   val highlightThisComponentOnFocusListener = highlightComponentFocusListener(this)
 
   def highlight(components: Component*) = {
@@ -42,6 +42,7 @@ trait HighlightOnFocus extends Component {
   private def removeHighlightFocusListeners(components: Seq[Component]): Unit = {
     components.foreach { component =>
       getHighlightFocusListeners(component).foreach { focusListener =>
+        focusListener.asInstanceOf[HighlightingFocusListener].defocus()
         component.removeFocusListener(focusListener)
       }
     }
@@ -53,11 +54,15 @@ trait HighlightOnFocus extends Component {
 
   class HighlightingFocusListener(componentToHighlight: Component) extends FocusListener {
     override def focusGained(e: FocusEvent): Unit = {
-      componentToHighlight.setBackground(ColorUtils.lighten(backgroundColor).by(10))
+      componentToHighlight.setBackground(ColorUtils.lighten(highlightBackgroundColor).by(10))
     }
 
     override def focusLost(e: FocusEvent): Unit = {
-      componentToHighlight.setBackground(backgroundColor)
+      defocus()
+    }
+
+    def defocus(): Unit = {
+      componentToHighlight.setBackground(highlightBackgroundColor)
     }
   }
 

@@ -38,6 +38,8 @@ class SongEditor(onSongUpdated: (Song) => Unit,
   position(nameField).toTheRightOf(label).withMargin(10).in(this)
   position(channelField).toTheRightOf(nameField).withMargin(10).in(this)
 
+  def highlightBackgroundColor = backgroundColor
+
   def setSong(song: Song): Unit = {
     this.songOpt = Option(song)
 

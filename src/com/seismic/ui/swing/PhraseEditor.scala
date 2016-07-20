@@ -68,6 +68,8 @@ class PhraseEditor(onSongUpdated: () => Unit,
 
   position(phraseEditPanel).at(4, 4).in(this)
 
+  def highlightBackgroundColor = backgroundColor
+
   def setPhrase(phrase: Phrase): Unit = {
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)

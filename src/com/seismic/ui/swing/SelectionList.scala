@@ -49,6 +49,8 @@ class SelectionList[T <: Selectable](onSelectNext: () => Unit,
     }
   })
 
+  def highlightBackgroundColor = backgroundColor
+
   def addItem(item: T): Unit = {
     selectionItemsOpt.foreach { selectionItems =>
       val selectItem = createSelectItem(item)

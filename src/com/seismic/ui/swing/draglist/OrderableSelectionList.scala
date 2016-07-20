@@ -6,7 +6,7 @@ import java.awt._
 import javax.swing.event.{ListDataEvent, ListDataListener, ListSelectionEvent, ListSelectionListener}
 
 import com.daveclay.swing.util.Position.position
-import com.seismic.ui.swing.{Sizing, SwingComponents}
+import com.seismic.ui.swing.{HighlightOnFocus, Sizing, SwingComponents}
 
 case class ListCallbacks[T](onClick: (T) => Unit,
                             onBackout: () => Unit,
@@ -14,7 +14,8 @@ case class ListCallbacks[T](onClick: (T) => Unit,
                             onReordered: (Seq[T]) => Unit)
 
 class OrderableSelectionList[T](callbacks: ListCallbacks[T],
-                                renderItem: (T, CellState) => Component) extends JPanel {
+                                renderItem: (T, CellState) => Component,
+                                backgroundColor: Color) extends JPanel with HighlightOnFocus {
 
   trait SelectionItem[E] {
     def triggerClicked()
@@ -62,6 +63,10 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   // TODO: configurable ui
   jlist.setVisibleRowCount(0)
 
+  jlist.setFocusable(true)
+
+  highlight(jlist).onFocusOf(jlist)
+
   private val onReorderedItems = (selectionItems: Seq[SelectionItem[T]]) => {
     val values = selectionItems.flatMap {
       case ValueSelectionItem(value) => Some(value)
@@ -78,6 +83,8 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   val scrollPane = new JScrollPane(jlist)
   scrollPane.setOpaque(false)
   scrollPane.setBorder(BorderFactory.createEmptyBorder())
+
+  def highlightBackgroundColor = backgroundColor
 
   override def setPreferredSize(size: Dimension): Unit = {
     import Sizing._
