@@ -22,10 +22,10 @@ class SetlistUI(seismic: Seismic,
   }
 
   val namePanel = new JPanel
-  namePanel.setPreferredSize(new Dimension(size.width - 8, 30))
+  namePanel.setPreferredSize(new Dimension(size.width - 4, 30))
   namePanel.setBackground(componentBGColor)
   SwingComponents.addBorder(namePanel)
-  val nameField = new LabeledTextField("Set List", 12, onSetListNameChange)
+  val nameField = new LabeledTextField("Set List", 40, onSetListNameChange)
 
   val songCallbacks = ListCallbacks(songClicked,
                                     songBackout,

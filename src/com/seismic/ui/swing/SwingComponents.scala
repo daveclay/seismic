@@ -63,7 +63,7 @@ object SwingComponents {
     })
 
     val line = new LineBorder(new Color(100, 100, 100))
-    val margin = new EmptyBorder(5, 15, 5, 15)
+    val margin = new EmptyBorder(2, 8, 2, 8)
     val compound = new CompoundBorder(line, margin)
     button.setBorder(compound)
   }
