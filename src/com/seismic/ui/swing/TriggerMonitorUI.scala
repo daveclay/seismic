@@ -5,22 +5,32 @@ import javax.swing.JPanel
 
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 import com.daveclay.swing.util.Position._
+import com.seismic.io.Preferences
 import com.seismic.messages.{Message, TriggerOffMessage, TriggerOnMessage}
 
-class TriggerMonitorUI(monoFont: Font, size: Dimension) extends JPanel {
+class TriggerMonitorUI(onKickThresholdSet: (Int) => Unit,
+                       onSnareThresholdSet: (Int) => Unit,
+                       size: Dimension) extends JPanel {
   SwingComponents.addBorder(this)
   setFocusable(false)
   setPreferredSize(size)
 
-  val monitorSize = new Dimension(size.width / 2 - 100, size.height - 8)
+  private val triggerThresholds = Preferences.getPreferences.triggerThresholds
 
-  val kickMonitor = new TriggerMeter("KICK", monoFont, monitorSize)
-  val snareMonitor = new TriggerMeter("SNARE", monoFont, monitorSize)
-  val handleMeter = new HandleMeter(new Dimension(140, size.height - 8))
+  private val monitorSize = new Dimension(size.width / 2 - 100, size.height - 8)
+  private val kickMonitor = new TriggerMeter("KICK",
+                                              onKickThresholdSet,
+                                              triggerThresholds.kickThreshold,
+                                              monitorSize)
 
-  val triggerMonitors = Map(
-                             "KICK" -> kickMonitor,
-                             "SNARE" -> snareMonitor)
+  private val snareMonitor = new TriggerMeter("SNARE",
+                                               onSnareThresholdSet,
+                                               triggerThresholds.snareThreshold,
+                                               monitorSize)
+
+  private val handleMeter = new HandleMeter(new Dimension(140, size.height - 8))
+
+  private val triggerMonitors = Map("KICK" -> kickMonitor, "SNARE" -> snareMonitor)
 
   position(kickMonitor).at(4, 4).in(this)
   position(snareMonitor).toTheRightOf(kickMonitor).withMargin(4).in(this)

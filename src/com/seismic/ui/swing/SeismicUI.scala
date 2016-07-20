@@ -5,9 +5,10 @@ import java.awt.event._
 import java.io.File
 import javax.swing._
 
-import com.seismic.ui.swing.SwingComponents.{monoFont11, titleFont}
+import com.seismic.ui.swing.SwingComponents.{backgroundColor, componentBGColor, monoFont11, titleFont}
 import com.daveclay.swing.util.Position.position
 import com.seismic._
+import com.seismic.io.Preferences
 
 case class SeismicSerialCallbacks(triggerOn: (String, Int, Int) => Unit,
                                   triggerOff: (String) => Unit,
@@ -47,18 +48,24 @@ class SeismicUI(seismic: Seismic,
   frame.setPreferredSize(contentSize)
 
   val mainPanel = frame.getContentPane
-  val backgroundColor = new Color(30, 30, 43)
-  val componentBGColor = new Color(50, 50, 50)
-
-  // TODO: build a factory that knows about all this shared styling
-  // then ask the factory to create components, the factory sets the styling
-  // remove all the styling from this layout and state handling.
+  val preferences = Preferences.getPreferences
+  val triggerThresholds = preferences.triggerThresholds
 
   val title = SwingComponents.label("SEISMIC.", SwingComponents.monoFont18)
-  val triggerMonitorUI = new TriggerMonitorUI(monoFont11, triggerMonitorSize)
+
+  val onKickThresholdSet = (threshold: Int) => {
+    triggerThresholds.kickThreshold = threshold
+    preferences.save()
+  }
+
+  val onSnareThresholdSet = (threshold: Int) => {
+    triggerThresholds.kickThreshold = threshold
+    preferences.save()
+  }
+
+  val triggerMonitorUI = new TriggerMonitorUI(onKickThresholdSet, onSnareThresholdSet, triggerMonitorSize)
   triggerMonitorUI.setBackground(componentBGColor)
 
-  // TODO: settings textbox that sets the value of a "t" keypress
   val phraseNavigationKeyListener = new PhraseNavigationKeyListener(callbacks.prevPhrase,
                                                                      callbacks.nextPhrase,
                                                                      callbacks.patch,

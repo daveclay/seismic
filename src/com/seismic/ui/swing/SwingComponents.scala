@@ -108,6 +108,8 @@ object SwingComponents {
   val fontName = "PT Mono"
   val monoFont11 = new Font(fontName, Font.PLAIN, 11)
   val monoFont18 = new Font(fontName, Font.PLAIN, 18)
+  val backgroundColor = new Color(30, 30, 43)
+  val componentBGColor = new Color(50, 50, 50)
   val foregroundFontColor = new Color(200, 200, 210)
   val buttonActiveColor = new Color(250, 200, 0)
   val buttonActiveFontColor = Color.BLACK

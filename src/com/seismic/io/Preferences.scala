@@ -2,7 +2,7 @@ package com.seismic.io
 
 import java.io.File
 
-import com.seismic.{HandleCalibration, HandleMeterCalibration, SetList}
+import com.seismic.{HandleCalibration, HandleMeterCalibration, SetList, TriggerThresholds}
 import com.seismic.io.ObjectMapperFactory.objectMapper
 
 object Preferences {
@@ -30,7 +30,13 @@ object Preferences {
 
 case class Preferences(var lastSetListDir: String,
                        var handleCalibration: HandleCalibration = HandleCalibration(),
-                       var handleMeterCalibration: HandleMeterCalibration = HandleMeterCalibration()) {
+                       var handleMeterCalibration: HandleMeterCalibration = HandleMeterCalibration(),
+                       var triggerThresholds: TriggerThresholds = TriggerThresholds()) {
+
+  if (triggerThresholds == null) {
+    triggerThresholds = TriggerThresholds()
+    save()
+  }
 
   def save() {
     objectMapper.writeValue(Preferences.preferencesFile, this)
