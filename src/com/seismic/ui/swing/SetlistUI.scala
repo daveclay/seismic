@@ -48,7 +48,9 @@ class SetlistUI(seismic: Seismic,
 
   private val editorWidth = size.width - songSelect.getPreferredSize.width - phraseSelect.getPreferredSize.width - 12
 
-  val songEditor = new SongEditor(onSongUpdated, new Dimension(editorWidth, 40), componentBGColor)
+  val songEditor = new SongEditor(onSongUpdated,
+                                   onSongDeleted,
+                                   new Dimension(editorWidth, 40), componentBGColor)
   val phraseEditor = new PhraseEditor(save,
                                        onPhraseUpdated,
                                        onPhraseDeleted,
@@ -107,6 +109,23 @@ class SetlistUI(seismic: Seismic,
     songSelect.itemWasUpdated(song)
   }
 
+  def onSongDeleted(songToDelete: Song): Unit = {
+    seismic.setListOpt.foreach { setList =>
+      val index = setList.songs.indexOf(songToDelete)
+      setList.removeSong(songToDelete)
+      save()
+
+      updateSetList(setList)
+      val songToSelect = if (index < 1) setList.songs(0) else setList.songs(index - 1)
+      val phrase = songToSelect.phrases.head
+      seismic.setCurrentSong(songToSelect)
+      seismic.setCurrentPhrase(phrase)
+
+      indicateSelectedSong(songToSelect)
+      indicateSelectedPhrase(phrase)
+    }
+  }
+
   def songsReordered(songs: Seq[Song]): Unit = {
     seismic.setListOpt.foreach { setList =>
       setList.updateSongs(songs)
@@ -127,14 +146,14 @@ class SetlistUI(seismic: Seismic,
   def onPhraseDeleted(phrase: Phrase): Unit = {
     seismic.currentSongOpt.foreach { song =>
       val phraseIdx = song.phrases.indexOf(phrase)
-      val phraseToSelect = if (phraseIdx < 1) song.phrases(0) else song.phrases(phraseIdx - 1)
 
       song.removePhrase(phrase)
       save()
+
+      val phraseToSelect = if (phraseIdx < 1) song.phrases(0) else song.phrases(phraseIdx - 1)
       seismic.setCurrentPhrase(phraseToSelect)
       phraseSelect.setItems(song.phrases)
-      phraseSelect.setCurrentSelectedItem(phraseToSelect)
-      phraseEditor.setPhrase(phraseToSelect)
+      indicateSelectedPhrase(phrase)
     }
   }
 
@@ -181,15 +200,19 @@ class SetlistUI(seismic: Seismic,
     phraseSelect.grabFocus()
   }
 
-  def setSetList(setList: SetList): Unit = {
+  private def setSetList(setList: SetList): Unit = {
     val song = setList.songs.head
     val phrase = song.phrases.head
 
-    nameField.setText(setList.name)
-    songSelect.setItems(setList.songs)
+    updateSetList(setList)
 
     indicateSelectedSong(song)
     indicateSelectedPhrase(phrase)
+  }
+
+  private def updateSetList(setList: SetList): Unit = {
+    nameField.setText(setList.name)
+    songSelect.setItems(setList.songs)
   }
 }
 

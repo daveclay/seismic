@@ -202,6 +202,10 @@ case class SetList(var name: String) {
     newSong
   }
 
+  def removeSong(song: Song): Unit = {
+    songs = songs.remove(song)
+  }
+
   def updateSongs(songs: Seq[Song]): Unit = {
     this.songs = songs.toArray
   }
