@@ -9,7 +9,7 @@ import com.daveclay.swing.util.Position._
 class ManualTriggerConfig(triggerName: String,
                           triggerOn: (String, Int, Int) => Unit,
                           triggerOff: (String) => Unit,
-                          size: Dimension) extends JPanel {
+                          size: Dimension) extends JPanel with HighlightOnFocus {
   SwingComponents.addBorder(this)
   setPreferredSize(size)
 
@@ -32,6 +32,8 @@ class ManualTriggerConfig(triggerName: String,
     override def keyReleased(e: KeyEvent): Unit = triggerOff(triggerName)
   })
 
+  highlight(this).onFocusOf(triggerValueField.inputField, handleValueField.inputField, triggerButton)
+
   position(label).at(4, 4).in(this)
   position(triggerValueField).toTheRightOf(label).withMargin(12).in(this)
   position(handleValueField).toTheRightOf(triggerValueField).withMargin(4).in(this)
@@ -39,6 +41,8 @@ class ManualTriggerConfig(triggerName: String,
 
   def onChange(value: String): Unit = {
   }
+
+  def highlightBackgroundColor = SwingComponents.componentBGColor
 
   private def getTriggerValue = triggerValueField.inputField.getText.toInt
   private def getHandleValue = handleValueField.inputField.getText.toInt
