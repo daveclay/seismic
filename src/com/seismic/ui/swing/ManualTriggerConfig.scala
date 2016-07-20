@@ -24,12 +24,12 @@ class ManualTriggerConfig(triggerName: String,
 
   val triggerButton = SwingComponents.button("FIRE")
   triggerButton.addMouseListener(new MouseAdapter {
-    override def mousePressed(e: MouseEvent): Unit = triggerOn(triggerName, getTriggerValue, getHandleValue)
-    override def mouseReleased(e: MouseEvent): Unit = triggerOff(triggerName)
+    override def mousePressed(e: MouseEvent): Unit = fire()
+    override def mouseReleased(e: MouseEvent): Unit = off()
   })
   triggerButton.addKeyListener(new KeyAdapter() {
-    override def keyPressed(e: KeyEvent): Unit = triggerOn(triggerName, getTriggerValue, getHandleValue)
-    override def keyReleased(e: KeyEvent): Unit = triggerOff(triggerName)
+    override def keyPressed(e: KeyEvent): Unit = fire()
+    override def keyReleased(e: KeyEvent): Unit = off()
   })
 
   highlight(this).onFocusOf(triggerValueField.inputField, handleValueField.inputField, triggerButton)
@@ -40,6 +40,14 @@ class ManualTriggerConfig(triggerName: String,
   position(triggerButton).toTheRightOf(handleValueField).withMargin(4).in(this)
 
   def onChange(value: String): Unit = {
+  }
+
+  def fire(): Unit = {
+    triggerOn(triggerName, getTriggerValue, getHandleValue)
+  }
+
+  def off(): Unit = {
+    triggerOff(triggerName)
   }
 
   def highlightBackgroundColor = SwingComponents.componentBGColor

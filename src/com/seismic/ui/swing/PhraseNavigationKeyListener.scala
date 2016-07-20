@@ -5,9 +5,11 @@ import java.awt.event.{KeyAdapter, KeyEvent}
 class PhraseNavigationKeyListener(onUp: () => Unit,
                                   onDown: () => Unit,
                                   onNumber: (Int) => Unit,
-                                  captureTrigger: () => Unit
+                                  fireTrigger: (Int) => Unit,
+                                  releaseTrigger: (Int) => Unit
                                  ) extends KeyAdapter {
-  override def keyPressed(e: KeyEvent): Unit = Action(e).execute()
+  override def keyPressed(e: KeyEvent): Unit = Action(e).keyPressed()
+  override def keyReleased(e: KeyEvent): Unit = Action(e).keyReleased()
 
   case class Action(e: KeyEvent) {
     val consume = (f: () => Unit) => {
@@ -17,7 +19,7 @@ class PhraseNavigationKeyListener(onUp: () => Unit,
 
     val consumeNumber = (i: Int) => consume(() => onNumber(i))
 
-    def execute(): Unit = {
+    def keyPressed(): Unit = {
       e.getKeyCode match {
         case KeyEvent.VK_UP | KeyEvent.VK_KP_UP => consume(() => onUp())
         case KeyEvent.VK_DOWN | KeyEvent.VK_KP_DOWN => consume(() => onDown())
@@ -29,7 +31,16 @@ class PhraseNavigationKeyListener(onUp: () => Unit,
         case KeyEvent.VK_6 => consumeNumber(6)
         case KeyEvent.VK_7 => consumeNumber(7)
         case KeyEvent.VK_8 => consumeNumber(8)
-        case KeyEvent.VK_T => consume(() => captureTrigger())
+        case KeyEvent.VK_S => consume(() => fireTrigger(e.getKeyCode))
+        case KeyEvent.VK_K => consume(() => fireTrigger(e.getKeyCode))
+        case _ =>
+      }
+    }
+
+    def keyReleased(): Unit = {
+      e.getKeyCode match {
+        case KeyEvent.VK_S => consume(() => releaseTrigger(e.getKeyCode))
+        case KeyEvent.VK_K => consume(() => releaseTrigger(e.getKeyCode))
         case _ =>
       }
     }

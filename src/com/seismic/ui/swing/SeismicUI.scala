@@ -51,7 +51,7 @@ class SeismicUI(seismic: Seismic,
   val preferences = Preferences.getPreferences
   val triggerThresholds = preferences.triggerThresholds
 
-  val title = SwingComponents.label("SEISMIC.", SwingComponents.monoFont18)
+  val title = SwingComponents.label("SEISM!C", SwingComponents.monoFont18)
 
   val onKickThresholdSet = (threshold: Int) => {
     triggerThresholds.kickThreshold = threshold
@@ -66,12 +66,31 @@ class SeismicUI(seismic: Seismic,
   val triggerMonitorUI = new TriggerMonitorUI(onKickThresholdSet, onSnareThresholdSet, triggerMonitorSize)
   triggerMonitorUI.setBackground(componentBGColor)
 
+  val kickTriggerConfig = new ManualTriggerConfig("KICK", callbacks.triggerOn, callbacks.triggerOff, triggerConfigSize)
+  kickTriggerConfig.setBackground(componentBGColor)
+
+  val snareTriggerConfig = new ManualTriggerConfig("SNARE", callbacks.triggerOn, callbacks.triggerOff, triggerConfigSize)
+  snareTriggerConfig.setBackground(componentBGColor)
+
+  val fireKeyTrigger = (keyCode: Int) => {
+    keyCode match {
+      case KeyEvent.VK_S => snareTriggerConfig.fire()
+      case KeyEvent.VK_K => kickTriggerConfig.fire()
+    }
+  }
+
+  val releaseKeyTrigger = (keyCode: Int) => {
+    keyCode match {
+      case KeyEvent.VK_S => snareTriggerConfig.off()
+      case KeyEvent.VK_K => kickTriggerConfig.off()
+    }
+  }
+
   val phraseNavigationKeyListener = new PhraseNavigationKeyListener(callbacks.prevPhrase,
                                                                      callbacks.nextPhrase,
                                                                      callbacks.patch,
-                                                                     () => {
-                                                                       println(s"pressed some letter, I think")
-                                                                     })
+                                                                     fireKeyTrigger,
+                                                                     releaseKeyTrigger)
 
   val setlistUI = new SetlistUI(seismic,
                                  callbacks,
@@ -80,12 +99,6 @@ class SeismicUI(seismic: Seismic,
                                  componentBGColor)
   setlistUI.addKeyListener(phraseNavigationKeyListener)
   setlistUI.setOpaque(false)
-
-  val kickTriggerConfig = new ManualTriggerConfig("KICK", callbacks.triggerOn, callbacks.triggerOff, triggerConfigSize)
-  kickTriggerConfig.setBackground(componentBGColor)
-
-  val snareTriggerConfig = new ManualTriggerConfig("SNARE", callbacks.triggerOn, callbacks.triggerOff, triggerConfigSize)
-  snareTriggerConfig.setBackground(componentBGColor)
 
   val onFileSelected = (file: File) => setlistUI.openSetList(seismic.openSetList(file))
   val fileChooser = new JSONFileChooser(frame, onFileSelected)
