@@ -40,7 +40,7 @@ class MeterCircleIndicator(size: Dimension) extends JPanel {
     g2d.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL))
     g2d.drawLine(startX.toInt, startY.toInt, centerX.toInt, centerY.toInt)
     g2d.drawLine(centerX.toInt, centerY.toInt, endX.toInt, endY.toInt)
-    g2d.setColor(new Color(255, 120, 0))
+    g2d.setColor(SwingComponents.orangeColor)
     g2d.drawLine(startX.toInt, startY.toInt, pointerX.toInt, pointerY.toInt)
   }
 }

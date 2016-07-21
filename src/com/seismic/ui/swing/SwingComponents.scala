@@ -115,6 +115,7 @@ object SwingComponents {
   val buttonActiveFontColor = Color.BLACK
   val buttonFocusFontColor = buttonActiveColor
   val highlightColor = new Color(170, 170, 170)
+  val orangeColor = new Color(255, 120, 0)
 
   def titleLabel(text: String) = {
     val title = label(text)

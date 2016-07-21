@@ -51,7 +51,8 @@ class SeismicUI(seismic: Seismic,
   val preferences = Preferences.getPreferences
   val triggerThresholds = preferences.triggerThresholds
 
-  val title = SwingComponents.label("SEISM!C", SwingComponents.monoFont18)
+  val title = SwingComponents.label("SEISMIC", SwingComponents.monoFont18)
+  title.setForeground(SwingComponents.orangeColor)
 
   val onKickThresholdSet = (threshold: Int) => {
     triggerThresholds.kickThreshold = threshold
