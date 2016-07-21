@@ -46,11 +46,11 @@ object Selector {
     panel.setBorder(BorderFactory.createLineBorder(Color.GRAY))
     val label = SwingComponents.label(selectable.label, SwingComponents.monoFont18)
     if (cellState.isSelected) {
-      SwingComponents.buttonFocused(panel)
+      panel.setBackground(SwingComponents.highlightColor)
       label.setForeground(panel.getForeground)
     } else {
-      SwingComponents.buttonBlurred(panel)
-      label.setForeground(panel.getForeground)
+      panel.setBackground(Color.BLACK)
+      label.setForeground(SwingComponents.foregroundFontColor)
     }
     panel.add(label)
     panel

@@ -69,7 +69,7 @@ class TriggerMeter(title: String,
     cancelDecay()
     label.setText(f"$title%5s $value%4s")
     label.setForeground(Color.BLACK)
-    setBackground(new Color(170, 170, 170))
+    setBackground(SwingComponents.highlightColor)
     setValueWithoutDecay(value)
     decayCounter = (value * .04f).toInt
   }
