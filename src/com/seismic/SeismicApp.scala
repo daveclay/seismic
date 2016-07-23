@@ -73,6 +73,7 @@ object SeismicApp {
       }
 
       serialMonitor.start(args(0))
+      midiIO.addOutput(args(1))
     }
   }
 }
