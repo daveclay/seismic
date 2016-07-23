@@ -72,7 +72,7 @@ object SeismicApp {
         }
       }
 
-      serialMonitor.start("mock")
+      serialMonitor.start(args(0))
     }
   }
 }
