@@ -35,32 +35,40 @@ class Seismic(midiIO: MIDIIO) {
       val velocity = instrument.mapValueToVelocity(trigger.triggerValue)
       instrument.notes.foreach { (note) =>
         if (note.startsWith("N")) {
-          midiIO.sendNoteOff(song.channel, MidiNoteMap.valueForNote(note.drop(1)), 0)
+          sendNoteOn(song, note.drop(1))
         } else if (note.startsWith("X")) {
-          midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note.drop(1)), velocity)
+          sendNoteOn(song, note.drop(1), velocity)
         } else if ( ! note.startsWith("T")) {
-          midiIO.sendNoteOn(song.channel, MidiNoteMap.valueForNote(note), velocity)
+          sendNoteOn(song, note, velocity)
         }
       }
-      triggeredState.triggered(trigger.name, instrument, song.channel)
+      triggeredState.triggered(trigger.name, instrument, song)
       instrument.fireTriggerOnListener(velocity)
     }
   }
 
   def off(name: String): Unit = {
     triggeredState.lastTriggered(name) match {
-      case Some(Tuple2(instrument, channel)) =>
+      case Some(Tuple2(instrument, song)) =>
         instrument.notes.foreach { (note) =>
           if (note.startsWith("T")) {
-            midiIO.sendNoteOff(channel, MidiNoteMap.valueForNote(note.drop(1)), 0)
+            sendNoteOff(song, note.drop(1))
           } else if (!note.startsWith("X") && !note.startsWith("N")) {
-            midiIO.sendNoteOff(channel, MidiNoteMap.valueForNote(note), 0)
+            sendNoteOff(song, note)
           }
         }
         instrument.fireTriggerOffListener()
       case None =>
         System.err.println(f"Somehow managed to trigger an off event with no previous on event for $name. Ignoring.")
     }
+  }
+
+  private def sendNoteOn(song: Song, note: String, velocity: Int = 0): Unit = {
+    midiIO.sendNoteOn(song.channel - 1, MidiNoteMap.valueForNote(note), velocity)
+  }
+
+  private def sendNoteOff(song: Song, note: String): Unit = {
+    midiIO.sendNoteOff(song.channel - 1, MidiNoteMap.valueForNote(note), 0)
   }
 
   def patch(patch: Int): Unit = {
