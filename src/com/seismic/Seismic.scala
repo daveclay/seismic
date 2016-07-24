@@ -64,6 +64,7 @@ class Seismic(midiIO: MIDIIO) {
   }
 
   def patch(patch: Int): Unit = {
+    println(f"patch switch: $patch")
     currentSongOpt.foreach { song =>
       song.phrases.find { phrase =>
         phrase.patch == patch
