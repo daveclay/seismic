@@ -35,7 +35,7 @@ class Seismic(midiIO: MIDIIO) {
       val velocity = instrument.mapValueToVelocity(trigger.triggerValue)
       instrument.notes.foreach { (note) =>
         if (note.startsWith("N")) {
-          sendNoteOn(song, note.drop(1))
+          sendNoteOff(song, note.drop(1))
         } else if (note.startsWith("X")) {
           sendNoteOn(song, note.drop(1), velocity)
         } else if ( ! note.startsWith("T")) {

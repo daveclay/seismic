@@ -66,7 +66,21 @@ class PhraseEditor(onSongUpdated: () => Unit,
     position(deleteButton).toTheRightOf(patchField).withMargin(10).in(this)
   }
 
+  var instrumentsPanel = new JPanel() {
+    setPreferredSize(new Dimension(instrumentUISize.width * 2, instrumentUISize.height))
+    setOpaque(false)
+    position(kickInstrumentUI).below(phraseEditPanel).withMargin(10).in(this)
+    position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
+  }
+
+  val instructions = SwingComponents.label("<html>Prefixes:<br/>" +
+    "X: do not send note off when released.<br/>" +
+    "N: send note off when triggered.<br/>" +
+    "T: send note off when released.<br/>")
+
   position(phraseEditPanel).at(4, 4).in(this)
+  position(instrumentsPanel).below(phraseEditPanel).withMargin(4).in(this)
+  position(instructions).below(instrumentsPanel).withMargin(4).in(this)
 
   def highlightBackgroundColor = backgroundColor
 
@@ -77,8 +91,6 @@ class PhraseEditor(onSongUpdated: () => Unit,
     kickInstrumentUI.setInstruments(phrase.kickInstruments)
     snareInstrumentUI.setInstruments(phrase.snareInstruments)
 
-    position(kickInstrumentUI).below(phraseEditPanel).withMargin(10).in(this)
-    position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
     configureHighlighting()
   }
 
