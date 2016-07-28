@@ -142,7 +142,7 @@ class InstrumentUI(instrument: Instrument,
   }
 
   private def onValueChange(value: String):Unit = {
-    instrument.setNotes(value.split(", "))
+    instrument.setNotes(value.split(",").map { s => s.trim() })
     instrumentWasUpdated()
   }
 
