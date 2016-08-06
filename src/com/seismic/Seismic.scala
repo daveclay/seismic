@@ -271,12 +271,14 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   @JsonManagedReference var snareInstruments: Array[Instrument] = Array.empty
   @JsonBackReference var song: Song = null
 
+  private val triggerThresholds = getPreferences.triggerThresholds
+
   def addNewKickInstrument(): Unit = {
-    kickInstruments = kickInstruments :+ newInstrument
+    kickInstruments = kickInstruments :+ newInstrument(() => triggerThresholds.kickThreshold)
   }
 
   def addNewSnareInstrument(): Unit = {
-    snareInstruments = snareInstruments :+ newInstrument
+    snareInstruments = snareInstruments :+ newInstrument(() => triggerThresholds.snareThreshold)
   }
 
   def removeKickInstrument(instrument: Instrument): Unit = {
@@ -307,9 +309,10 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
     next(instruments, (instrument: Instrument) => instrument.highestNote(), -1)
   }
 
-  private def newInstrument = {
+  private def newInstrument(triggerThreshold: () => Int) = {
     val note = nextNote()
     val newInstrument = new Instrument(Array(note))
+    newInstrument.setTriggerThreshold(triggerThreshold)
     newInstrument.phrase = this
     newInstrument
   }
@@ -331,15 +334,14 @@ case class Instrument(var notes: Array[String]) {
 
   private var triggeredOnListener: Option[(Int) => Unit] = None
   private var triggeredOffListener: Option[() => Unit] = None
-  private var threshold = 900
+  private var triggerThreshold = () => 900
 
-  def setThreshold(threshold: Int = 900) = {
-    this.threshold = threshold
-    this
+  def setTriggerThreshold(triggerThreshold: () => Int): Unit = {
+    this.triggerThreshold = triggerThreshold
   }
 
   def mapValueToVelocity(value: Int): Int = {
-    val mappedValue = map(value, 0, threshold, 0, 127)
+    val mappedValue = map(value, 0, triggerThreshold(), 0, 127)
     Math.max(Math.min(mappedValue, 127), 0).toInt
   }
 
