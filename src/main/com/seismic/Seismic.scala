@@ -267,11 +267,27 @@ case class Song(var name: String,
 
 case class Phrase(var name: String, var patch: Int) extends Selectable {
 
-  @JsonManagedReference var kickInstruments: Array[Instrument] = Array.empty
-  @JsonManagedReference var snareInstruments: Array[Instrument] = Array.empty
+  private var kickInstruments: Array[Instrument] = Array.empty
+  private var snareInstruments: Array[Instrument] = Array.empty
   @JsonBackReference var song: Song = null
 
-  private val triggerThresholds = getPreferences.triggerThresholds
+  val triggerThresholds = getPreferences.triggerThresholds
+
+  def getKickInstruments = kickInstruments
+
+  @JsonManagedReference
+  def setKickInstruments(kickInstruments: Array[Instrument]): Unit = {
+    kickInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.kickThreshold) }
+    this.kickInstruments = kickInstruments
+  }
+
+  def getSnareInstruments = snareInstruments
+
+  @JsonManagedReference
+  def setSnareInstruments(snareInstruments: Array[Instrument]): Unit = {
+    snareInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.snareThreshold) }
+    this.snareInstruments = snareInstruments
+  }
 
   def addNewKickInstrument(): Unit = {
     kickInstruments = kickInstruments :+ newInstrument(() => triggerThresholds.kickThreshold)
@@ -334,14 +350,18 @@ case class Instrument(var notes: Array[String]) {
 
   private var triggeredOnListener: Option[(Int) => Unit] = None
   private var triggeredOffListener: Option[() => Unit] = None
-  private var triggerThreshold = () => 900
+  private var triggerThreshold: Option[() => Int] = None
 
   def setTriggerThreshold(triggerThreshold: () => Int): Unit = {
-    this.triggerThreshold = triggerThreshold
+    this.triggerThreshold = Option(triggerThreshold)
   }
 
   def mapValueToVelocity(value: Int): Int = {
-    val mappedValue = map(value, 0, triggerThreshold(), 0, 127)
+    val threshold = triggerThreshold match {
+      case Some(f) => f()
+      case None => 900
+    }
+    val mappedValue = map(value, 0, threshold, 0, 127)
     Math.max(Math.min(mappedValue, 127), 0).toInt
   }
 

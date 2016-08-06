@@ -88,8 +88,8 @@ class PhraseEditor(onSongUpdated: () => Unit,
     curentPhraseOpt = Option(phrase)
     nameField.setText(phrase.name)
     patchField.setText(phrase.patch.toString)
-    kickInstrumentUI.setInstruments(phrase.kickInstruments)
-    snareInstrumentUI.setInstruments(phrase.snareInstruments)
+    kickInstrumentUI.setInstruments(phrase.getKickInstruments)
+    snareInstrumentUI.setInstruments(phrase.getSnareInstruments)
 
     configureHighlighting()
   }
@@ -116,7 +116,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   private def onAddKickInstrumentClicked(): Unit = {
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewKickInstrument()
-      kickInstrumentUI.setInstruments(phrase.kickInstruments)
+      kickInstrumentUI.setInstruments(phrase.getKickInstruments)
       configureHighlighting()
       onSongUpdated()
     }
@@ -125,7 +125,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   private def onDeleteKickInstrumentClicked(instrument: Instrument): Unit = {
     curentPhraseOpt.foreach { phrase =>
       phrase.removeKickInstrument(instrument)
-      kickInstrumentUI.setInstruments(phrase.kickInstruments)
+      kickInstrumentUI.setInstruments(phrase.getKickInstruments)
       configureHighlighting()
       onSongUpdated()
     }
@@ -134,7 +134,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   private def onAddSnareInstrumentClicked(): Unit = {
     curentPhraseOpt.foreach { phrase =>
       phrase.addNewSnareInstrument()
-      snareInstrumentUI.setInstruments(phrase.snareInstruments)
+      snareInstrumentUI.setInstruments(phrase.getSnareInstruments)
       configureHighlighting()
       onSongUpdated()
     }
@@ -143,7 +143,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   private def onDeleteSnareInstrumentClicked(instrument: Instrument): Unit = {
     curentPhraseOpt.foreach { phrase =>
       phrase.removeSnareInstrument(instrument)
-      snareInstrumentUI.setInstruments(phrase.snareInstruments)
+      snareInstrumentUI.setInstruments(phrase.getSnareInstruments)
       configureHighlighting()
       onSongUpdated()
     }
