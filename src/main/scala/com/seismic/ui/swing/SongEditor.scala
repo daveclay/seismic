@@ -1,10 +1,11 @@
 package com.seismic.ui.swing
 
-import java.awt.event.KeyListener
+import java.awt.event.{ActionEvent, KeyListener}
 import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
+import com.seismic.scala.ActionListenerExtensions._
 import com.seismic.{Phrase, Song}
 
 class SongEditor(onSongUpdated: (Song) => Unit,
@@ -33,7 +34,7 @@ class SongEditor(onSongUpdated: (Song) => Unit,
   val nameField = SwingComponents.textField(Color.BLACK, 30, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", 3, onChannelChange)
   val deleteButton = SwingComponents.button("DELETE")
-  deleteButton.addActionListener(e => { songOpt.foreach { song => onDeleteSong(song) } })
+  deleteButton.addActionListener((e: ActionEvent) => songOpt.foreach { song => onDeleteSong(song) })
 
   highlight(this).onFocusOf(nameField, channelField.inputField)
 

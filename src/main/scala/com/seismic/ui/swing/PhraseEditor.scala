@@ -1,9 +1,10 @@
 package com.seismic.ui.swing
 
-import java.awt.event.KeyListener
+import java.awt.event.{ActionEvent, ActionListener, KeyListener}
 import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
+import com.seismic.scala.ActionListenerExtensions._
 import com.daveclay.swing.util.Position._
 import com.seismic.{Instrument, Phrase}
 
@@ -52,7 +53,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   val patchField = new LabeledTextField("Patch", 3, onPatchChange)
 
   val deleteButton = SwingComponents.button("DELETE")
-  deleteButton.addActionListener(e => {
+  deleteButton.addActionListener((e: ActionEvent) => {
     curentPhraseOpt.foreach { phrase => onDeletePhrase(phrase) }
   })
 

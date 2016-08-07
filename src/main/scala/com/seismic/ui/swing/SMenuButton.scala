@@ -1,8 +1,8 @@
 package com.seismic.ui.swing
 
-import java.awt.Color
-import java.awt.event.ActionEvent
-import javax.swing.{AbstractAction, JButton, JMenuItem, JPopupMenu}
+import java.awt.{Color, Component}
+import java.awt.event.{ActionEvent, ActionListener}
+import javax.swing._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -14,9 +14,11 @@ class SMenuButton[T](text: String, onSelected: (T) => Unit) extends JButton(text
   popup.setOpaque(true)
   popup.setBackground(Color.BLACK)
   popup.setForeground(new Color(200, 200, 200))
-  addActionListener( (e) =>
-    popup.show(this, 7, getHeight - 4)
-  )
+  addActionListener(new ActionListener {
+    override def actionPerformed(e: ActionEvent): Unit = {
+      popup.show(SMenuButton.this, 7, getHeight - 4)
+    }
+  })
 
   val items = ArrayBuffer[MenuItemIndex]()
 

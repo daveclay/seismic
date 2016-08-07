@@ -1,11 +1,13 @@
 package com.seismic.ui.swing
 
+import java.awt.event.{ActionEvent, ActionListener}
 import java.awt.{Color, Component, Container, Dimension}
 import javax.swing.{JLabel, JPanel, JTextField}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Instrument
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+import com.seismic.scala.ActionListenerExtensions._
 
 class InstrumentsUI(labelValue: String,
                     onAddInstrumentClicked: () => Unit,
@@ -22,9 +24,7 @@ class InstrumentsUI(labelValue: String,
   position(label).atOrigin().in(this)
 
   val addInstrumentButton = SwingComponents.button("Add")
-  addInstrumentButton.addActionListener(e => {
-    onAddInstrumentClicked()
-  })
+  addInstrumentButton.addActionListener((e: ActionEvent) => onAddInstrumentClicked())
 
   var instrumentNoteUIsOpt: Option[Seq[InstrumentUI]] = None
 
@@ -128,7 +128,7 @@ class InstrumentUI(instrument: Instrument,
   noteField.setText(instrument.notes.mkString(", "))
 
   val deleteButton = SwingComponents.button("DELETE")
-  deleteButton.addActionListener(e => onDeleteInstrument())
+  deleteButton.addActionListener((e: ActionEvent) => onDeleteInstrument())
 
   position(noteField).atOrigin().in(this)
   position(deleteButton).toTheRightOf(noteField).withMargin(10).in(this)

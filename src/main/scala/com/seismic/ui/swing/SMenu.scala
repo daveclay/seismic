@@ -1,8 +1,9 @@
 package com.seismic.ui.swing
 
 import java.awt.Toolkit
-import java.awt.event.ActionEvent
+import java.awt.event.{ActionEvent, ActionListener}
 import javax.swing.{JMenu, JMenuItem, KeyStroke}
+import com.seismic.scala.ActionListenerExtensions._
 
 class SMenu(name: String) extends JMenu(name) {
 

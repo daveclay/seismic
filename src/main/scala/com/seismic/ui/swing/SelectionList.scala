@@ -1,9 +1,10 @@
 package com.seismic.ui.swing
 
-import java.awt.event.{FocusEvent, FocusListener, KeyEvent, KeyListener}
+import java.awt.event._
 import java.awt.{BorderLayout, Color, Component, Dimension}
 import javax.swing._
 
+import com.seismic.scala.ActionListenerExtensions._
 import com.daveclay.swing.util.Position._
 
 trait Selectable {
@@ -24,7 +25,7 @@ class SelectionList[T <: Selectable](onSelectNext: () => Unit,
   setFocusable(true)
 
   var addItemButton = SwingComponents.button("Add")
-  addItemButton.addActionListener(e => { onAddItem() })
+  addItemButton.addActionListener((e: ActionEvent) => { onAddItem() })
   highlight(this).onFocusOf(addItemButton)
 
   var selectionItemsOpt: Option[Seq[SelectionItem[T]]] = None

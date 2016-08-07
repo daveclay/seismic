@@ -4,7 +4,7 @@ import java.awt._
 import java.awt.event._
 import javax.swing.border.{Border, CompoundBorder, EmptyBorder, LineBorder}
 import javax.swing._
-import javax.swing.plaf.ButtonUI
+import com.seismic.scala.ActionListenerExtensions._
 
 object SwingComponents {
 
@@ -158,10 +158,7 @@ object SwingComponents {
       }
     })
 
-    field.addActionListener((e: ActionEvent) => {
-      triggerValueChange()
-    })
-
+    field.addActionListener((e: ActionEvent) => triggerValueChange())
     field
   }
 }

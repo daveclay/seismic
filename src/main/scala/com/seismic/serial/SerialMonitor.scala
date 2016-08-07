@@ -21,10 +21,12 @@ class SerialMonitor() {
   def start(port: String): Unit = {
     val serialIO = serialIOFor(port)
 
-    serialIO.open(() => {
-      val message = serialIO.readStringUntil(10)
-      if (message != null) {
-        handleMessage(message)
+    serialIO.open(new SerialListener {
+      override def dataAvailable(): Unit = {
+        val message = serialIO.readStringUntil(10)
+        if (message != null) {
+          handleMessage(message)
+        }
       }
     })
   }
@@ -140,7 +142,11 @@ class MockSerialIO extends SerialIO {
 
     def trigger(message: String): Unit = {
       queue.put(message)
-      notifierPool.execute(() => serialListener.dataAvailable() )
+      notifierPool.execute(new Runnable {
+        override def run(): Unit = {
+          serialListener.dataAvailable()
+        }
+      })
     }
 
     private def createNextTriggerMessage() = {
