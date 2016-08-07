@@ -1,10 +1,9 @@
 package com.seismic.scala
 
-import org.scalatest.{FlatSpec, Matchers}
-
 import com.seismic.scala.StringExtensions._
+import com.seismic.test.Test
 
-class StringExtensionsTest extends FlatSpec with Matchers {
+class StringExtensionsTest extends Test {
   val s = "ABCD"
 
   "The string ABCD" should "startsWithAny X, T, or A" in {

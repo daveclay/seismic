@@ -3,11 +3,10 @@ package com.seismic
 import com.seismic.io.Preferences
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.MIDIIO
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers}
+import com.seismic.test.Test
 import org.mockito.Mockito._
 
-class SeismicTest extends FlatSpec with MockitoSugar with Matchers {
+class SeismicTest extends Test {
 
   val midiIO = mock[MIDIIO]
   val preferences = Preferences(".")
