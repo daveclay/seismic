@@ -1,8 +1,6 @@
 package com.seismic
 
-import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue}
-import java.util.concurrent.locks.LockSupport
-
+import com.seismic.io.Preferences
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
 import com.seismic.serial.SerialMonitor
@@ -15,7 +13,8 @@ object SeismicApp {
     System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Seismic")
     val serialMonitor = new SerialMonitor
     val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
-    val seismic = new Seismic(midiIO)
+    val preferences = Preferences.getPreferences
+    val seismic = new Seismic(midiIO, preferences)
     val seismicUIFactory = new SeismicUIFactory
 
     val seismicMidiHandler = (message: Message) => {

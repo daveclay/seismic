@@ -13,6 +13,7 @@ import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._
 import com.seismic.utils.Next.{highest, next}
 import com.seismic.scala.ArrayExtensions._
+import com.seismic.scala.StringExtensions._
 
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
@@ -20,7 +21,7 @@ import com.seismic.scala.ArrayExtensions._
   *
   * @param midiIO
   */
-class Seismic(midiIO: MIDIIO) {
+class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
 
   val triggeredState = new TriggeredState
   var setListOpt: Option[SetList] = None
@@ -28,6 +29,19 @@ class Seismic(midiIO: MIDIIO) {
   var currentPhraseOpt: Option[Phrase] = None
 
   var onPhraseChangeHandlerOpt: Option[(Phrase) => Unit] = None
+
+  case class Note(note: String) {
+
+    def noteValue = {
+      if (note.startsWithAny("N", "X", "T")) {
+        note.drop(1)
+      } else if (note.startsWith("X")) {
+        note.drop(1)
+      } else if ( ! note.startsWith("T")) {
+        note
+      }
+    }
+  }
 
   def trigger(trigger: TriggerOnMessage): Unit = {
     withCurrentPhraseInSong { (phrase, song) =>
@@ -120,6 +134,8 @@ class Seismic(midiIO: MIDIIO) {
 
   def setCurrentPhrase(phrase: Phrase): Unit = {
     currentPhraseOpt = Option(phrase)
+    phrase.setTriggerThresholds(preferences.triggerThresholds)
+    phrase.setHandleCalibration(preferences.handleCalibration)
     onPhraseChangeHandlerOpt.foreach { handler => handler(phrase) }
   }
 
@@ -271,13 +287,23 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   private var snareInstruments: Array[Instrument] = Array.empty
   @JsonBackReference var song: Song = null
 
-  val triggerThresholds = getPreferences.triggerThresholds
+  var triggerThresholdsOpt: Option[TriggerThresholds] = None
+  var handleCalibrationOpt: Option[HandleCalibration] = None
+
+  def setHandleCalibration(handleCalibration: HandleCalibration): Unit = {
+    handleCalibrationOpt = Option(handleCalibration)
+  }
+
+  def setTriggerThresholds(triggerThresholds: TriggerThresholds): Unit = {
+    triggerThresholdsOpt = Option(triggerThresholds)
+    kickInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.kickThreshold) }
+    snareInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.snareThreshold) }
+  }
 
   def getKickInstruments = kickInstruments
 
   @JsonManagedReference
   def setKickInstruments(kickInstruments: Array[Instrument]): Unit = {
-    kickInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.kickThreshold) }
     this.kickInstruments = kickInstruments
   }
 
@@ -285,16 +311,19 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
   @JsonManagedReference
   def setSnareInstruments(snareInstruments: Array[Instrument]): Unit = {
-    snareInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.snareThreshold) }
     this.snareInstruments = snareInstruments
   }
 
   def addNewKickInstrument(): Unit = {
-    kickInstruments = kickInstruments :+ newInstrument(() => triggerThresholds.kickThreshold)
+    withTriggerThresholds(triggerThresholds => {
+      kickInstruments = kickInstruments :+ newInstrument(() => triggerThresholds.kickThreshold)
+    })
   }
 
   def addNewSnareInstrument(): Unit = {
-    snareInstruments = snareInstruments :+ newInstrument(() => triggerThresholds.snareThreshold)
+    withTriggerThresholds(triggerThresholds => {
+      snareInstruments = snareInstruments :+ newInstrument(() => triggerThresholds.snareThreshold)
+    })
   }
 
   def removeKickInstrument(instrument: Instrument): Unit = {
@@ -310,6 +339,13 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
       case "KICK" => selectInstrumentForValue(kickInstruments, handleValue)
       case "SNARE" => selectInstrumentForValue(snareInstruments, handleValue)
       case _ => throw new IllegalArgumentException(f"unknown trigger $name")
+    }
+  }
+
+  private def withTriggerThresholds(f: (TriggerThresholds) => Unit): Unit = {
+    triggerThresholdsOpt match {
+      case Some(triggerThresholds) => f(triggerThresholds)
+      case None => throw new IllegalStateException("Somehow I have no triggerThresholds yet trying to play the instrument")
     }
   }
 
@@ -334,7 +370,10 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   }
 
   private def selectInstrumentForValue(instruments: Array[Instrument], value: Int) = {
-    getPreferences.handleCalibration.select(value, instruments)
+    handleCalibrationOpt match {
+      case Some(handleCalibration) => handleCalibration.select(value, instruments)
+      case None => throw new IllegalStateException("Somehow I have no HandleCalibration yet someone's trying to play the instrument")
+    }
   }
 }
 
@@ -370,6 +409,7 @@ case class Instrument(var notes: Array[String]) {
   }
 
   def highestNote() = {
+    // Todo: nope
     highest(notes, (note: String) => MidiNoteMap.valueForNote(note))
   }
 

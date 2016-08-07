@@ -8,7 +8,7 @@ import com.seismic.io.ObjectMapperFactory.objectMapper
 object Preferences {
   private val homeDir = System.getProperties.getProperty("user.dir")
   private val preferencesFile = new File(homeDir, ".seismic.json")
-  private val preferences = Preferences.buildPreferences()
+  private var preferencesOpt: Option[Preferences] = None
 
   private def buildPreferences() = {
     if ( ! preferencesFile.exists()) {
@@ -20,12 +20,18 @@ object Preferences {
     }
   }
 
-  def getPreferences = preferences
+  def getPreferences = {
+    preferencesOpt match {
+      case Some(preferences) => preferences
+      case None =>
+        preferencesOpt = Option(buildPreferences())
+        preferencesOpt.get
+    }
+  }
 
   def main(args: Array[String]): Unit = {
     println(Preferences.getPreferences.handleCalibration)
   }
-
 }
 
 case class Preferences(var lastSetListDir: String,
