@@ -3,7 +3,7 @@ package com.seismic
 import com.seismic.io.Preferences
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
-import com.seismic.serial.SerialMonitor
+import com.seismic.serial.{SerialMonitor, StandardSerialIO}
 import com.seismic.ui.swing.{SeismicSerialCallbacks, SeismicUI, SeismicUIFactory}
 import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 
@@ -11,6 +11,16 @@ object SeismicApp {
 
   def main(args: Array[String]): Unit = {
     System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Seismic")
+
+    if (args.length < 1) {
+      println("java -jar seismic.jar [serial port] [MIDI port]")
+      println("Available serial ports:")
+      StandardSerialIO.list().foreach { p => println(p) }
+      println("\nAvailable Midi Busses:")
+      StupidMonkeyMIDI.availableInputs().foreach { p => println(p) }
+      return
+    }
+
     val serialMonitor = new SerialMonitor
     val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
     val preferences = Preferences.getPreferences
