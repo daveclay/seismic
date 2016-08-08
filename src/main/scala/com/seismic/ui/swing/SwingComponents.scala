@@ -89,6 +89,14 @@ object SwingComponents {
     button
   }
 
+  def deleteButton() = {
+    val deleteButton = new JButton("x")
+    configureButton(deleteButton)
+    deleteButton.setFont(monoFont13)
+    deleteButton.setForeground(orangeColor)
+    deleteButton
+  }
+
   def label(text: String): JLabel = {
     label(text, monoFont11)
   }
@@ -107,6 +115,7 @@ object SwingComponents {
   // val monoFont11 = new Font("PT Mono", Font.PLAIN, 11)
   val fontName = "PT Mono"
   val monoFont11 = new Font(fontName, Font.PLAIN, 11)
+  val monoFont13 = new Font(fontName, Font.PLAIN, 13)
   val monoFont18 = new Font(fontName, Font.PLAIN, 18)
   val backgroundColor = new Color(30, 30, 43)
   val componentBGColor = new Color(50, 50, 50)
@@ -160,5 +169,14 @@ object SwingComponents {
 
     field.addActionListener((e: ActionEvent) => triggerValueChange())
     field
+  }
+
+  def createImageIcon(path: String, description: String) = {
+    val imgURL = getClass.getResource(path)
+    if (imgURL == null) {
+      throw new IllegalArgumentException(f"Resource not found: $path")
+    }
+
+    new ImageIcon(imgURL, description)
   }
 }

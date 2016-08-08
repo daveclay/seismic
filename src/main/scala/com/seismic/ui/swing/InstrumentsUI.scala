@@ -124,10 +124,10 @@ class InstrumentUI(instrument: Instrument,
   setPreferredSize(size)
   setOpaque(false)
 
-  val noteField = new LabeledTextField("Note", 10, onValueChange)
+  val noteField = new LabeledTextField("Note", 20, onValueChange)
   noteField.setText(instrument.notes.mkString(", "))
 
-  val deleteButton = SwingComponents.button("DELETE")
+  val deleteButton = SwingComponents.deleteButton()
   deleteButton.addActionListener((e: ActionEvent) => onDeleteInstrument())
 
   position(noteField).atOrigin().in(this)

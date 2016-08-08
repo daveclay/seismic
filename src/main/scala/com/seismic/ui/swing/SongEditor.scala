@@ -33,7 +33,7 @@ class SongEditor(onSongUpdated: (Song) => Unit,
   val label = SwingComponents.label("SONG", SwingComponents.monoFont18)
   val nameField = SwingComponents.textField(Color.BLACK, 30, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", 3, onChannelChange)
-  val deleteButton = SwingComponents.button("DELETE")
+  val deleteButton = SwingComponents.deleteButton()
   deleteButton.addActionListener((e: ActionEvent) => songOpt.foreach { song => onDeleteSong(song) })
 
   highlight(this).onFocusOf(nameField, channelField.inputField)

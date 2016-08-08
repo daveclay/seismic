@@ -19,7 +19,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   setBackground(backgroundColor)
 
   var curentPhraseOpt: Option[Phrase] = None
-  val instrumentUISize = new Dimension(200, 300)
+  val instrumentUISize = new Dimension(242, 300)
 
   val kickInstrumentUI = new InstrumentsUI("Kick",
                                             onAddKickInstrumentClicked,
@@ -52,7 +52,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   val nameField = SwingComponents.textField(Color.BLACK, 12, onNameChange)
   val patchField = new LabeledTextField("Patch", 3, onPatchChange)
 
-  val deleteButton = SwingComponents.button("DELETE")
+  val deleteButton = SwingComponents.deleteButton()
   deleteButton.addActionListener((e: ActionEvent) => {
     curentPhraseOpt.foreach { phrase => onDeletePhrase(phrase) }
   })
