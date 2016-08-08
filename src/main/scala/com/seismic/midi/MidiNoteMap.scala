@@ -1,4 +1,5 @@
 package com.seismic.midi
+import com.seismic.scala.StringExtensions._
 
 object MidiNoteMap {
 
@@ -17,13 +18,25 @@ object MidiNoteMap {
     f"${NOTE_NAMES(i % 12)}$octave" -> i
   }.toMap[String, Int]
 
-  def noteForValue(value: Int) = {
+  def midiValueForNote(note: String) = {
+    valueForNote(noteWithoutPrefix(note))
+  }
+
+  def noteForMidiValue(value: Int) = {
     val octave = (value / 12) + octaveShift
     val note = value % 12
     NOTE_NAMES(note) + octave
   }
 
-  def valueForNote(key: String) = {
+  private def valueForNote(key: String) = {
     NOTE_MAP(key)
+  }
+
+  private def noteWithoutPrefix(note: String) = {
+    if (note.startsWithAny("N", "X", "T")) {
+      note.drop(1)
+    } else {
+      note
+    }
   }
 }

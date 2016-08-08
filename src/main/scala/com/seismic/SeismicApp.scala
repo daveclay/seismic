@@ -14,7 +14,8 @@ object SeismicApp {
     val serialMonitor = new SerialMonitor
     val midiIO = new StupidMonkeyMIDI("IAC Bus 2")
     val preferences = Preferences.getPreferences
-    val seismic = new Seismic(midiIO, preferences)
+    val triggeredState = new TriggeredState
+    val seismic = new Seismic(midiIO, preferences, triggeredState)
     val seismicUIFactory = new SeismicUIFactory
 
     val seismicMidiHandler = (message: Message) => {

@@ -4,7 +4,6 @@ import java.io.File
 
 import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
 import com.seismic.io.{Preferences, SetListSerializer}
-import com.seismic.io.Preferences.getPreferences
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.{MIDIIO, MidiNoteMap}
 import com.seismic.ui.swing.Selectable
@@ -13,7 +12,6 @@ import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._
 import com.seismic.utils.Next.{highest, next}
 import com.seismic.scala.ArrayExtensions._
-import com.seismic.scala.StringExtensions._
 
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
@@ -21,27 +19,13 @@ import com.seismic.scala.StringExtensions._
   *
   * @param midiIO
   */
-class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
+class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: TriggeredState) {
 
-  val triggeredState = new TriggeredState
   var setListOpt: Option[SetList] = None
   var currentSongOpt: Option[Song] = None
   var currentPhraseOpt: Option[Phrase] = None
 
   var onPhraseChangeHandlerOpt: Option[(Phrase) => Unit] = None
-
-  case class Note(note: String) {
-
-    def noteValue = {
-      if (note.startsWithAny("N", "X", "T")) {
-        note.drop(1)
-      } else if (note.startsWith("X")) {
-        note.drop(1)
-      } else if ( ! note.startsWith("T")) {
-        note
-      }
-    }
-  }
 
   def trigger(trigger: TriggerOnMessage): Unit = {
     withCurrentPhraseInSong { (phrase, song) =>
@@ -49,9 +33,9 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
       val velocity = instrument.mapValueToVelocity(trigger.triggerValue)
       instrument.notes.foreach { (note) =>
         if (note.startsWith("N")) {
-          sendNoteOff(song, note.drop(1))
+          sendNoteOff(song, note)
         } else if (note.startsWith("X")) {
-          sendNoteOn(song, note.drop(1), velocity)
+          sendNoteOn(song, note, velocity)
         } else if ( ! note.startsWith("T")) {
           sendNoteOn(song, note, velocity)
         }
@@ -66,7 +50,7 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
       case Some(Tuple2(instrument, song)) =>
         instrument.notes.foreach { (note) =>
           if (note.startsWith("T")) {
-            sendNoteOff(song, note.drop(1))
+            sendNoteOff(song, note)
           } else if (!note.startsWith("X") && !note.startsWith("N")) {
             sendNoteOff(song, note)
           }
@@ -78,17 +62,17 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
   }
 
   private def sendNoteOn(song: Song, note: String, velocity: Int = 0): Unit = {
-    midiIO.sendNoteOn(song.channel - 1, MidiNoteMap.valueForNote(note), velocity)
+    midiIO.sendNoteOn(song.channel - 1, MidiNoteMap.midiValueForNote(note), velocity)
   }
 
   private def sendNoteOff(song: Song, note: String): Unit = {
-    midiIO.sendNoteOff(song.channel - 1, MidiNoteMap.valueForNote(note), 0)
+    midiIO.sendNoteOff(song.channel - 1, MidiNoteMap.midiValueForNote(note), 0)
   }
 
   def patch(patch: Int): Unit = {
     println(f"patch switch: $patch")
     currentSongOpt.foreach { song =>
-      song.phrases.find { phrase =>
+      song.getPhrases.find { phrase =>
         phrase.patch == patch
       } match {
         case Some(phrase) => setCurrentPhrase(phrase)
@@ -119,7 +103,7 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
     val setList = SetListSerializer.read(file)
     setListOpt = Option(setList)
     currentSongOpt = Option(setList.songs.head)
-    currentPhraseOpt = Option(setList.songs.head.phrases.head)
+    currentPhraseOpt = Option(setList.songs.head.getPhrases.head)
     setList
   }
 
@@ -129,7 +113,7 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
 
   def setCurrentSong(song: Song): Unit = {
     currentSongOpt = Option(song)
-    setCurrentPhrase(song.phrases.head)
+    setCurrentPhrase(song.getPhrases.head)
   }
 
   def setCurrentPhrase(phrase: Phrase): Unit = {
@@ -153,12 +137,12 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
 
   private def selectPhraseAt(index: Int): Option[Phrase] = {
     currentSongOpt.flatMap { song =>
-      if (song.phrases.length == index) {
+      if (song.getPhrases.length == index) {
         getFirstPhraseInNextSong
       } else if (index < 0) {
         getLastPhraseFromPreviousSong
       } else {
-        Option(song.phrases(wrapIndex(index, song.phrases)))
+        Option(song.getPhrases(wrapIndex(index, song.getPhrases)))
       }
     }.tap { phrase =>
       currentSongOpt = Option(phrase.song)
@@ -167,11 +151,11 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
   }
 
   private def getLastPhraseFromPreviousSong: Option[Phrase] = {
-    getPreviousSong.flatMap { song => Option(song.phrases.last) }
+    getPreviousSong.flatMap { song => Option(song.getPhrases.last) }
   }
 
   private def getFirstPhraseInNextSong: Option[Phrase] = {
-    getNextSong.flatMap { song => Option(song.phrases.head) }
+    getNextSong.flatMap { song => Option(song.getPhrases.head) }
   }
 
   private def indexOfCurrentSong() = {
@@ -179,7 +163,7 @@ class Seismic(midiIO: MIDIIO, val preferences: Preferences) {
   }
 
   private def indexOfCurrentPhrase() = {
-    withCurrentSongAndPhrase { (song, phrase) => song.phrases.indexOf(phrase) }
+    withCurrentSongAndPhrase { (song, phrase) => song.getPhrases.indexOf(phrase) }
   }
 
   private def withCurrentSongAndPhrase[T](f: (Song, Phrase) => T) = {
@@ -245,11 +229,18 @@ case class SetList(var name: String) {
 }
 
 case class Song(var name: String,
-                var channel: Int
-               ) extends Selectable {
+                var channel: Int) extends Selectable {
 
-  @JsonManagedReference var phrases: Array[Phrase] = Array.empty
+  private var phrases: Array[Phrase] = Array.empty
   @JsonBackReference var setList: SetList = null
+
+  @JsonManagedReference
+  def setPhrases(phrases: Array[Phrase]): Unit = {
+    phrases.foreach { phrase => phrase.song = this }
+    this.phrases = phrases
+  }
+
+  def getPhrases = phrases
 
   def addPhrase() = {
     val nextPatch = next(phrases, (p: Phrase) => {p.patch })
@@ -304,6 +295,7 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
   @JsonManagedReference
   def setKickInstruments(kickInstruments: Array[Instrument]): Unit = {
+    setPhraseOnInstruments(kickInstruments)
     this.kickInstruments = kickInstruments
   }
 
@@ -311,18 +303,23 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
   @JsonManagedReference
   def setSnareInstruments(snareInstruments: Array[Instrument]): Unit = {
+    setPhraseOnInstruments(snareInstruments)
     this.snareInstruments = snareInstruments
   }
 
-  def addNewKickInstrument(): Unit = {
+  def addNewKickInstrument(): Instrument = {
     withTriggerThresholds(triggerThresholds => {
-      kickInstruments = kickInstruments :+ newInstrument(() => triggerThresholds.kickThreshold)
+      val instrument = newInstrument(() => triggerThresholds.kickThreshold)
+      kickInstruments = kickInstruments :+ instrument
+      instrument
     })
   }
 
-  def addNewSnareInstrument(): Unit = {
+  def addNewSnareInstrument(): Instrument = {
     withTriggerThresholds(triggerThresholds => {
-      snareInstruments = snareInstruments :+ newInstrument(() => triggerThresholds.snareThreshold)
+      val instrument = newInstrument(() => triggerThresholds.snareThreshold)
+      snareInstruments = snareInstruments :+ instrument
+      instrument
     })
   }
 
@@ -342,7 +339,11 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
     }
   }
 
-  private def withTriggerThresholds(f: (TriggerThresholds) => Unit): Unit = {
+  private def setPhraseOnInstruments(instruments: Seq[Instrument]): Unit = {
+    instruments.foreach { instrument => instrument.phrase = this }
+  }
+
+  private def withTriggerThresholds[T](f: (TriggerThresholds) => T) = {
     triggerThresholdsOpt match {
       case Some(triggerThresholds) => f(triggerThresholds)
       case None => throw new IllegalStateException("Somehow I have no triggerThresholds yet trying to play the instrument")
@@ -350,11 +351,11 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   }
 
   private def nextNote() = {
-    MidiNoteMap.noteForValue(nextNoteForInstruments( allInstruments() ))
+    MidiNoteMap.noteForMidiValue(nextNoteForInstruments(allInstruments()))
   }
 
   private def allInstruments(): Seq[Instrument] = {
-    song.phrases.flatMap { phrase => phrase.kickInstruments ++ phrase.snareInstruments } ++ kickInstruments ++ snareInstruments
+    song.getPhrases.flatMap { phrase => phrase.kickInstruments ++ phrase.snareInstruments } ++ kickInstruments ++ snareInstruments
   }
 
   private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
@@ -409,8 +410,7 @@ case class Instrument(var notes: Array[String]) {
   }
 
   def highestNote() = {
-    // Todo: nope
-    highest(notes, (note: String) => MidiNoteMap.valueForNote(note))
+    highest(notes, (note: String) => MidiNoteMap.midiValueForNote(note))
   }
 
   def wasTriggeredOn(f: (Int) => Unit): Unit = {
