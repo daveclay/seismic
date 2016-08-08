@@ -102,8 +102,8 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
   def openSetList(file: File) = {
     val setList = SetListSerializer.read(file)
     setListOpt = Option(setList)
-    currentSongOpt = Option(setList.songs.head)
-    currentPhraseOpt = Option(setList.songs.head.getPhrases.head)
+    setCurrentSong(setList.songs.head)
+    setCurrentPhrase(setList.songs.head.getPhrases.head)
     setList
   }
 
