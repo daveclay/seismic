@@ -12,7 +12,7 @@ object Next {
     }
   }
 
-  def next[T](items: Seq[T], getter: (T) => Int, initial: Int = 0) = {
-    highest(items, getter, initial) + 1
+  def next[T](items: Seq[T], getter: (T) => Int, initial: Int = 0, max: Int = Integer.MAX_VALUE) = {
+    Math.min(max, highest(items, getter, initial) + 1)
   }
 }

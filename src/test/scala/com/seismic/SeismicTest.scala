@@ -107,6 +107,12 @@ class SeismicTest extends Test {
     }
   }
 
+  "when adding phrase" - {
+    "it should not break" in new SongData {
+      song.addPhrase()
+    }
+  }
+
   trait SongData {
 
     val midiIO = mock[MIDIIO]

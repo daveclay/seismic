@@ -113,6 +113,7 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
 
   def setCurrentSong(song: Song): Unit = {
     currentSongOpt = Option(song)
+    song.setPreferences(preferences)
     setCurrentPhrase(song.getPhrases.head)
   }
 
@@ -233,6 +234,11 @@ case class Song(var name: String,
 
   private var phrases: Array[Phrase] = Array.empty
   @JsonBackReference var setList: SetList = null
+  private var preferencesOpt: Option[Preferences] = None
+
+  def setPreferences(preferences: Preferences) = {
+    this.preferencesOpt = Option(preferences)
+  }
 
   @JsonManagedReference
   def setPhrases(phrases: Array[Phrase]): Unit = {
@@ -247,8 +253,15 @@ case class Song(var name: String,
 
     val newPhrase = Phrase(s"Phrase $nextPatch", nextPatch)
     newPhrase.song = this
-    newPhrase.addNewKickInstrument()
-    newPhrase.addNewSnareInstrument()
+
+    preferencesOpt match {
+      case Some(preferences) =>
+        newPhrase.setTriggerThresholds(preferences.triggerThresholds)
+        newPhrase.setHandleCalibration(preferences.handleCalibration)
+        newPhrase.addNewKickInstrument()
+        newPhrase.addNewSnareInstrument()
+      case None => throw new IllegalStateException("Can't add phrases because somehow preferences weren't set.")
+    }
 
     phrases = phrases :+ newPhrase
 
@@ -359,7 +372,7 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   }
 
   private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
-    next(instruments, (instrument: Instrument) => instrument.highestNote(), -1)
+    next(instruments, (instrument: Instrument) => instrument.highestNote(), -1, 127)
   }
 
   private def newInstrument(triggerThreshold: () => Int) = {

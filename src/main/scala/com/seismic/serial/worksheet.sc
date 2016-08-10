@@ -1,3 +1,5 @@
+import java.io.{BufferedReader, StringWriter}
+
 import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
