@@ -113,6 +113,12 @@ class SeismicTest extends Test {
     }
   }
 
+  "when adding song" - {
+    "it should not break" in new SongData {
+      setList.addSong()
+    }
+  }
+
   trait SongData {
 
     val midiIO = mock[MIDIIO]
@@ -131,6 +137,11 @@ class SeismicTest extends Test {
 
     val song = Song("Test Song", 1)
     song.setPhrases(Array(phrase))
+
+    val setList = new SetList("Test SetList")
+    setList.songs = Array(song)
+
+    seismic.setSetList(setList)
 
     seismic.setCurrentSong(song)
     seismic.setCurrentPhrase(phrase)

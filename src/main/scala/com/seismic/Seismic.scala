@@ -99,11 +99,16 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
     setList
   }
 
-  def openSetList(file: File) = {
-    val setList = SetListSerializer.read(file)
+  def setSetList(setList: SetList): Unit = {
     setListOpt = Option(setList)
+    setList.setPreferences(preferences)
     setCurrentSong(setList.songs.head)
     setCurrentPhrase(setList.songs.head.getPhrases.head)
+  }
+
+  def openSetList(file: File) = {
+    val setList = SetListSerializer.read(file)
+    setSetList(setList)
     setList
   }
 
@@ -119,8 +124,6 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
 
   def setCurrentPhrase(phrase: Phrase): Unit = {
     currentPhraseOpt = Option(phrase)
-    phrase.setTriggerThresholds(preferences.triggerThresholds)
-    phrase.setHandleCalibration(preferences.handleCalibration)
     onPhraseChangeHandlerOpt.foreach { handler => handler(phrase) }
   }
 
@@ -198,18 +201,28 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
 case class SetList(var name: String) {
 
   @JsonManagedReference var songs: Array[Song] = Array.empty
+  private var preferencesOpt: Option[Preferences] = None
+
+  def setPreferences(preferences: Preferences) = {
+    this.preferencesOpt = Option(preferences)
+    songs.foreach { song => song.setPreferences(preferences) }
+  }
 
   def addSong() = {
+    preferencesOpt match {
+      case Some(preferences) =>
+        val channel = next(songs, (s: Song) => { s.channel })
+        // TODO: change song name, can't dup names.
+        val newSong = Song(s"Song $channel", channel)
+        newSong.setPreferences(preferences)
+        newSong.addPhrase()
+        newSong.setList = this
 
-    val channel = next(songs, (s: Song) => { s.channel })
+        songs = songs :+ newSong
+        newSong
 
-    // TODO: change song name, can't dup names.
-    val newSong = Song(s"Song $channel", channel)
-    newSong.addPhrase()
-    newSong.setList = this
-
-    songs = songs :+ newSong
-    newSong
+      case None => throw new IllegalStateException("Can't add song because somehow preferences weren't set.")
+    }
   }
 
   def removeSong(song: Song): Unit = {
@@ -238,6 +251,12 @@ case class Song(var name: String,
 
   def setPreferences(preferences: Preferences) = {
     this.preferencesOpt = Option(preferences)
+    phrases.foreach { phrase => setPrefsOnPhrase(phrase, preferences) }
+  }
+  
+  private def setPrefsOnPhrase(phrase: Phrase, preferences: Preferences): Unit = {
+    phrase.setTriggerThresholds(preferences.triggerThresholds)
+    phrase.setHandleCalibration(preferences.handleCalibration)
   }
 
   @JsonManagedReference
@@ -256,8 +275,7 @@ case class Song(var name: String,
 
     preferencesOpt match {
       case Some(preferences) =>
-        newPhrase.setTriggerThresholds(preferences.triggerThresholds)
-        newPhrase.setHandleCalibration(preferences.handleCalibration)
+        setPrefsOnPhrase(newPhrase, preferences)
         newPhrase.addNewKickInstrument()
         newPhrase.addNewSnareInstrument()
       case None => throw new IllegalStateException("Can't add phrases because somehow preferences weren't set.")
