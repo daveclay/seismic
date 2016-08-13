@@ -19,7 +19,7 @@ class PhraseEditor(onSongUpdated: () => Unit,
   setBackground(backgroundColor)
 
   var curentPhraseOpt: Option[Phrase] = None
-  val instrumentUISize = new Dimension(242, 300)
+  val instrumentUISize = new Dimension(242, 280)
 
   val kickInstrumentUI = new InstrumentsUI("Kick",
                                             onAddKickInstrumentClicked,
@@ -74,10 +74,12 @@ class PhraseEditor(onSongUpdated: () => Unit,
     position(snareInstrumentUI).toTheRightOf(kickInstrumentUI).withMargin(4).in(this)
   }
 
-  val instructions = SwingComponents.label("<html>Prefixes:<br/>" +
+  val instructions = SwingComponents.label("<html><b>Prefixes:</b><br/>" +
     "X: do not send note off when released.<br/>" +
     "N: send note off when triggered.<br/>" +
-    "T: send note off when released.<br/>")
+    "T: send note off when released.<br/>" +
+    "<b>Suffixes:</b><br/>" +
+    "/4: send note message on midi channel 4")
 
   position(phraseEditPanel).at(4, 4).in(this)
   position(instrumentsPanel).below(phraseEditPanel).withMargin(4).in(this)

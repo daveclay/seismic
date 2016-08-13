@@ -94,6 +94,16 @@ class SeismicTest extends Test {
         verify(midiIO, never()).sendNoteOff(anyInt(), anyInt(), anyInt())
       }
     }
+
+    "for notes suffixed with / for midi channel " - {
+      "it should trigger a midi note on with the channel" in new SongData {
+        val instrument = phrase.addNewKickInstrument()
+        instrument.setNotes(Array("C#3/4"))
+
+        seismic.trigger(TriggerOnMessage("KICK", 1023, 1023))
+        verify(midiIO).sendNoteOn(3, 61, 127)
+      }
+    }
   }
 
   "when adding instruments" - {

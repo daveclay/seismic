@@ -18,8 +18,16 @@ object MidiNoteMap {
     f"${NOTE_NAMES(i % 12)}$octave" -> i
   }.toMap[String, Int]
 
+  def channelForNote(note: String, defaultChannel: Int) = {
+    if (note.contains("/")) {
+      note.split("/")(1).toInt - 1
+    } else {
+      defaultChannel
+    }
+  }
+
   def midiValueForNote(note: String) = {
-    valueForNote(noteWithoutPrefix(note))
+    valueForNote(noteWithoutSuffix(noteWithoutPrefix(note)))
   }
 
   def noteForMidiValue(value: Int) = {
@@ -30,6 +38,14 @@ object MidiNoteMap {
 
   private def valueForNote(key: String) = {
     NOTE_MAP(key)
+  }
+
+  private def noteWithoutSuffix(note: String) = {
+    if (note.contains("/")) {
+      note.split("/")(0)
+    } else {
+      note
+    }
   }
 
   private def noteWithoutPrefix(note: String) = {
