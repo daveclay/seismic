@@ -92,7 +92,7 @@ object SwingComponents {
   def deleteButton() = {
     val deleteButton = new JButton("x")
     configureButton(deleteButton)
-    deleteButton.setFont(monoFont13)
+    deleteButton.setFont(monoFont11)
     deleteButton.setForeground(orangeColor)
     deleteButton
   }
@@ -145,21 +145,17 @@ object SwingComponents {
     field.setForeground(new Color(200, 200, 200))
     field.setBackground(backgroundColor)
     field.setOpaque(true)
-    // field.setEditable(false)
+    field.setEditable(true)
     field.setCaretColor(new Color(250, 250, 20))
+    field.setMargin(new Insets(0, 5, 0, 15))
     field.setFont(monoFont11)
 
     val triggerValueChange = () => {
-      field.setEditable(false)
-      field.getCaret.setVisible(false)
       onValueChange(field.getText)
     }
 
     field.addFocusListener(new FocusListener {
       override def focusGained(e: FocusEvent): Unit = {
-        field.setEditable(true)
-        field.getCaret.setVisible(true)
-        field.getCaret.setSelectionVisible(true)
       }
 
       override def focusLost(e: FocusEvent): Unit = {

@@ -35,7 +35,7 @@ class LabeledTextField(labelText: String,
   position(label).atOrigin().in(this)
 
   if (orientation == LabeledTextField.Horizontal) {
-    setPreferredSize(new Dimension(labelSize.width + textFieldSize.width, textFieldSize.height))
+    setPreferredSize(new Dimension(labelSize.width + textFieldSize.width + 10, textFieldSize.height))
     position(inputField).toTheRightOf(label).withMargin(margin).in(this)
   } else {
     setPreferredSize(new Dimension(Math.max(labelSize.width, textFieldSize.width), textFieldSize.height + labelSize.height))

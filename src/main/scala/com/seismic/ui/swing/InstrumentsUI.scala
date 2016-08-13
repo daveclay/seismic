@@ -53,7 +53,7 @@ class InstrumentsUI(labelValue: String,
 
   def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentUI]): Unit = {
     instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
-      position(instrumentUI).below(previousComponent).withMargin(4).in(this)
+      position(instrumentUI).below(previousComponent).in(this)
       instrumentUI
     }
   }
@@ -68,7 +68,7 @@ class InstrumentsUI(labelValue: String,
       new InstrumentUI(instrument,
                         onInstrumentUpdated,
                             deleteInstrument,
-                            new Dimension(getPreferredSize.width, 20),
+                            new Dimension(getPreferredSize.width, 30),
                             backgroundColor)
     }
   }
@@ -124,14 +124,14 @@ class InstrumentUI(instrument: Instrument,
   setPreferredSize(size)
   setOpaque(false)
 
-  val noteField = new LabeledTextField("Note", 20, onValueChange)
+  val noteField = new LabeledTextField("Note", 24, onValueChange)
   noteField.setText(instrument.notes.mkString(", "))
 
   val deleteButton = SwingComponents.deleteButton()
   deleteButton.addActionListener((e: ActionEvent) => onDeleteInstrument())
 
   position(noteField).atOrigin().in(this)
-  position(deleteButton).toTheRightOf(noteField).withMargin(10).in(this)
+  position(deleteButton).toTheRightOf(noteField).withMargin(6).in(this)
 
   instrument.wasTriggeredOn { (pitch) =>
     invokeLater { () => noteField.highlightField() }
