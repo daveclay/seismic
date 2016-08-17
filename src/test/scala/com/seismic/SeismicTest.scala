@@ -129,15 +129,38 @@ class SeismicTest extends Test {
     }
   }
 
+  "when calibrating the handle, triggered midi notes" - {
+    "should fire the first instrument when low" in new SongData {
+      seismic.trigger(TriggerOnMessage("KICK", 800, 0))
+      verify(midiIO).sendNoteOn(0, 61, 112)
+    }
+
+    "should fire the second instrument when high" in new SongData {
+      seismic.trigger(TriggerOnMessage("KICK", 800, 800))
+      verify(midiIO).sendNoteOn(0, 5, 112)
+    }
+
+    "should reflect updated calibration" in new SongData {
+      preferences.handleCalibration.calibrationMinValue = 100
+      preferences.handleCalibration.calibrationMaxValue = 110
+
+      seismic.trigger(TriggerOnMessage("KICK", 800, 110))
+      verify(midiIO).sendNoteOn(0, 5, 112)
+    }
+  }
+
   trait SongData {
 
     val midiIO = mock[MIDIIO]
     val preferences = Preferences(".")
+    preferences.handleCalibration.calibrationMinValue = 0
+    preferences.handleCalibration.calibrationMaxValue = 1023
     val triggeredState = new TriggeredState
     val seismic = new Seismic(midiIO, preferences, triggeredState)
 
     val kickInstrument1 = Instrument(Array("C#3"))
     val kickInstrument2 = Instrument(Array("F-2"))
+
     val snareInstrument1 = Instrument(Array("C#-2"))
     val snareInstrument2 = Instrument(Array("G8"))
 
