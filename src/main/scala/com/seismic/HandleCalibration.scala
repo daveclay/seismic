@@ -6,8 +6,13 @@ case class HandleCalibration(var calibrationMinValue: Int = 0,
                              var calibrationMaxValue: Int = 1023) {
 
   def select[T](value: Int, items: Seq[T]) = {
-    val constrained = Math.min(calibrationMaxValue, Math.max(calibrationMinValue, value))
-    items(Math.round(map(constrained, calibrationMinValue, calibrationMaxValue, 0, items.size - 1)))
+    val min = Math.min(calibrationMaxValue, calibrationMinValue)
+    val max = Math.max(calibrationMaxValue, calibrationMinValue)
+
+    val range = max - min
+
+    val constrained = Math.min(range, Math.max(0, value))
+    items(Math.round(map(constrained, range, 0, 0, items.size - 1)))
   }
 }
 
