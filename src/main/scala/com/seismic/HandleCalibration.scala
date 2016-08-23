@@ -3,16 +3,17 @@ package com.seismic
 import com.seismic.utils.ValueMapHelper._
 
 case class HandleCalibration(var calibrationMinValue: Int = 0,
-                             var calibrationMaxValue: Int = 1023) {
+                             var calibrationMaxValue: Int = 1023,
+                             var inverted: Boolean = true) {
 
   def select[T](value: Int, items: Seq[T]) = {
-    val min = Math.min(calibrationMaxValue, calibrationMinValue)
-    val max = Math.max(calibrationMaxValue, calibrationMinValue)
+    val range = calibrationMaxValue - calibrationMinValue
+    val valueAdjustedForRange = Math.max(0, Math.min(calibrationMaxValue, value - calibrationMinValue))
 
-    val range = max - min
+    val min = if (inverted) range else 0
+    val max = if (inverted) 0 else range
 
-    val constrained = Math.min(range, Math.max(0, value))
-    items(Math.round(map(constrained, range, 0, 0, items.size - 1)))
+    items(Math.round(map(valueAdjustedForRange, min, max, 0, items.size - 1)))
   }
 }
 
