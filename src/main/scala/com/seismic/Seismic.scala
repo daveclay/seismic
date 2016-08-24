@@ -2,6 +2,9 @@ package com.seismic
 
 import java.io.File
 
+/*
+ * fuck my OWN ass
+ */
 import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference}
 import com.seismic.io.{Preferences, SetListSerializer}
 import com.seismic.messages.TriggerOnMessage
