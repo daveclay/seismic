@@ -35,7 +35,6 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
 
   private val preferences = getPreferences
   private val handleCalibration = preferences.handleCalibration
-  private val handleMeterCalibration = preferences.handleMeterCalibration
 
   private val onMinSet = (s: String) => {
     handleCalibration.calibrationMinValue = s.toInt
@@ -72,8 +71,8 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
     this.lastRawValue = value
 
     val radians = map(value,
-                       handleMeterCalibration.valueAt180,
-                       handleMeterCalibration.valueAt270,
+                       handleCalibration.calibrationMinValue,
+                       handleCalibration.calibrationMaxValue,
                        Math.PI.toFloat,
                        4.71239f)
 
@@ -109,12 +108,20 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   }
 
   private def calibrate270() {
-    handleMeterCalibration.valueAt270 = lastRawValue
-    preferences.save()
+    // TODO: highlight which field was set
+    maxField.setText(lastRawValue.toString)
+    onMaxSet(lastRawValue.toString)
+    wasCalibrated()
   }
 
   private def calibrate180() {
-    handleMeterCalibration.valueAt180 = lastRawValue
+    minField.setText(lastRawValue.toString)
+    onMinSet(lastRawValue.toString)
+    wasCalibrated()
+  }
+
+  private def wasCalibrated(): Unit = {
     preferences.save()
+    setRawValue(lastRawValue)
   }
 }
