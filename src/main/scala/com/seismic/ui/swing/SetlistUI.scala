@@ -53,6 +53,7 @@ class SetlistUI(seismic: Seismic,
                                    new Dimension(editorWidth, 40), componentBGColor)
   val phraseEditor = new PhraseEditor(save,
                                        onPhraseUpdated,
+                                       onDupPhrase,
                                        onPhraseDeleted,
                                        new Dimension(editorWidth, size.height - 40),
                                        componentBGColor)
@@ -77,11 +78,7 @@ class SetlistUI(seismic: Seismic,
   }
 
   def onSetListNameChange(name: String): Unit = {
-    seismic.setListOpt.foreach {
-      setList => {
-        setList.setName(name)
-      }
-    }
+    withSetList { setList => setList.setName(name) }
   }
 
   def songClicked(song: Song): Unit = {
@@ -89,7 +86,7 @@ class SetlistUI(seismic: Seismic,
   }
 
   def addSong(): Unit = {
-    seismic.setListOpt.foreach { setList =>
+    withSetList { setList =>
       val song = setList.addSong()
       save()
       songSelect.addItem(song)
@@ -110,7 +107,7 @@ class SetlistUI(seismic: Seismic,
   }
 
   def onSongDeleted(songToDelete: Song): Unit = {
-    seismic.setListOpt.foreach { setList =>
+    withSetList { setList =>
       val index = setList.songs.indexOf(songToDelete)
       setList.removeSong(songToDelete)
       save()
@@ -127,24 +124,28 @@ class SetlistUI(seismic: Seismic,
   }
 
   def songsReordered(songs: Seq[Song]): Unit = {
-    seismic.setListOpt.foreach { setList =>
+    withSetList { setList =>
       setList.updateSongs(songs)
       seismic.save()
     }
   }
 
   def addPhrase(): Unit = {
-    seismic.currentSongOpt.foreach { song =>
-      val phrase = song.addPhrase()
-      save()
-      phraseSelect.addItem(phrase)
-      seismic.setCurrentPhrase(phrase)
-      phraseEditor.grabFocus()
+    withCurrentSong { song =>
+      val newPhrase = song.addPhrase()
+      phraseAdded(newPhrase)
+    }
+  }
+
+  def onDupPhrase(phrase: Phrase): Unit = {
+    withCurrentSong { song =>
+      val newPhrase = song.dupPhrase(phrase)
+      phraseAdded(newPhrase)
     }
   }
 
   def onPhraseDeleted(phrase: Phrase): Unit = {
-    seismic.currentSongOpt.foreach { song =>
+    withCurrentSong { song =>
       val phraseIdx = song.getPhrases.indexOf(phrase)
 
       song.removePhrase(phrase)
@@ -172,15 +173,21 @@ class SetlistUI(seismic: Seismic,
   }
 
   def phrasesReordered(phrases: Seq[Phrase]): Unit = {
-    seismic.currentSongOpt.foreach { song =>
+    withCurrentSong { song =>
       song.updatePhrases(phrases)
       seismic.save()
     }
   }
 
+  private def phraseAdded(newPhrase: Phrase): Unit = {
+    save()
+    phraseSelect.addItem(newPhrase)
+    seismic.setCurrentPhrase(newPhrase)
+    phraseEditor.grabFocus()
+  }
+
   private def indicateSelectedSong(song: Song): Unit = {
     val phrases = song.getPhrases
-    val phrase = phrases.head
     songSelect.setCurrentSelectedItem(song)
     songEditor.setSong(song)
     phraseSelect.setItems(phrases)
@@ -213,6 +220,14 @@ class SetlistUI(seismic: Seismic,
   private def updateSetList(setList: SetList): Unit = {
     nameField.setText(setList.name)
     songSelect.setItems(setList.songs)
+  }
+
+  private def withSetList[T](f: (SetList) => T) = {
+    seismic.setListOpt.foreach { setList => f(setList) }
+  }
+
+  private def withCurrentSong[T](f: (Song) => T) = {
+    seismic.currentSongOpt.foreach { song => f(song) }
   }
 }
 

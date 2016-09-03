@@ -271,23 +271,18 @@ case class Song(var name: String,
 
   def getPhrases = phrases
 
-  def addPhrase() = {
-    val nextPatch = next(phrases, (p: Phrase) => {p.patch })
-
-    val newPhrase = Phrase(s"Phrase $nextPatch", nextPatch)
-    newPhrase.song = this
-
-    preferencesOpt match {
-      case Some(preferences) =>
-        setPrefsOnPhrase(newPhrase, preferences)
-        newPhrase.addNewKickInstrument()
-        newPhrase.addNewSnareInstrument()
-      case None => throw new IllegalStateException("Can't add phrases because somehow preferences weren't set.")
+  def dupPhrase(phrase: Phrase) = {
+    withNewPhrase { newPhrase =>
+      newPhrase.setKickInstruments(phrase.getKickInstruments.map { instrument => Instrument(instrument.notes.clone()) })
+      newPhrase.setSnareInstruments(phrase.getSnareInstruments.map { instrument => Instrument(instrument.notes.clone()) })
     }
+  }
 
-    phrases = phrases :+ newPhrase
-
-    newPhrase
+  def addPhrase() = {
+    withNewPhrase { newPhrase =>
+      newPhrase.addNewKickInstrument()
+      newPhrase.addNewSnareInstrument()
+    }
   }
 
   def updatePhrases(phrases: Seq[Phrase]) = {
@@ -305,10 +300,38 @@ case class Song(var name: String,
   def setChannel(channel: Int): Unit = {
     this.channel = channel
   }
+
+  private def withNewPhrase[T](f: (Phrase) => T) = {
+    val newPhrase = createPhrase()
+    withPrefs { preferences =>
+      setPrefsOnPhrase(newPhrase, preferences)
+      f(newPhrase)
+      phrases = phrases :+ newPhrase
+      newPhrase
+    }
+  }
+
+  private def withPrefs[T](f: (Preferences) => T) = {
+    preferencesOpt match {
+      case Some(preferences) =>
+        f(preferences)
+      case None => throw new IllegalStateException("Preferences weren't set!")
+    }
+  }
+
+  private def createPhrase() = {
+    val patch = nextPatch()
+    val newPhrase = Phrase(s"Phrase $patch", patch)
+    newPhrase.song = this
+    newPhrase
+  }
+
+  private def nextPatch() = {
+    next(phrases, (p: Phrase) => {p.patch })
+  }
 }
 
 case class Phrase(var name: String, var patch: Int) extends Selectable {
-
   private var kickInstruments: Array[Instrument] = Array.empty
   private var snareInstruments: Array[Instrument] = Array.empty
   @JsonBackReference var song: Song = null
@@ -334,12 +357,24 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
     this.kickInstruments = kickInstruments
   }
 
+  def dupKickInstruments() = {
+    dupInstruments(kickInstruments)
+  }
+
   def getSnareInstruments = snareInstruments
 
   @JsonManagedReference
   def setSnareInstruments(snareInstruments: Array[Instrument]): Unit = {
     setPhraseOnInstruments(snareInstruments)
     this.snareInstruments = snareInstruments
+  }
+
+  def dupSnareInstruments() = {
+    dupInstruments(snareInstruments)
+  }
+
+  private def dupInstruments(instruments: Seq[Instrument]) = {
+    instruments.map { instrument => Instrument(instrument.notes.clone()) }
   }
 
   def addNewKickInstrument(): Instrument = {

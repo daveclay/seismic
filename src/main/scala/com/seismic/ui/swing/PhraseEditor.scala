@@ -10,6 +10,7 @@ import com.seismic.{Instrument, Phrase}
 
 class PhraseEditor(onSongUpdated: () => Unit,
                    onPhraseUpdated: (Phrase) => Unit,
+                   onDupPhrase: (Phrase) => Unit,
                    onDeletePhrase: (Phrase) => Unit,
                    size: Dimension,
                    val backgroundColor: Color) extends JPanel with HighlightOnFocus {
@@ -52,6 +53,11 @@ class PhraseEditor(onSongUpdated: () => Unit,
   val nameField = SwingComponents.textField(Color.BLACK, 12, onNameChange)
   val patchField = new LabeledTextField("Patch", 3, onPatchChange)
 
+  val dupButton = SwingComponents.button("Dup")
+  dupButton.addActionListener((e: ActionEvent) => {
+    curentPhraseOpt.foreach { phrase => onDupPhrase(phrase) }
+  })
+
   val deleteButton = SwingComponents.deleteButton()
   deleteButton.addActionListener((e: ActionEvent) => {
     curentPhraseOpt.foreach { phrase => onDeletePhrase(phrase) }
@@ -64,7 +70,8 @@ class PhraseEditor(onSongUpdated: () => Unit,
     position(label).atOrigin().in(this)
     position(nameField).toTheRightOf(label).withMargin(10).in(this)
     position(patchField).toTheRightOf(nameField).withMargin(10).in(this)
-    position(deleteButton).toTheRightOf(patchField).withMargin(10).in(this)
+    position(dupButton).toTheRightOf(patchField).withMargin(10).in(this)
+    position(deleteButton).toTheRightOf(dupButton).withMargin(10).in(this)
   }
 
   var instrumentsPanel = new JPanel() {
