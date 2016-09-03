@@ -386,11 +386,7 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   }
 
   private def nextNote() = {
-    MidiNoteMap.noteForMidiValue(nextNoteForInstruments(allInstruments()))
-  }
-
-  private def allInstruments(): Seq[Instrument] = {
-    song.getPhrases.flatMap { phrase => phrase.kickInstruments ++ phrase.snareInstruments } ++ kickInstruments ++ snareInstruments
+    MidiNoteMap.noteForMidiValue(nextNoteForInstruments(kickInstruments ++ snareInstruments))
   }
 
   private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
