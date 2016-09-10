@@ -2,7 +2,7 @@ package com.seismic.ui.swing
 
 import java.awt.event.{MouseAdapter, MouseEvent, MouseListener}
 import java.awt.{Color, Dimension}
-import javax.swing.{JLabel, JLayeredPane}
+import javax.swing.{BorderFactory, JLabel, JLayeredPane, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.io.Preferences.getPreferences
@@ -52,7 +52,19 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   private val maxField = new LabeledTextField("max", 4, LabeledTextField.Vertical, 0, onMaxSet)
   maxField.setText(handleCalibration.calibrationMaxValue.toString)
 
+  private val invertLabel = SwingComponents.label("INV")
+  private val invertHandleToggle = new JPanel()
+  invertHandleToggle.setPreferredSize(new Dimension(12, 12))
+  updateReverseHandleToggle()
+  invertHandleToggle.setBorder(BorderFactory.createLineBorder(Color.GRAY))
+  invertHandleToggle.addMouseListener(new MouseAdapter {
+    override def mousePressed(e: MouseEvent): Unit = toggleReverseHandle()
+  })
+
   private val indicator = new MeterCircleIndicator(indicatorSize)
+  indicator.addMouseListener(new MouseAdapter() {
+    override def mousePressed(e: MouseEvent): Unit = calibrate()
+  })
 
   position(indicator).at(0, 0).in(this)
   setLayer(indicator, 1)
@@ -66,6 +78,8 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
 
   position(minField).toTheRightOf(indicator).withMargin(4).in(this)
   position(maxField).below(minField).withMargin(4).in(this)
+  position(invertLabel).toTheRightOf(minField).withMargin(4).in(this)
+  position(invertHandleToggle).below(invertLabel).withMargin(4).in(this)
 
   def setRawValue(value: Int): Unit = {
     this.lastRawValue = value
@@ -89,10 +103,6 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
     indicator.setBackground(color)
     label.setBackground(color)
   }
-
-  addMouseListener(new MouseAdapter() {
-    override def mousePressed(e: MouseEvent): Unit = calibrate()
-  })
 
   private def radiansForValue(value: Int) = {
     map(value, 0, 1023, 0, (2f * Math.PI).toFloat)
@@ -123,5 +133,18 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   private def wasCalibrated(): Unit = {
     preferences.save()
     setRawValue(lastRawValue)
+  }
+
+  private def toggleReverseHandle(): Unit = {
+    handleCalibration.inverted = !handleCalibration.inverted
+    preferences.save()
+    updateReverseHandleToggle()
+  }
+
+  private def updateReverseHandleToggle(): Unit = {
+    val color = if (handleCalibration.inverted) SwingComponents.backgroundColor else SwingComponents.orangeColor
+    invertHandleToggle.setBackground(color)
+    invertLabel.setForeground(color)
+
   }
 }
