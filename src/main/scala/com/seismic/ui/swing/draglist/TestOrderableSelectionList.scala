@@ -37,7 +37,10 @@ object TestOrderableSelectionList {
       }
 
       val callbacks = ListCallbacks(onAccept, onBackout, onAddItem, onReordered)
-      val list = new OrderableSelectionList[String](callbacks, renderItem, new Color(10, 23, 20))
+      val list = new OrderableSelectionList[String](callbacks,
+                                                     renderItem,
+                                                     () => SwingComponents.button("Add"),
+                                                     new Color(10, 23, 20))
       list.setItems(Array("Thing A", "Thing B", "Thing C", "D", "Bullshit"))
       list.setPreferredSize(new Dimension(320, 240))
 

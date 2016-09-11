@@ -1,9 +1,8 @@
 package com.seismic.ui.swing
 
 import java.awt.Dimension
-import javax.swing.JPanel
+import javax.swing._
 import java.awt.Color
-import javax.swing.{BorderFactory, JLabel, JPanel}
 
 import com.seismic.Song
 import com.seismic.ui.swing.draglist.{CellState, OrderableSelectionList}
@@ -26,11 +25,18 @@ object Selector {
   }
 
   case class PhraseSelectable(phrase: Phrase) extends Selectable {
-    def label = phrase.name
+    def label = f"${phrase.patch} ${phrase.name}"
   }
 
   case class SongSelectable(song: Song) extends Selectable {
     def label = song.name
+  }
+
+  def renderAddButton(): JButton = {
+    val button = SwingComponents.button("Add")
+    button.setBorder(BorderFactory.createLineBorder(SwingComponents.componentBGColor))
+    button.setFont(SwingComponents.monoFont18)
+    button
   }
 
   def renderSongItem(song: Song, cellState: CellState) = {
@@ -42,18 +48,23 @@ object Selector {
   }
 
   def renderSelectable(selectable: Selectable, cellState: CellState) = {
-    val panel = new JPanel
-    panel.setBorder(BorderFactory.createLineBorder(Color.GRAY))
+    val panel = new ItemPanel
     val label = SwingComponents.label(selectable.label, SwingComponents.monoFont18)
     if (cellState.isSelected) {
       panel.setBackground(SwingComponents.highlightColor)
+      label.setText(f">>> ${label.getText}")
+      label.setFont(SwingComponents.monoFont18Bold)
       label.setForeground(panel.getForeground)
     } else {
       panel.setBackground(Color.BLACK)
       label.setForeground(SwingComponents.foregroundFontColor)
     }
-    panel.add(label)
+    position(label).at(4, 4).in(panel)
     panel
+  }
+
+  class ItemPanel extends JPanel {
+    setBorder(BorderFactory.createLineBorder(SwingComponents.componentBGColor))
   }
 }
 

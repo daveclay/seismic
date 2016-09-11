@@ -15,6 +15,7 @@ case class ListCallbacks[T](onClick: (T) => Unit,
 
 class OrderableSelectionList[T](callbacks: ListCallbacks[T],
                                 renderItem: (T, CellState) => Component,
+                                renderAddButton: () => JButton,
                                 backgroundColor: Color) extends JPanel with HighlightOnFocus {
 
   trait SelectionItem[E] {
@@ -32,13 +33,8 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   }
 
   case class AddButtonItem() extends SelectionItem[T] {
-    val button = SwingComponents.button("Add")
+    val button = renderAddButton()
     def renderCell(cellState: CellState) = {
-      if (cellState.cellHasFocus) {
-        SwingComponents.buttonFocused(button)
-      } else {
-        SwingComponents.buttonBlurred(button)
-      }
       button
     }
     def triggerSelected(): Unit = {}
@@ -60,7 +56,7 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
   jlist.setLayoutOrientation(JList.VERTICAL)
   jlist.setCellRenderer(new SelectionListItemRenderer)
   jlist.addMouseListener(new SelectionListMouseListener)
-  // TODO: configurable ui
+  // TODO: scrollbars? OR will we never have more than 8 anyways?
   jlist.setVisibleRowCount(0)
 
   jlist.setFocusable(true)

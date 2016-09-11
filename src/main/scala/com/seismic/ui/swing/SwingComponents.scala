@@ -117,6 +117,7 @@ object SwingComponents {
   val monoFont11 = new Font(fontName, Font.PLAIN, 11)
   val monoFont13 = new Font(fontName, Font.PLAIN, 13)
   val monoFont18 = new Font(fontName, Font.PLAIN, 18)
+  val monoFont18Bold = new Font(fontName, Font.BOLD, 18)
   val backgroundColor = new Color(30, 30, 43)
   val componentBGColor = new Color(50, 50, 50)
   val foregroundFontColor = new Color(200, 200, 210)

@@ -31,7 +31,10 @@ class SetlistUI(seismic: Seismic,
                                     songBackout,
                                     addSong,
                                     songsReordered)
-  val songSelect = new OrderableSelectionList[Song](songCallbacks, Selector.renderSongItem, componentBGColor)
+  val songSelect = new OrderableSelectionList[Song](songCallbacks,
+                                                     Selector.renderSongItem,
+                                                     Selector.renderAddButton,
+                                                     componentBGColor)
   songSelect.setPreferredSize(new Dimension(250, size.height - 4))
   songSelect.setBackground(componentBGColor)
 
@@ -39,7 +42,10 @@ class SetlistUI(seismic: Seismic,
                                           phraseBackout,
                                           addPhrase,
                                           phrasesReordered)
-  val phraseSelect = new OrderableSelectionList[Phrase](phraseCallbacks, Selector.renderPhraseItem, componentBGColor)
+  val phraseSelect = new OrderableSelectionList[Phrase](phraseCallbacks,
+                                                         Selector.renderPhraseItem,
+                                                         Selector.renderAddButton,
+                                                         componentBGColor)
   phraseSelect.setPreferredSize(new Dimension(250, size.height - 4))
   phraseSelect.setBackground(componentBGColor)
 
