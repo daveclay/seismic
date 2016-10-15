@@ -1,14 +1,15 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
 import java.awt._
 import java.awt.event._
 import java.io.File
 import javax.swing._
 
-import com.seismic.ui.swing.SwingComponents.{backgroundColor, componentBGColor, monoFont11, titleFont}
 import com.daveclay.swing.util.Position.position
 import com.seismic._
 import com.seismic.io.Preferences
+import com.seismic.ui.utils.SwingComponents.{backgroundColor, componentBGColor}
+import com.seismic.ui.utils.{JSONFileChooser, SMenu, _}
 
 case class SeismicSerialCallbacks(triggerOn: (String, Int, Int) => Unit,
                                   triggerOff: (String) => Unit,

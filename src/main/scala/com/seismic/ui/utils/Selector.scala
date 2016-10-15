@@ -1,13 +1,13 @@
-package com.seismic.ui.swing
+package com.seismic.ui.utils
 
 import java.awt.Dimension
 import javax.swing._
 import java.awt.Color
 
 import com.seismic.Song
-import com.seismic.ui.swing.draglist.{CellState, OrderableSelectionList}
+import com.seismic.ui.utils.draglist.{CellState, OrderableSelectionList}
 import com.daveclay.swing.util.Position._
-import com.seismic.ui.swing.draglist.OrderableSelectionList
+import com.seismic.ui.utils.draglist.OrderableSelectionList
 import com.seismic.{Phrase, Song}
 
 class Selector(songSelect: OrderableSelectionList[Song],

@@ -1,4 +1,4 @@
-package com.seismic.ui.swing
+package com.seismic.ui.utils
 
 import java.awt.event._
 import java.awt.{BorderLayout, Color, Component, Dimension}

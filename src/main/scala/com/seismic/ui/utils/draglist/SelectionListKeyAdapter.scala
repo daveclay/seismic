@@ -1,4 +1,4 @@
-package com.seismic.ui.swing.draglist
+package com.seismic.ui.utils.draglist
 
 import java.awt.event.{KeyAdapter, KeyEvent}
 import javax.swing.{DefaultListModel, JList}

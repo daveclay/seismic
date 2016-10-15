@@ -1,4 +1,4 @@
-package com.seismic.ui.swing
+package com.seismic.ui.utils
 
 import java.io.File
 import javax.swing.filechooser.FileNameExtensionFilter

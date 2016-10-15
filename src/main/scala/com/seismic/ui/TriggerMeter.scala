@@ -1,12 +1,13 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
 import java.awt._
-import java.awt.event.{MouseAdapter, MouseEvent, MouseListener}
+import java.awt.event.{MouseAdapter, MouseEvent}
 import java.util.concurrent.{Executors, ScheduledFuture, TimeUnit}
-import javax.swing.{JLabel, JPanel}
+import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
-import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+import com.seismic.ui.utils.SwingThreadHelper.invokeLater
+import com.seismic.ui.utils.{Indicator, LabeledTextField, SwingComponents}
 
 class TriggerMeter(title: String,
                    onThresholdSet: (Int) => Unit,

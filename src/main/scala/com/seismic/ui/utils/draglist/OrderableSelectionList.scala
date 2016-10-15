@@ -1,4 +1,4 @@
-package com.seismic.ui.swing.draglist
+package com.seismic.ui.utils.draglist
 
 import java.awt.event._
 import javax.swing._
@@ -6,7 +6,7 @@ import java.awt._
 import javax.swing.event.{ListDataEvent, ListDataListener, ListSelectionEvent, ListSelectionListener}
 
 import com.daveclay.swing.util.Position.position
-import com.seismic.ui.swing.{HighlightOnFocus, Sizing, SwingComponents}
+import com.seismic.ui.utils.{HighlightOnFocus, Sizing, SwingComponents}
 
 case class ListCallbacks[T](onClick: (T) => Unit,
                             onBackout: () => Unit,

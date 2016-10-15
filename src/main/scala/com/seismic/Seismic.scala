@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.{JsonBackReference, JsonManagedReference
 import com.seismic.io.{Preferences, SetListSerializer}
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.{MIDIIO, MidiNoteMap}
-import com.seismic.ui.swing.Selectable
+import com.seismic.ui.utils.Selectable
 import com.seismic.utils.ValueMapHelper.map
 import com.seismic.utils.ArrayUtils.wrapIndex
 import com.seismic.scala.OptionExtensions._

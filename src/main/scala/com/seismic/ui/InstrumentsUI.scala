@@ -1,13 +1,14 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
-import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.event.ActionEvent
 import java.awt.{Color, Component, Container, Dimension}
-import javax.swing.{JLabel, JPanel, JTextField}
+import javax.swing.{JLabel, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Instrument
-import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 import com.seismic.scala.ActionListenerExtensions._
+import com.seismic.ui.utils.SwingThreadHelper.invokeLater
+import com.seismic.ui.utils.{LabeledTextField, SwingComponents}
 
 class InstrumentsUI(labelValue: String,
                     onAddInstrumentClicked: () => Unit,

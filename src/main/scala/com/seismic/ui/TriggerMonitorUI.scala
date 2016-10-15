@@ -1,12 +1,13 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
-import java.awt.{Color, Dimension, Font}
+import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
-import com.seismic.ui.swing.SwingThreadHelper.invokeLater
 import com.daveclay.swing.util.Position._
 import com.seismic.io.Preferences
 import com.seismic.messages.{Message, TriggerOffMessage, TriggerOnMessage}
+import com.seismic.ui.utils.SwingComponents
+import com.seismic.ui.utils.SwingThreadHelper.invokeLater
 
 class TriggerMonitorUI(onKickThresholdSet: (Int) => Unit,
                        onSnareThresholdSet: (Int) => Unit,

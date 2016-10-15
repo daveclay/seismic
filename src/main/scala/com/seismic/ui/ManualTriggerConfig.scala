@@ -1,10 +1,11 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
 import java.awt.event.{KeyAdapter, KeyEvent, MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension}
-import javax.swing.{JLabel, JPanel}
+import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
+import com.seismic.ui.utils.{HighlightOnFocus, LabeledTextField, SwingComponents}
 
 class ManualTriggerConfig(triggerName: String,
                           triggerOn: (String, Int, Int) => Unit,

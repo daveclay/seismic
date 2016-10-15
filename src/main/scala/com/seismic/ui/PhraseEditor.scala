@@ -1,11 +1,12 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
-import java.awt.event.{ActionEvent, ActionListener, KeyListener}
+import java.awt.event.{ActionEvent, KeyListener}
 import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
-import com.seismic.scala.ActionListenerExtensions._
 import com.daveclay.swing.util.Position._
+import com.seismic.scala.ActionListenerExtensions._
+import com.seismic.ui.utils.{HighlightOnFocus, LabeledTextField, SwingComponents}
 import com.seismic.{Instrument, Phrase}
 
 class PhraseEditor(onSongUpdated: () => Unit,

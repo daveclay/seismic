@@ -1,4 +1,4 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
 import java.awt.event.{KeyAdapter, KeyEvent}
 

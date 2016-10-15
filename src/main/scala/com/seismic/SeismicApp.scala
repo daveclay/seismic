@@ -4,8 +4,8 @@ import com.seismic.io.Preferences
 import com.seismic.messages._
 import com.seismic.midi.StupidMonkeyMIDI
 import com.seismic.serial.{SerialMonitor, StandardSerialIO}
-import com.seismic.ui.swing.{SeismicSerialCallbacks, SeismicUI, SeismicUIFactory}
-import com.seismic.ui.swing.SwingThreadHelper.invokeLater
+import com.seismic.ui.{SeismicSerialCallbacks, SeismicUIFactory}
+import com.seismic.ui.utils.SwingThreadHelper.invokeLater
 
 object SeismicApp {
 

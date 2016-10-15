@@ -1,4 +1,4 @@
-package com.seismic.ui.swing.draglist
+package com.seismic.ui.utils.draglist
 
 import javax.activation.ActivationDataFlavor
 import javax.activation.DataHandler

@@ -1,9 +1,9 @@
-package com.seismic.ui.swing.draglist
+package com.seismic.ui.utils.draglist
 
 import java.awt.{BorderLayout, Color, Dimension}
 import javax.swing.{JFrame, JLabel, JPanel, WindowConstants}
 
-import com.seismic.ui.swing.SwingComponents
+import com.seismic.ui.utils.SwingComponents
 
 object TestOrderableSelectionList {
 

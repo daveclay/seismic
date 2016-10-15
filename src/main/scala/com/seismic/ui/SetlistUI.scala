@@ -1,11 +1,12 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
 import java.awt.event.KeyListener
 import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
-import com.seismic.ui.swing.draglist.{ListCallbacks, OrderableSelectionList}
+import com.seismic.ui.utils._
+import com.seismic.ui.utils.draglist.{ListCallbacks, OrderableSelectionList}
 import com.seismic.{Phrase, Seismic, SetList, Song}
 
 class SetlistUI(seismic: Seismic,

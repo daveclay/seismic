@@ -1,11 +1,12 @@
-package com.seismic.ui.swing
+package com.seismic.ui
 
-import java.awt.event.{MouseAdapter, MouseEvent, MouseListener}
+import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension}
-import javax.swing.{BorderFactory, JLabel, JLayeredPane, JPanel}
+import javax.swing.{BorderFactory, JLayeredPane, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.io.Preferences.getPreferences
+import com.seismic.ui.utils.{LabeledTextField, MeterCircleIndicator, SwingComponents}
 import com.seismic.utils.ValueMapHelper._
 
 object Angles {
