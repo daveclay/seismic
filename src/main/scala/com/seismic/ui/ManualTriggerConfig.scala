@@ -13,6 +13,7 @@ class ManualTriggerConfig(triggerName: String,
                           size: Dimension) extends JPanel with HighlightOnFocus {
   SwingComponents.addBorder(this)
   setPreferredSize(size)
+  setMinimumSize(size)
 
   val label = SwingComponents.label(triggerName, SwingComponents.monoFont18)
   label.setForeground(new Color(200, 200, 200))

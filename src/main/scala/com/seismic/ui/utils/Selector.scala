@@ -1,22 +1,23 @@
 package com.seismic.ui.utils
 
-import java.awt.Dimension
+import java.awt.{Color, Dimension, GridBagLayout, Insets}
 import javax.swing._
-import java.awt.Color
 
 import com.seismic.Song
 import com.seismic.ui.utils.draglist.{CellState, OrderableSelectionList}
 import com.daveclay.swing.util.Position._
 import com.seismic.ui.utils.draglist.OrderableSelectionList
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.{Phrase, Song}
 
 class Selector(songSelect: OrderableSelectionList[Song],
                phraseSelect: OrderableSelectionList[Phrase]) extends JPanel {
 
-  setPreferredSize(new Dimension(Sizing.fitWidth(songSelect, phraseSelect) + 4, 600))
+  setPreferredSize(new Dimension(Sizing.fitWidth(songSelect, phraseSelect) + 4, 400))
 
-  position(songSelect).atOrigin().withMargin(4).in(this)
-  position(phraseSelect).toTheRightOf(songSelect).withMargin(4).in(this)
+  val helper = new GridBagLayoutHelper(this)
+  helper.position(songSelect).atOrigin().withPadding(new Insets(0, 4, 0, 0)).fill().weightX(.5f).weightY(.5f).alignLeft().inParent()
+  helper.position(phraseSelect).nextTo(songSelect).withPadding(new Insets(0, 4, 0, 4)).fill().weightX(.5f).weightY(.5f).alignRight().inParent()
 }
 
 object Selector {

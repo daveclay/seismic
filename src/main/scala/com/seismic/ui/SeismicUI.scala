@@ -9,6 +9,7 @@ import com.daveclay.swing.util.Position.position
 import com.seismic._
 import com.seismic.io.Preferences
 import com.seismic.ui.utils.SwingComponents.{backgroundColor, componentBGColor}
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.ui.utils.{JSONFileChooser, SMenu, _}
 
 case class SeismicSerialCallbacks(triggerOn: (String, Int, Int) => Unit,
@@ -45,7 +46,8 @@ class SeismicUI(seismic: Seismic,
   val contentSize = new Dimension(1024, 700)
   val triggerMonitorSize = new Dimension(contentSize.width - 12, 88)
   val triggerConfigSize = new Dimension(contentSize.width / 2 - 8, 40)
-  val setListSize = new Dimension(contentSize.width - 8, contentSize.height - 50 - titleSize - triggerMonitorSize.height - triggerConfigSize.height)
+  //val setListSize = new Dimension(contentSize.width - 8, contentSize.height - 50 - titleSize - triggerMonitorSize.height - triggerConfigSize.height)
+  val setListSize = new Dimension(contentSize.width - 200, contentSize.height - 200 - titleSize - triggerMonitorSize.height - triggerConfigSize.height)
   frame.setPreferredSize(contentSize)
 
   val mainPanel = frame.getContentPane
@@ -120,14 +122,16 @@ class SeismicUI(seismic: Seismic,
   fileMenu.addItem("Save", acceleratorMnemonicKey = KeyEvent.VK_S, saveSetList)
 
   frame.setJMenuBar( menuBar )
+  val contentPane = frame.getContentPane
 
   SwingComponents.addBorder(triggerMonitorUI)
 
-  position(title).at(4, 4).in(mainPanel)
-  position(triggerMonitorUI).below(title).in(mainPanel)
-  position(setlistUI).below(triggerMonitorUI).in(mainPanel)
-  position(kickTriggerConfig).below(setlistUI).withMargin(4).in(mainPanel)
-  position(snareTriggerConfig).toTheRightOf(kickTriggerConfig).withMargin(4).in(mainPanel)
+  val helper = new GridBagLayoutHelper(contentPane)
+  helper.position(title).withPadding(4).atOrigin().colspan(2).weightX(1).fillHorizontal().alignLeft().inParent()
+  helper.position(triggerMonitorUI).withPadding(new Insets(0, 4, 0, 4)).colspan(2).below(title).fillHorizontal().alignLeft().inParent()
+  helper.position(setlistUI).colspan(2).below(triggerMonitorUI).fill().weightY(1f).alignLeft().inParent()
+  helper.position(kickTriggerConfig).withPadding(4).below(setlistUI).fillHorizontal().weightX(.5f).inParent()
+  helper.position(snareTriggerConfig).withPadding(4).nextTo(kickTriggerConfig).fillHorizontal().weightX(.5f).inParent()
 }
 
 

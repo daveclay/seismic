@@ -7,6 +7,7 @@ import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
 import com.seismic.ui.utils.SwingThreadHelper.invokeLater
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.ui.utils.{Indicator, LabeledTextField, SwingComponents}
 
 class TriggerMeter(title: String,
@@ -14,6 +15,7 @@ class TriggerMeter(title: String,
                    threshold: Int,
                    size: Dimension) extends JPanel {
   setPreferredSize(size)
+  setMinimumSize(size)
   setBackground(Color.BLACK)
 
   var decayCounter = 30
@@ -42,17 +44,23 @@ class TriggerMeter(title: String,
   private val onThresholdValueSet = (v: String) => onThresholdSet(v.toInt)
   private val thresholdField = new LabeledTextField("lim", 5, LabeledTextField.Vertical, 0, onThresholdValueSet)
   thresholdField.setText(threshold.toString)
+  thresholdField.setPreferredSize(SwingComponents.digitFieldDimension())
+  thresholdField.setMinimumSize(SwingComponents.digitFieldDimension())
   thresholdField.inputField.setBackground(SwingComponents.componentBGColor)
 
   private val linearIndicator = new Indicator(new Dimension(size.width - 100, size.height))
   linearIndicator.setBackground(new Color(40, 40, 50))
   SwingComponents.addBorder(linearIndicator)
 
-  label.setPreferredSize(new Dimension(140, 21))
+  private val labelDimension = new Dimension(140, 21)
+  label.setMinimumSize(labelDimension)
+  label.setPreferredSize(labelDimension)
 
-  position(linearIndicator).at(0, 0).in(this)
-  position(label).toTheRightOf(linearIndicator).withMargin(4).in(this)
-  position(thresholdField).below(label).withMargin(4).in(this)
+  val helper = new GridBagLayoutHelper(this)
+
+  helper.position(linearIndicator).atOrigin().rowspan(2).fillHorizontal().weightX(1).alignLeft().inParent()
+  helper.position(label).nextTo(linearIndicator).withPadding(new Insets(4, 4, 0, 4)).alignLeft().inParent()
+  helper.position(thresholdField).below(label).withPadding(new Insets(0, 4, 4, 4)).alignLeft().inParent()
 
   addMouseListener(new MouseAdapter() {
     override def mousePressed(e: MouseEvent): Unit = setValue(1023)

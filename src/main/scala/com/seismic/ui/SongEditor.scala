@@ -1,11 +1,12 @@
 package com.seismic.ui
 
 import java.awt.event.{ActionEvent, KeyListener}
-import java.awt.{Color, Dimension}
-import javax.swing.JPanel
+import java.awt.{Color, Dimension, GridBagConstraints, Insets}
+import javax.swing.{BorderFactory, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.scala.ActionListenerExtensions._
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.ui.utils.{HighlightOnFocus, LabeledTextField, SwingComponents}
 import com.seismic.{Phrase, Song}
 
@@ -15,6 +16,8 @@ class SongEditor(onSongUpdated: (Song) => Unit,
                  val backgroundColor: Color) extends JPanel with HighlightOnFocus {
 
   setPreferredSize(size)
+  setMinimumSize(size)
+
   setBackground(backgroundColor)
   SwingComponents.addBorder(this)
 
@@ -32,6 +35,7 @@ class SongEditor(onSongUpdated: (Song) => Unit,
   }
 
   val label = SwingComponents.label("SONG", SwingComponents.monoFont18)
+  label.setMinimumSize(label.getPreferredSize)
   val nameField = SwingComponents.textField(Color.BLACK, 30, onNameChange)
   val channelField = new LabeledTextField("MIDI Channel", 3, onChannelChange)
   val deleteButton = SwingComponents.deleteButton()
@@ -39,10 +43,14 @@ class SongEditor(onSongUpdated: (Song) => Unit,
 
   highlight(this).onFocusOf(nameField, channelField.inputField)
 
-  position(label).at(4, 4).in(this)
-  position(nameField).toTheRightOf(label).withMargin(10).in(this)
-  position(channelField).toTheRightOf(nameField).withMargin(10).in(this)
-  position(deleteButton).toTheRightOf(channelField).withMargin(10).in(this)
+  val helper = new GridBagLayoutHelper(this)
+
+  val pad = new Insets(4, 4, 0, 0)
+  helper.position(label).withPadding(4).alignLeft().atOrigin().inParent()
+  helper.position(nameField).withPadding(pad).nextTo(label).alignLeft().fillHorizontal().weightX(1).inParent()
+  helper.position(channelField).withPadding(pad).nextTo(nameField).alignLeft().inParent()
+  helper.position(deleteButton).withPadding(pad).nextTo(channelField).alignLeft().inParent()
+  helper.horizontalSpacer().weightX(.1f).nextTo(deleteButton).inParent()
 
   def highlightBackgroundColor = backgroundColor
 

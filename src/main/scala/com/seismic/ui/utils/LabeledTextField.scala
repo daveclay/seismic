@@ -1,10 +1,11 @@
 package com.seismic.ui.utils
 
 import java.awt.event.KeyListener
-import java.awt.{Color, Dimension}
+import java.awt.{Color, Dimension, Insets}
 import javax.swing.{JLabel, JPanel}
 
 import com.daveclay.swing.util.Position._
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 
 object LabeledTextField {
   trait Orientation
@@ -32,14 +33,21 @@ class LabeledTextField(labelText: String,
   val labelSize = label.getPreferredSize
   var textFieldSize = inputField.getPreferredSize
 
-  position(label).atOrigin().in(this)
+  val helper = new GridBagLayoutHelper(this)
+  helper.position(label).atOrigin().alignLeft().inParent()
 
   if (orientation == LabeledTextField.Horizontal) {
-    setPreferredSize(new Dimension(labelSize.width + textFieldSize.width + 10, textFieldSize.height))
-    position(inputField).toTheRightOf(label).withMargin(margin).in(this)
+    val dimension = new Dimension(labelSize.width + textFieldSize.width + 10, textFieldSize.height)
+    setPreferredSize(dimension)
+    setMinimumSize(dimension)
+    helper.position(inputField).nextTo(label).withPadding(new Insets(0, margin, 0, 0)).fillHorizontal().weightX(1).inParent()
+
   } else {
-    setPreferredSize(new Dimension(Math.max(labelSize.width, textFieldSize.width), textFieldSize.height + labelSize.height))
-    position(inputField).below(label).withMargin(margin).in(this)
+    val dimension = new Dimension(Math.max(labelSize.width, textFieldSize.width),
+                                              textFieldSize.height + labelSize.height)
+    setPreferredSize(dimension)
+    setMinimumSize(dimension)
+    helper.position(inputField).nextTo(label).withPadding(new Insets(0, margin, 0, 0)).fillHorizontal().weightX(1).inParent()
   }
 
   def highlightField(): Unit = {

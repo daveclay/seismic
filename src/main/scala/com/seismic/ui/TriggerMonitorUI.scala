@@ -1,6 +1,6 @@
 package com.seismic.ui
 
-import java.awt.{Color, Dimension}
+import java.awt.{Color, Dimension, Insets}
 import javax.swing.JPanel
 
 import com.daveclay.swing.util.Position._
@@ -8,6 +8,7 @@ import com.seismic.io.Preferences
 import com.seismic.messages.{Message, TriggerOffMessage, TriggerOnMessage}
 import com.seismic.ui.utils.SwingComponents
 import com.seismic.ui.utils.SwingThreadHelper.invokeLater
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 
 class TriggerMonitorUI(onKickThresholdSet: (Int) => Unit,
                        onSnareThresholdSet: (Int) => Unit,
@@ -15,6 +16,7 @@ class TriggerMonitorUI(onKickThresholdSet: (Int) => Unit,
   SwingComponents.addBorder(this)
   setFocusable(false)
   setPreferredSize(size)
+  setMinimumSize(size)
 
   private val triggerThresholds = Preferences.getPreferences.triggerThresholds
 
@@ -29,13 +31,15 @@ class TriggerMonitorUI(onKickThresholdSet: (Int) => Unit,
                                                triggerThresholds.snareThreshold,
                                                monitorSize)
 
-  private val handleMeter = new HandleMeter(new Dimension(140, size.height - 8))
+  private val handleMeter = new HandleMeter(new Dimension(194, size.height - 8))
 
   private val triggerMonitors = Map("KICK" -> kickMonitor, "SNARE" -> snareMonitor)
 
-  position(kickMonitor).at(4, 4).in(this)
-  position(snareMonitor).toTheRightOf(kickMonitor).withMargin(4).in(this)
-  position(handleMeter).toTheRightOf(snareMonitor).withMargin(10).in(this)
+  val helper = new GridBagLayoutHelper(this)
+
+  helper.position(kickMonitor).atOrigin().withPadding(new Insets(4, 4, 0, 0)).alignLeft().fillHorizontal().weightX(.5f).inParent()
+  helper.position(snareMonitor).nextTo(kickMonitor).alignLeft().fillHorizontal().weightX(.5f).withPadding(new Insets(4, 4, 0, 4)).inParent()
+  helper.position(handleMeter).nextTo(snareMonitor).alignLeft().withPadding(new Insets(4, 0, 4, 0)).inParent()
 
   override def setBackground(color: Color): Unit = {
     super.setBackground(color)

@@ -1,13 +1,14 @@
 package com.seismic.ui
 
 import java.awt.event.ActionEvent
-import java.awt.{Color, Component, Container, Dimension}
-import javax.swing.{JLabel, JPanel}
+import java.awt._
+import javax.swing.{BorderFactory, JLabel, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.Instrument
 import com.seismic.scala.ActionListenerExtensions._
 import com.seismic.ui.utils.SwingThreadHelper.invokeLater
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.ui.utils.{LabeledTextField, SwingComponents}
 
 class InstrumentsUI(labelValue: String,
@@ -18,11 +19,17 @@ class InstrumentsUI(labelValue: String,
                     backgroundColor: Color) extends JPanel {
 
   setPreferredSize(size)
+  setMinimumSize(size)
   setOpaque(false)
 
   val label = SwingComponents.label(labelValue.toUpperCase, SwingComponents.monoFont18)
   label.setOpaque(false)
-  position(label).atOrigin().in(this)
+
+  val spacer = new JPanel()
+
+  val helper = new GridBagLayoutHelper(this)
+
+  helper.position(label).atOrigin().alignLeft().inParent()
 
   val addInstrumentButton = SwingComponents.button("Add")
   addInstrumentButton.addActionListener((e: ActionEvent) => onAddInstrumentClicked())
@@ -38,8 +45,11 @@ class InstrumentsUI(labelValue: String,
   private def positionInstrumentUIs() {
     instrumentNoteUIsOpt.foreach { instrumentUIs =>
       addInstrumentUIs(label, instrumentUIs)
-      position(addInstrumentButton).below(instrumentUIs.last).withMargin(4).in(this)
+      helper.position(addInstrumentButton).below(instrumentUIs.last).alignLeft().withPadding(4).inParent()
+      remove(spacer)
+      helper.verticalSpacer(spacer).below(addInstrumentButton).inParent()
     }
+    revalidate()
     repaint()
   }
 
@@ -52,9 +62,9 @@ class InstrumentsUI(labelValue: String,
     setBackground(backgroundColor)
   }
 
-  def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentUI]): Unit = {
+  private def addInstrumentUIs(topComponent: Container, instrumentUIs: Seq[InstrumentUI]): Unit = {
     instrumentUIs.foldLeft(topComponent) { (previousComponent, instrumentUI) =>
-      position(instrumentUI).below(previousComponent).in(this)
+      helper.position(instrumentUI).below(previousComponent).fillHorizontal().weightX(1).inParent()
       instrumentUI
     }
   }
@@ -116,38 +126,7 @@ class InstrumentsUI(labelValue: String,
   }
 }
 
-class InstrumentUI(instrument: Instrument,
-                   instrumentWasUpdated: () => Unit,
-                   onDeleteInstrument: () => Unit,
-                   size: Dimension,
-                   backgroundColor: Color) extends JPanel {
 
-  setPreferredSize(size)
-  setOpaque(false)
-
-  val noteField = new LabeledTextField("Note", 24, onValueChange)
-  noteField.setText(instrument.notes.mkString(", "))
-
-  val deleteButton = SwingComponents.deleteButton()
-  deleteButton.addActionListener((e: ActionEvent) => onDeleteInstrument())
-
-  position(noteField).atOrigin().in(this)
-  position(deleteButton).toTheRightOf(noteField).withMargin(6).in(this)
-
-  instrument.wasTriggeredOn { (pitch) =>
-    invokeLater { () => noteField.highlightField() }
-  }
-
-  instrument.wasTriggeredOff { () =>
-    invokeLater { () => noteField.unhighlightField() }
-  }
-
-  private def onValueChange(value: String):Unit = {
-    instrument.setNotes(value.split(",").map { s => s.trim() })
-    instrumentWasUpdated()
-  }
-
-}
 
 
 

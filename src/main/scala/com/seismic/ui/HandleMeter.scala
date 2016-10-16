@@ -23,6 +23,7 @@ object Angles {
 
 class HandleMeter(size: Dimension) extends JLayeredPane {
   setPreferredSize(size)
+  setMinimumSize(size)
 
   private val indicatorSize = new Dimension(size.height, size.height)
   private val centerX = indicatorSize.getWidth / 2f
@@ -47,11 +48,16 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
     preferences.save()
   }
 
+  private val thresholdFieldDimension = SwingComponents.digitFieldDimension()
   private val minField = new LabeledTextField("min", 4, LabeledTextField.Vertical, 0, onMinSet)
+  minField.setPreferredSize(thresholdFieldDimension)
+  minField.setMinimumSize(thresholdFieldDimension)
   minField.setText(handleCalibration.calibrationMinValue.toString)
 
   private val maxField = new LabeledTextField("max", 4, LabeledTextField.Vertical, 0, onMaxSet)
   maxField.setText(handleCalibration.calibrationMaxValue.toString)
+  maxField.setPreferredSize(thresholdFieldDimension)
+  maxField.setMinimumSize(thresholdFieldDimension)
 
   private val invertLabel = SwingComponents.label("INV")
   private val invertHandleToggle = new JPanel()

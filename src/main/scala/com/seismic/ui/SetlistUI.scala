@@ -1,12 +1,13 @@
 package com.seismic.ui
 
 import java.awt.event.KeyListener
-import java.awt.{Color, Dimension}
-import javax.swing.JPanel
+import java.awt.{Color, Dimension, GridBagLayout, Insets}
+import javax.swing.{BorderFactory, JPanel}
 
 import com.daveclay.swing.util.Position._
 import com.seismic.ui.utils._
 import com.seismic.ui.utils.draglist.{ListCallbacks, OrderableSelectionList}
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.{Phrase, Seismic, SetList, Song}
 
 class SetlistUI(seismic: Seismic,
@@ -16,27 +17,34 @@ class SetlistUI(seismic: Seismic,
                 componentBGColor: Color) extends JPanel {
 
   setPreferredSize(size)
+  setMinimumSize(size)
 
   seismic.onPhraseChange { (phrase: Phrase) =>
     indicateSelectedSong(phrase.song)
     indicateSelectedPhrase(phrase)
   }
 
-  val namePanel = new JPanel
-  namePanel.setPreferredSize(new Dimension(size.width - 4, 30))
-  namePanel.setBackground(componentBGColor)
-  SwingComponents.addBorder(namePanel)
   val nameField = new LabeledTextField("Set List", 40, onSetListNameChange)
+  val namePanel = new JPanel
+  private val nameSize = new Dimension(300, 30)
+  namePanel.setPreferredSize(nameSize)
+  namePanel.setMinimumSize(nameSize)
+  namePanel.setBackground(componentBGColor)
+  position(nameField).at(4, 4).in(namePanel)
+  SwingComponents.addBorder(namePanel)
 
   val songCallbacks = ListCallbacks(songClicked,
                                     songBackout,
                                     addSong,
                                     songsReordered)
+
   val songSelect = new OrderableSelectionList[Song](songCallbacks,
                                                      Selector.renderSongItem,
                                                      Selector.renderAddButton,
                                                      componentBGColor)
-  songSelect.setPreferredSize(new Dimension(250, size.height - 4))
+  private val selectSize = new Dimension(250, 200)
+  songSelect.setPreferredSize(selectSize)
+  songSelect.setMinimumSize(selectSize)
   songSelect.setBackground(componentBGColor)
 
   val phraseCallbacks = new ListCallbacks(phraseClicked,
@@ -47,7 +55,8 @@ class SetlistUI(seismic: Seismic,
                                                          Selector.renderPhraseItem,
                                                          Selector.renderAddButton,
                                                          componentBGColor)
-  phraseSelect.setPreferredSize(new Dimension(250, size.height - 4))
+  phraseSelect.setPreferredSize(selectSize)
+  phraseSelect.setMinimumSize(selectSize)
   phraseSelect.setBackground(componentBGColor)
 
   val selector = new Selector(songSelect, phraseSelect)
@@ -68,10 +77,11 @@ class SetlistUI(seismic: Seismic,
   val editor = new Editor(songEditor, phraseEditor)
   editor.setOpaque(false)
 
-  position(nameField).at(4, 4).in(namePanel)
-  position(namePanel).at(0, 4).in(this)
-  position(selector).below(namePanel).withMargin(4).in(this)
-  position(editor).toTheRightOf(selector).withMargin(4).in(this)
+  val helper = new GridBagLayoutHelper(this)
+
+  helper.position(namePanel).withPadding(4).atOrigin().colspan(2).fillHorizontal().alignLeft().inParent()
+  helper.position(selector).below(namePanel).fillVertical().alignLeft().weightY(.5f).inParent()
+  helper.position(editor).nextTo(selector).fill().alignLeft().weightY(1).weightX(.6f).alignLeft().inParent()
 
   def save(): Unit = {
     seismic.save()
@@ -242,9 +252,13 @@ class SetlistUI(seismic: Seismic,
 class Editor(songEditor: SongEditor,
              phraseEditor: PhraseEditor) extends JPanel {
 
-  setPreferredSize(new Dimension(Sizing.fitWidth(songEditor), Sizing.fitHeight(songEditor, phraseEditor)))
+  private val editorSize = new Dimension(Sizing.fitWidth(songEditor),
+                                          Sizing.fitHeight(songEditor, phraseEditor))
+  setPreferredSize(editorSize)
+  setMinimumSize(editorSize)
 
-  position(songEditor).atOrigin().in(this)
-  position(phraseEditor).below(songEditor).withMargin(4).in(this)
+  val helper = new GridBagLayoutHelper(this)
+  helper.position(songEditor).atOrigin().withPadding(new Insets(0, 0, 0, 4)).fillHorizontal().weightX(1).alignLeft().inParent()
+  helper.position(phraseEditor).below(songEditor).withPadding(new Insets(0, 0, 0, 4)).fill().weightX(1).weightY(1).alignLeft().inParent()
 }
 

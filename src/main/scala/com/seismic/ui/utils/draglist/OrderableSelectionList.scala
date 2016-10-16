@@ -6,6 +6,7 @@ import java.awt._
 import javax.swing.event.{ListDataEvent, ListDataListener, ListSelectionEvent, ListSelectionListener}
 
 import com.daveclay.swing.util.Position.position
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.ui.utils.{HighlightOnFocus, Sizing, SwingComponents}
 
 case class ListCallbacks[T](onClick: (T) => Unit,
@@ -84,12 +85,17 @@ class OrderableSelectionList[T](callbacks: ListCallbacks[T],
 
   override def setPreferredSize(size: Dimension): Unit = {
     import Sizing._
-    val innerSize = size.decreaseSize(4)
     super.setPreferredSize(size)
+
+    val innerSize = size.decreaseSize(8)
     jlist.setFixedCellWidth(innerSize.width)
     jlist.setFixedCellHeight(30)
-    scrollPane.setPreferredSize(size)
-    position(scrollPane).atOrigin().in(this)
+
+    scrollPane.setPreferredSize(innerSize)
+    scrollPane.setMinimumSize(innerSize)
+
+    val helper = new GridBagLayoutHelper(this)
+    helper.position(scrollPane).atOrigin().withPadding(4).fill().weightY(1).alignLeft().inParent()
   }
 
   override def setBackground(color: Color): Unit = {

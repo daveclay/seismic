@@ -1,11 +1,11 @@
 package com.seismic.ui.utils
 
-import java.awt.Dimension
-import java.awt.event.{MouseEvent, MouseListener}
+import java.awt.{Color, Dimension}
 import javax.swing.JPanel
 
 import com.daveclay.swing.color.GradientValueMap
 import com.daveclay.swing.util.Position._
+import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.utils.ValueMapHelper._
 
 class Indicator(size: Dimension,
@@ -32,12 +32,17 @@ class Indicator(size: Dimension,
   meterColorMap.addGreenPoint(1000, 255)
   meterColorMap.addBluePoint(1000, 0)
 
+  setPreferredSize(size)
+  setMinimumSize(size)
+
+  private val lightDimension = new Dimension(1, size.height)
+  
   val light = new JPanel()
+  light.setBackground(Color.BLACK)
+  light.setPreferredSize(lightDimension)
+  light.setMinimumSize(lightDimension)
 
   position(light).at(0, 0).in(this)
-
-  this.setPreferredSize(size)
-  light.setPreferredSize(new Dimension(0, size.height))
 
   def setValue(value: Int): Unit = {
     val size: Dimension = getSize
@@ -45,6 +50,13 @@ class Indicator(size: Dimension,
     light.setSize(new Dimension(width, Math.ceil(size.getHeight).toInt))
     light.setBackground(meterColorMap.getColorForValue(value))
   }
+
+  /*
+  addComponentListener(new ComponentAdapter() {
+    override def componentResized(e: ComponentEvent): Unit = {
+    }
+  })
+  */
 }
 
 object MeterColors {

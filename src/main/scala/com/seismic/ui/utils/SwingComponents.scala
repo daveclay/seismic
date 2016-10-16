@@ -97,6 +97,8 @@ object SwingComponents {
     deleteButton
   }
 
+  def digitFieldDimension() = new Dimension(50, 17)
+
   def label(text: String): JLabel = {
     label(text, monoFont11)
   }
