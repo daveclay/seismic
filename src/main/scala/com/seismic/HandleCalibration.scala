@@ -17,5 +17,7 @@ case class HandleCalibration(var calibrationMinValue: Int = 0,
   }
 }
 
+case class TriggerThreshold(threshold: Int = 900)
+
 case class TriggerThresholds(var kickThreshold: Int = 900, var snareThreshold: Int = 900)
 

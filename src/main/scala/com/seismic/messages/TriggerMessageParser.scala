@@ -11,7 +11,7 @@ object TriggerMessageParser {
   def nextPhrase = "PHRASE,NEXT"
   def prevPhrase = "PHRASE,PREV"
   def patch(patch: Int) = "PATCH,$patch"
-  def triggerOn(name: String, triggerValue: Int, handleValue: Int) = s"T,ON,$name,$triggerValue,$handleValue"
+  def triggerOn(name: String, triggerValue: Int, handleValue: Int, fingerValue: Int) = s"T,ON,$name,$triggerValue,$handleValue,$fingerValue"
   def triggerOff(name: String) = s"T,OFF,$name"
 
   def from(message: String): Message = {
@@ -48,7 +48,7 @@ object TriggerMessageParser {
   }
 
   /**
-    * Trigger On:   "T,ON,KICK,203,152"
+    * Trigger On:   "T,ON,KICK,203,152,0"
     * Trigger Off:  "T,OFF,KICK"
     * @param values
     * @return
@@ -61,7 +61,8 @@ object TriggerMessageParser {
       case "ON" =>
         val triggerValue = Integer.parseInt(values(2))
         val handleValue = Integer.parseInt(values(3))
-        TriggerOnMessage(trigger, triggerValue, handleValue)
+        val fingerTrigger = Integer.parseInt(values(4)) == 1
+        TriggerOnMessage(trigger, triggerValue, handleValue, fingerTrigger)
       case "OFF" => TriggerOffMessage(trigger)
       case _ => throw new IllegalArgumentException(s"Invalid message: $onOff in ${values.mkString(",")}")
     }

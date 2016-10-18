@@ -28,8 +28,7 @@ class InstrumentsUI(labelValue: String,
   val spacer = new JPanel()
 
   val helper = new GridBagLayoutHelper(this)
-
-  helper.position(label).atOrigin().alignLeft().inParent()
+  helper.position(label).atOrigin().align(GridBagConstraints.NORTHWEST).inParent()
 
   val addInstrumentButton = SwingComponents.button("Add")
   addInstrumentButton.addActionListener((e: ActionEvent) => onAddInstrumentClicked())

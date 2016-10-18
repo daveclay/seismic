@@ -49,8 +49,8 @@ object SeismicApp {
       val patch = (patch: Int) => {
         serialMonitor.fireSerialMessage(TriggerMessageParser.patch(patch))
       }
-      val triggerOn = (name: String, triggerValue: Int, handleValue: Int) => {
-        serialMonitor.fireSerialMessage(TriggerMessageParser.triggerOn(name, triggerValue, handleValue))
+      val triggerOn = (name: String, triggerValue: Int, handleValue: Int, fingerValue: Int) => {
+        serialMonitor.fireSerialMessage(TriggerMessageParser.triggerOn(name, triggerValue, handleValue, fingerValue))
       }
       val triggerOff = (name: String) => {
         serialMonitor.fireSerialMessage(TriggerMessageParser.triggerOff(name))

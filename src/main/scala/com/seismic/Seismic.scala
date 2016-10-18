@@ -13,6 +13,28 @@ import com.seismic.scala.OptionExtensions._
 import com.seismic.utils.Next.{highest, next}
 import com.seismic.scala.ArrayExtensions._
 
+object InstrumentBanks {
+  val names = Array("KICK", "ALTKICK", "SNARE", "ALTSNARE")
+
+  def bankPrefixForFingerTrigger(fingerTrigger: Boolean) = {
+    if (fingerTrigger) "ALT" else ""
+  }
+
+  def bankForTrigger(triggerOnMessage: TriggerOnMessage) = {
+    s"${bankPrefixForFingerTrigger(triggerOnMessage.fingerTrigger)}${triggerOnMessage.name}"
+  }
+
+  def triggerThresholdForBank(name: String, triggerThresholds: TriggerThresholds) = {
+    if (name.indexOf("KICK") > -1) {
+      () => triggerThresholds.kickThreshold
+    } else {
+      () => triggerThresholds.snareThreshold
+    }
+  }
+
+  def createDefaultInstrumentBanks = InstrumentBanks.names.map { name => name -> InstrumentBank(name) }.toMap
+}
+
 /**
   * Contains the structure and management of a SetList of Songs and MIDIInstruments
   * TODO: should I rename "phrase" to "scene" to match Maschine?
@@ -29,7 +51,7 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
 
   def trigger(trigger: TriggerOnMessage): Unit = {
     withCurrentPhraseInSong { (phrase, song) =>
-      val instrument = phrase.instrumentFor(trigger.name, trigger.handleValue)
+      val instrument = phrase.instrumentFor(trigger)
       val velocity = instrument.mapValueToVelocity(trigger.triggerValue)
       instrument.notes.foreach { (note) =>
         if (note.startsWith("N")) {
@@ -95,6 +117,7 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
 
   def newSetList = {
     val setList = SetList(name = "New Set List")
+    setList.setPreferences(preferences)
     setList.addSong()
 
     this.setListOpt = Option(setList)
@@ -257,7 +280,7 @@ case class Song(var name: String,
     this.preferencesOpt = Option(preferences)
     phrases.foreach { phrase => setPrefsOnPhrase(phrase, preferences) }
   }
-  
+
   private def setPrefsOnPhrase(phrase: Phrase, preferences: Preferences): Unit = {
     phrase.setTriggerThresholds(preferences.triggerThresholds)
     phrase.setHandleCalibration(preferences.handleCalibration)
@@ -273,15 +296,15 @@ case class Song(var name: String,
 
   def dupPhrase(phrase: Phrase) = {
     withNewPhrase { newPhrase =>
-      newPhrase.setKickInstruments(phrase.getKickInstruments.map { instrument => Instrument(instrument.notes.clone()) })
-      newPhrase.setSnareInstruments(phrase.getSnareInstruments.map { instrument => Instrument(instrument.notes.clone()) })
+      phrase.dup(newPhrase)
     }
   }
 
   def addPhrase() = {
     withNewPhrase { newPhrase =>
-      newPhrase.addNewKickInstrument()
-      newPhrase.addNewSnareInstrument()
+      newPhrase.getInstrumentBanks.values.foreach { instrumentBank =>
+        instrumentBank.addNewInstrument()
+      }
     }
   }
 
@@ -332,12 +355,79 @@ case class Song(var name: String,
 }
 
 case class Phrase(var name: String, var patch: Int) extends Selectable {
-  private var kickInstruments: Array[Instrument] = Array.empty
-  private var snareInstruments: Array[Instrument] = Array.empty
-  @JsonBackReference var song: Song = null
 
+  private var instrumentBanks = InstrumentBanks.createDefaultInstrumentBanks
+  @JsonBackReference var song: Song = _
+
+  def instrumentFor(triggerOnMessage: TriggerOnMessage) = {
+    instrumentBanks(InstrumentBanks.bankForTrigger(triggerOnMessage)).selectInstrumentForValue(triggerOnMessage.handleValue)
+  }
+
+  def setTriggerThresholds(triggerThresholds: TriggerThresholds): Unit = {
+    for ((name, instrumentBank) <- instrumentBanks) {
+      instrumentBank.setTriggerThresholds(triggerThresholds)
+    }
+  }
+
+  def setHandleCalibration(handleCalibration: HandleCalibration): Unit = {
+    for ((name, instrumentBank) <- instrumentBanks) {
+      instrumentBank.setHandleCalibration(handleCalibration)
+    }
+  }
+
+  def getInstrumentBanks = instrumentBanks
+
+  @JsonManagedReference
+  def setInstrumentBanks(instrumentBanks: Map[String, InstrumentBank]): Unit = {
+    this.instrumentBanks = instrumentBanks
+  }
+
+  def dup(newPhrase: Phrase): Unit = {
+    newPhrase.setInstrumentBanks(instrumentBanks.transform((name, instrumentBank) =>
+      instrumentBank.dupIntoPhrase(newPhrase)))
+  }
+}
+
+case class InstrumentBank(name: String) {
+
+  @JsonManagedReference var instruments: Array[Instrument] = Array.empty
+  @JsonBackReference var phrase: Phrase = _
+
+  // TODO: which threshold does this bank listen to? Kick or snare?
   var triggerThresholdsOpt: Option[TriggerThresholds] = None
   var handleCalibrationOpt: Option[HandleCalibration] = None
+
+  def setTriggerThresholds(triggerThreshold: () => Int): Unit = {
+    instruments.foreach { instrument => instrument.setTriggerThreshold(triggerThreshold) }
+  }
+
+  @JsonManagedReference
+  def setInstruments(instruments: Array[Instrument]): Unit = {
+    this.instruments = instruments
+  }
+
+  def addNewInstrument(): Instrument = {
+    withTriggerThresholds(triggerThresholds => {
+      val instrument = newInstrument(InstrumentBanks.triggerThresholdForBank(name, triggerThresholds))
+      instruments = instruments :+ instrument
+      instrument
+    })
+  }
+
+  def removeInstrument(instrument: Instrument): Unit = {
+    instruments = instruments.remove(instrument)
+  }
+
+  def dupIntoPhrase(newPhrase: Phrase) = {
+    val instrumentBank = InstrumentBank(name)
+    instrumentBank.setInstruments(instruments.map { instrument =>
+      Instrument(instrument.notes.clone())
+    })
+    instrumentBank.phrase = newPhrase
+    instrumentBank.triggerThresholdsOpt = triggerThresholdsOpt
+    instrumentBank.handleCalibrationOpt = handleCalibrationOpt
+    instrumentBank
+  }
 
   def setHandleCalibration(handleCalibration: HandleCalibration): Unit = {
     handleCalibrationOpt = Option(handleCalibration)
@@ -345,83 +435,20 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
   def setTriggerThresholds(triggerThresholds: TriggerThresholds): Unit = {
     triggerThresholdsOpt = Option(triggerThresholds)
-    kickInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.kickThreshold) }
-    snareInstruments.foreach { instrument => instrument.setTriggerThreshold(() => triggerThresholds.snareThreshold) }
   }
 
-  def getKickInstruments = kickInstruments
-
-  @JsonManagedReference
-  def setKickInstruments(kickInstruments: Array[Instrument]): Unit = {
-    setPhraseOnInstruments(kickInstruments)
-    this.kickInstruments = kickInstruments
-  }
-
-  def dupKickInstruments() = {
-    dupInstruments(kickInstruments)
-  }
-
-  def getSnareInstruments = snareInstruments
-
-  @JsonManagedReference
-  def setSnareInstruments(snareInstruments: Array[Instrument]): Unit = {
-    setPhraseOnInstruments(snareInstruments)
-    this.snareInstruments = snareInstruments
-  }
-
-  def dupSnareInstruments() = {
-    dupInstruments(snareInstruments)
-  }
-
-  private def dupInstruments(instruments: Seq[Instrument]) = {
-    instruments.map { instrument => Instrument(instrument.notes.clone()) }
-  }
-
-  def addNewKickInstrument(): Instrument = {
-    withTriggerThresholds(triggerThresholds => {
-      val instrument = newInstrument(() => triggerThresholds.kickThreshold)
-      kickInstruments = kickInstruments :+ instrument
-      instrument
-    })
-  }
-
-  def addNewSnareInstrument(): Instrument = {
-    withTriggerThresholds(triggerThresholds => {
-      val instrument = newInstrument(() => triggerThresholds.snareThreshold)
-      snareInstruments = snareInstruments :+ instrument
-      instrument
-    })
-  }
-
-  def removeKickInstrument(instrument: Instrument): Unit = {
-    kickInstruments = kickInstruments.remove(instrument)
-  }
-
-  def removeSnareInstrument(instrument: Instrument): Unit = {
-    snareInstruments = snareInstruments.remove(instrument)
-  }
-
-  def instrumentFor(name: String, handleValue: Int): Instrument = {
-    name match {
-      case "KICK" => selectInstrumentForValue(kickInstruments, handleValue)
-      case "SNARE" => selectInstrumentForValue(snareInstruments, handleValue)
-      case _ => throw new IllegalArgumentException(f"unknown trigger $name")
-    }
-  }
-
-  private def setPhraseOnInstruments(instruments: Seq[Instrument]): Unit = {
-    instruments.foreach { instrument => instrument.phrase = this }
-  }
-
-  private def withTriggerThresholds[T](f: (TriggerThresholds) => T) = {
-    triggerThresholdsOpt match {
-      case Some(triggerThresholds) => f(triggerThresholds)
-      case None => throw new IllegalStateException("Somehow I have no triggerThresholds yet trying to play the instrument")
+  def selectInstrumentForValue(value: Int) = {
+    handleCalibrationOpt match {
+      case Some(handleCalibration) => handleCalibration.select(value, instruments)
+      case None => throw new IllegalStateException("Somehow I have no HandleCalibration yet someone's trying to play the instrument")
     }
   }
 
   private def nextNote() = {
-    MidiNoteMap.noteForMidiValue(nextNoteForInstruments(kickInstruments ++ snareInstruments))
+    // TODO: how's I wanna do this? Per bank? Cross bank? Eh, I rarely ever care that much. I could just
+    // label the notes from 1 to 16, have the phrase or song set a base note to add to. That'd make mapping
+    // to the Maschine simpler and I'd care less about getting the next MIDI note.
+    MidiNoteMap.noteForMidiValue(nextNoteForInstruments(instruments))
   }
 
   private def nextNoteForInstruments(instruments: Seq[Instrument]) = {
@@ -430,16 +457,15 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
 
   private def newInstrument(triggerThreshold: () => Int) = {
     val note = nextNote()
-    val newInstrument = new Instrument(Array(note))
+    val newInstrument = Instrument(Array(note))
     newInstrument.setTriggerThreshold(triggerThreshold)
-    newInstrument.phrase = this
     newInstrument
   }
 
-  private def selectInstrumentForValue(instruments: Array[Instrument], value: Int) = {
-    handleCalibrationOpt match {
-      case Some(handleCalibration) => handleCalibration.select(value, instruments)
-      case None => throw new IllegalStateException("Somehow I have no HandleCalibration yet someone's trying to play the instrument")
+  private def withTriggerThresholds[T](f: (TriggerThresholds) => T) = {
+    triggerThresholdsOpt match {
+      case Some(triggerThresholds) => f(triggerThresholds)
+      case None => throw new IllegalStateException("Somehow I have no triggerThresholds yet trying to play the instrument")
     }
   }
 }
@@ -451,8 +477,6 @@ case class Phrase(var name: String, var patch: Int) extends Selectable {
   * @param notes
   */
 case class Instrument(var notes: Array[String]) {
-
-  @JsonBackReference var phrase: Phrase = null
 
   private var triggeredOnListener: Option[(Int) => Unit] = None
   private var triggeredOffListener: Option[() => Unit] = None

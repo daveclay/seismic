@@ -12,7 +12,7 @@ import com.seismic.ui.utils.SwingComponents.{backgroundColor, componentBGColor}
 import com.seismic.ui.utils.layout.GridBagLayoutHelper
 import com.seismic.ui.utils.{JSONFileChooser, SMenu, _}
 
-case class SeismicSerialCallbacks(triggerOn: (String, Int, Int) => Unit,
+case class SeismicSerialCallbacks(triggerOn: (String, Int, Int, Int) => Unit,
                                   triggerOff: (String) => Unit,
                                   prevPhrase: () => Unit,
                                   nextPhrase: () => Unit,

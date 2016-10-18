@@ -8,7 +8,7 @@ import com.daveclay.swing.util.Position._
 import com.seismic.ui.utils.{HighlightOnFocus, LabeledTextField, SwingComponents}
 
 class ManualTriggerConfig(triggerName: String,
-                          triggerOn: (String, Int, Int) => Unit,
+                          triggerOn: (String, Int, Int, Int) => Unit,
                           triggerOff: (String) => Unit,
                           size: Dimension) extends JPanel with HighlightOnFocus {
   SwingComponents.addBorder(this)
@@ -23,6 +23,9 @@ class ManualTriggerConfig(triggerName: String,
 
   val handleValueField = new LabeledTextField("Handle Value", 5, onChange)
   handleValueField.setText("0")
+
+  val fingerField = new LabeledTextField("Finger", 2, onChange)
+  fingerField.setText("0")
 
   val triggerButton = SwingComponents.button("FIRE")
   triggerButton.addMouseListener(new MouseAdapter {
@@ -39,13 +42,14 @@ class ManualTriggerConfig(triggerName: String,
   position(label).at(4, 4).in(this)
   position(triggerValueField).toTheRightOf(label).withMargin(12).in(this)
   position(handleValueField).toTheRightOf(triggerValueField).withMargin(4).in(this)
-  position(triggerButton).toTheRightOf(handleValueField).withMargin(4).in(this)
+  position(fingerField).toTheRightOf(handleValueField).withMargin(4).in(this)
+  position(triggerButton).toTheRightOf(fingerField).withMargin(4).in(this)
 
   def onChange(value: String): Unit = {
   }
 
   def fire(): Unit = {
-    triggerOn(triggerName, getTriggerValue, getHandleValue)
+    triggerOn(triggerName, getTriggerValue, getHandleValue, getFingerValue)
   }
 
   def off(): Unit = {
@@ -56,4 +60,5 @@ class ManualTriggerConfig(triggerName: String,
 
   private def getTriggerValue = triggerValueField.inputField.getText.toInt
   private def getHandleValue = handleValueField.inputField.getText.toInt
+  private def getFingerValue = fingerField.inputField.getText.toInt
 }
