@@ -1,0 +1,12 @@
+{
+  "lastSetListDir" : "/Users/daveclay/work/seismic",
+  "handleCalibration" : {
+    "calibrationMinValue" : 0,
+    "calibrationMaxValue" : 300,
+    "inverted" : true
+  },
+  "triggerThresholds" : {
+    "kickThreshold" : 900,
+    "snareThreshold" : 900
+  }
+}
