@@ -84,15 +84,23 @@ class Seismic(midiIO: MIDIIO, preferences: Preferences, triggeredState: Triggere
   }
 
   private def sendNoteOn(song: Song, note: String, velocity: Int = 0): Unit = {
-    midiIO.sendNoteOn(MidiNoteMap.channelForNote(note, song.channel - 1),
-                       MidiNoteMap.midiValueForNote(note),
-                       velocity)
+    try {
+      midiIO.sendNoteOn(MidiNoteMap.channelForNote(note, song.channel - 1),
+                         MidiNoteMap.midiValueForNote(note),
+                         velocity)
+    } catch {
+      case e: Exception => e.printStackTrace()
+    }
   }
 
   private def sendNoteOff(song: Song, note: String): Unit = {
-    midiIO.sendNoteOff(MidiNoteMap.channelForNote(note, song.channel - 1),
-                        MidiNoteMap.midiValueForNote(note),
-                        0)
+    try {
+      midiIO.sendNoteOff(MidiNoteMap.channelForNote(note, song.channel - 1),
+                          MidiNoteMap.midiValueForNote(note),
+                          0)
+    } catch {
+      case e: Exception => e.printStackTrace()
+    }
   }
 
   def patch(patch: Int): Unit = {

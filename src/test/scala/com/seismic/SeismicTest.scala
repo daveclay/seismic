@@ -104,6 +104,21 @@ class SeismicTest extends Test {
         verify(midiIO).sendNoteOn(3, 61, 127)
       }
     }
+
+    "it should send numeric midi values" in new SongData {
+      val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+      instrument.setNotes(Array("6"))
+
+      seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
+      verify(midiIO).sendNoteOn(0, 6, 127)
+    }
+
+    "when an error occurs" in new SongData {
+      val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+      instrument.setNotes(Array(";"))
+
+      seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
+    }
   }
 
   "when adding instruments" - {
@@ -172,7 +187,7 @@ class SeismicTest extends Test {
     val song = Song("Test Song", 1)
     song.setPhrases(Array(phrase))
 
-    val setList = new SetList("Test SetList")
+    val setList = SetList("Test SetList")
     setList.songs = Array(song)
 
     seismic.setSetList(setList)

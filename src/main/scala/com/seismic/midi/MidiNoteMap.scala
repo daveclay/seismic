@@ -4,7 +4,7 @@ import com.seismic.scala.StringExtensions._
 object MidiNoteMap {
 
   def main(args: Array[String]): Unit = {
-    println(NOTE_MAP.keys)
+    println(NOTE_NAMES_TO_VALUES_MAP.keys)
   }
 
   /**
@@ -13,7 +13,7 @@ object MidiNoteMap {
   val octaveShift = -2
 
   val NOTE_NAMES = Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
-  val NOTE_MAP = 0.to(127).map { i =>
+  val NOTE_NAMES_TO_VALUES_MAP = 0.to(127).map { i =>
     val octave = (i / 12) + octaveShift
     f"${NOTE_NAMES(i % 12)}$octave" -> i
   }.toMap[String, Int]
@@ -36,8 +36,17 @@ object MidiNoteMap {
     NOTE_NAMES(note) + octave
   }
 
-  private def valueForNote(key: String) = {
-    NOTE_MAP(key)
+  private def valueForNote(noteName: String) = {
+    if (noteName.charAt(0).isDigit) {
+      noteName.toInt
+    } else {
+      NOTE_NAMES_TO_VALUES_MAP.get(noteName) match {
+        case Some(value) => value
+        case None =>
+          println(s"Unknown note value '$noteName'")
+          0
+      }
+    }
   }
 
   private def noteWithoutSuffix(note: String) = {
