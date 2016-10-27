@@ -1,6 +1,8 @@
 package com.seismic
 
-import com.seismic.io.Preferences
+import java.io.{File, StringWriter}
+
+import com.seismic.io.{ObjectMapperFactory, Preferences}
 import com.seismic.messages.TriggerOnMessage
 import com.seismic.midi.MIDIIO
 import com.seismic.test.Test
@@ -8,6 +10,28 @@ import org.mockito.Mockito._
 import org.mockito.Matchers._
 
 class SeismicTest extends Test {
+
+  "The setlist json file" - {
+    "should deserialize" in {
+      val in = new File("src/test/resources/New Set List Test.json")
+      val setList = ObjectMapperFactory.objectMapper.readValue(in, classOf[SetList])
+
+      setList.songs.length should be (1)
+      setList.songs(0).getPhrases.length should be (2)
+      setList.songs(0).getPhrases(0).getInstrumentBanks.length should be (4)
+      setList.songs(0).getPhrases(0).getInstrumentBankNamed("KICK").getInstruments.length should be (6)
+      setList.songs(0).getPhrases(0).getInstrumentBankNamed("ALTKICK").getInstruments.length should be (0)
+      setList.songs(0).getPhrases(0).getInstrumentBankNamed("SNARE").getInstruments.length should be (4)
+    }
+
+    "should serialize" in new SongData {
+      val writer = new StringWriter()
+      ObjectMapperFactory.objectMapper.writeValue(writer, setList)
+      val serializedSetList = ObjectMapperFactory.objectMapper.readValue(writer.toString, classOf[SetList])
+
+      serializedSetList should be eq setList
+    }
+  }
 
   "When triggering notes" - {
     "should trigger a midi note for the first kick instrument" in new SongData {
@@ -32,7 +56,7 @@ class SeismicTest extends Test {
 
     "for notes prefixed with N" - {
       "it should trigger a midi note off when trigger() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("NC#3"))
 
         seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -40,7 +64,7 @@ class SeismicTest extends Test {
       }
 
       "it should NOT trigger a midi note off when off() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("NC#3"))
         triggeredState.triggered("KICK", instrument, song)
 
@@ -51,7 +75,7 @@ class SeismicTest extends Test {
 
     "for notes prefixed with T" - {
       "it should NOT trigger a midi note on when trigger() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("TC#3"))
 
         seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -59,7 +83,7 @@ class SeismicTest extends Test {
       }
 
       "it should NOT trigger a midi note off when trigger() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("TC#3"))
 
         seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -67,7 +91,7 @@ class SeismicTest extends Test {
       }
 
       "it should trigger a midi note off when off() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("TC#3"))
         triggeredState.triggered("KICK", instrument, song)
 
@@ -78,7 +102,7 @@ class SeismicTest extends Test {
 
     "for notes prefixed with X" - {
       "it should trigger a midi note on when trigger() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("XC#3"))
 
         seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -86,7 +110,7 @@ class SeismicTest extends Test {
       }
 
       "it should NOT trigger a midi note off when off() is called" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("XC#3"))
         triggeredState.triggered("KICK", instrument, song)
 
@@ -97,7 +121,7 @@ class SeismicTest extends Test {
 
     "for notes suffixed with / for midi channel " - {
       "it should trigger a midi note on with the channel" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("C#3/4"))
 
         seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -106,7 +130,7 @@ class SeismicTest extends Test {
     }
 
     "it should send numeric midi values" in new SongData {
-      val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+      val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
       instrument.setNotes(Array("6"))
 
       seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -114,7 +138,7 @@ class SeismicTest extends Test {
     }
 
     "when an error occurs" in new SongData {
-      val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+      val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
       instrument.setNotes(Array(";"))
 
       seismic.trigger(TriggerOnMessage("KICK", 1023, 1023, false))
@@ -124,10 +148,10 @@ class SeismicTest extends Test {
   "when adding instruments" - {
     "if a prefixed note exists" - {
       "it should not break" in new SongData {
-        val instrument = phrase.getInstrumentBanks("KICK").addNewInstrument()
+        val instrument = phrase.getInstrumentBankNamed("KICK").addNewInstrument()
         instrument.setNotes(Array("NG3"))
 
-        phrase.getInstrumentBanks("KICK").addNewInstrument()
+        phrase.getInstrumentBankNamed("KICK").addNewInstrument()
       }
     }
   }
@@ -181,8 +205,8 @@ class SeismicTest extends Test {
     val snareInstrument2 = Instrument(Array("G8"))
 
     val phrase = Phrase("Test Phrase", 1)
-    phrase.getInstrumentBanks("KICK").setInstruments(Array(kickInstrument1, kickInstrument2))
-    phrase.getInstrumentBanks("SNARE").setInstruments(Array(snareInstrument1, snareInstrument2))
+    phrase.getInstrumentBankNamed("KICK").setInstruments(Array(kickInstrument1, kickInstrument2))
+    phrase.getInstrumentBankNamed("SNARE").setInstruments(Array(snareInstrument1, snareInstrument2))
 
     val song = Song("Test Song", 1)
     song.setPhrases(Array(phrase))

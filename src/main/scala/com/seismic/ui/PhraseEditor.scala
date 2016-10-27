@@ -112,10 +112,10 @@ class PhraseEditor(onSongUpdated: () => Unit,
     nameField.setText(phrase.name)
     patchField.setText(phrase.patch.toString)
 
-    kickInstrumentBank.setInstrumentBank(phrase.getInstrumentBanks("KICK"))
-    altKickInstrumentBank.setInstrumentBank(phrase.getInstrumentBanks("ALTKICK"))
-    snareInstrumentBank.setInstrumentBank(phrase.getInstrumentBanks("SNARE"))
-    altSnareInstrumentBank.setInstrumentBank(phrase.getInstrumentBanks("ALTSNARE"))
+    kickInstrumentBank.setInstrumentBank(phrase.getInstrumentBankNamed("KICK"))
+    altKickInstrumentBank.setInstrumentBank(phrase.getInstrumentBankNamed("ALTKICK"))
+    snareInstrumentBank.setInstrumentBank(phrase.getInstrumentBankNamed("SNARE"))
+    altSnareInstrumentBank.setInstrumentBank(phrase.getInstrumentBankNamed("ALTSNARE"))
 
     configureHighlighting()
   }

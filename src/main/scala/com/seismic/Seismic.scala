@@ -310,7 +310,7 @@ case class Song(var name: String,
 
   def addPhrase() = {
     withNewPhrase { newPhrase =>
-      newPhrase.getInstrumentBanks.values.foreach { instrumentBank =>
+      newPhrase.getInstrumentBanks.foreach { instrumentBank =>
         instrumentBank.addNewInstrument()
       }
     }
@@ -364,55 +364,54 @@ case class Song(var name: String,
 
 case class Phrase(var name: String, var patch: Int) extends Selectable {
 
-  private var instrumentBanks = InstrumentBanks.createDefaultInstrumentBanks
+  private var nameToInstrumentBanks: Map[String, InstrumentBank] = InstrumentBanks.createDefaultInstrumentBanks
+  private var instrumentBanks: Array[InstrumentBank] = nameToInstrumentBanks.values.toArray
   @JsonBackReference var song: Song = _
 
   def instrumentFor(triggerOnMessage: TriggerOnMessage) = {
-    instrumentBanks(InstrumentBanks.bankForTrigger(triggerOnMessage)).selectInstrumentForValue(triggerOnMessage.handleValue)
+    nameToInstrumentBanks(InstrumentBanks.bankForTrigger(triggerOnMessage)).selectInstrumentForValue(triggerOnMessage.handleValue)
   }
 
   def setTriggerThresholds(triggerThresholds: TriggerThresholds): Unit = {
-    for ((name, instrumentBank) <- instrumentBanks) {
+    for (instrumentBank <- instrumentBanks) {
       instrumentBank.setTriggerThresholds(triggerThresholds)
     }
   }
 
   def setHandleCalibration(handleCalibration: HandleCalibration): Unit = {
-    for ((name, instrumentBank) <- instrumentBanks) {
+    for (instrumentBank <- instrumentBanks) {
       instrumentBank.setHandleCalibration(handleCalibration)
     }
   }
 
+  def getInstrumentBankNamed(name: String) = nameToInstrumentBanks(name)
+
   def getInstrumentBanks = instrumentBanks
 
   @JsonManagedReference
-  def setInstrumentBanks(instrumentBanks: Map[String, InstrumentBank]): Unit = {
+  def setInstrumentBanks(instrumentBanks: Array[InstrumentBank]): Unit = {
     this.instrumentBanks = instrumentBanks
+    this.nameToInstrumentBanks = instrumentBanks.map(bank => bank.name -> bank).toMap
   }
 
   def dup(newPhrase: Phrase): Unit = {
-    newPhrase.setInstrumentBanks(instrumentBanks.transform((name, instrumentBank) =>
-      instrumentBank.dupIntoPhrase(newPhrase)))
+    newPhrase.setInstrumentBanks(instrumentBanks.map { instrumentBank => instrumentBank.dupIntoPhrase(newPhrase) })
   }
 }
 
 case class InstrumentBank(name: String) {
 
-  @JsonManagedReference var instruments: Array[Instrument] = Array.empty
+  private var instruments: Array[Instrument] = Array.empty
   @JsonBackReference var phrase: Phrase = _
 
-  // TODO: which threshold does this bank listen to? Kick or snare?
-  var triggerThresholdsOpt: Option[TriggerThresholds] = None
-  var handleCalibrationOpt: Option[HandleCalibration] = None
+  private var triggerThresholdsOpt: Option[TriggerThresholds] = None
+  private var handleCalibrationOpt: Option[HandleCalibration] = None
 
-  def setTriggerThresholds(triggerThreshold: () => Int): Unit = {
-    instruments.foreach { instrument => instrument.setTriggerThreshold(triggerThreshold) }
-  }
-
-  @JsonManagedReference
   def setInstruments(instruments: Array[Instrument]): Unit = {
     this.instruments = instruments
   }
+
+  def getInstruments = instruments
 
   def addNewInstrument(): Instrument = {
     withTriggerThresholds(triggerThresholds => {
@@ -443,6 +442,9 @@ case class InstrumentBank(name: String) {
 
   def setTriggerThresholds(triggerThresholds: TriggerThresholds): Unit = {
     triggerThresholdsOpt = Option(triggerThresholds)
+    instruments.foreach { instrument =>
+      instrument.setTriggerThreshold(InstrumentBanks.triggerThresholdForBank(name, triggerThresholds))
+    }
   }
 
   def selectInstrumentForValue(value: Int) = {

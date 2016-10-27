@@ -16,12 +16,12 @@ object Migrator {
       val song = Song(fromSong.name, fromSong.channel)
       song.setPhrases(fromSong.phrases.map { fromPhrase =>
         val phrase = Phrase(fromPhrase.name, fromPhrase.patch)
-        phrase.getInstrumentBanks("KICK").instruments = fromPhrase.kickInstruments.map { fromInstrument =>
+        phrase.getInstrumentBankNamed("KICK").setInstruments(fromPhrase.kickInstruments.map { fromInstrument =>
           Instrument(fromInstrument.notes)
-        }
-        phrase.getInstrumentBanks("SNARE").instruments = fromPhrase.snareInstruments.map { fromInstrument =>
+        })
+        phrase.getInstrumentBankNamed("SNARE").setInstruments(fromPhrase.snareInstruments.map { fromInstrument =>
           Instrument(fromInstrument.notes)
-        }
+        })
         phrase
       })
       song

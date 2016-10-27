@@ -6,361 +6,85 @@
     "phrases" : [ {
       "name" : "Intro",
       "patch" : 1,
-      "kickInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      }, {
-        "notes" : [ "A0" ]
-      }, {
-        "notes" : [ "A#0" ]
-      }, {
-        "notes" : [ "G#5" ]
-      }, {
-        "notes" : [ "A5" ]
-      }, {
-        "notes" : [ "A#5" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      }, {
-        "notes" : [ "C1" ]
-      }, {
-        "notes" : [ "B5" ]
-      }, {
-        "notes" : [ "C6" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
+      "instrumentBanks" : [
+        {
+          "name" : "KICK",
+          "instruments" : [ {
+            "notes" : [ "C#-2" ]
+          }, {
+            "notes" : [ "A0" ]
+          }, {
+            "notes" : [ "A#0" ]
+          }, {
+            "notes" : [ "G#5" ]
+          }, {
+            "notes" : [ "A5" ]
+          }, {
+            "notes" : [ "A#5" ]
+          } ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        },
+        {
+          "name" : "ALTKICK",
+          "instruments" : [ ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        },
+        {
+          "name" : "SNARE",
+          "instruments" : [ {
+            "notes" : [ "C#-2" ]
+          }, {
+            "notes" : [ "C1" ]
+          }, {
+            "notes" : [ "B5" ]
+          }, {
+            "notes" : [ "C6" ]
+          } ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        },
+        {
+          "name" : "ALTSNARE",
+          "instruments" : [ ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        }
+      ]
     }, {
       "name" : "Intro B",
       "patch" : 2,
-      "kickInstruments" : [ {
-        "notes" : [ "C#0" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "A#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Verse",
-      "patch" : 3,
-      "kickInstruments" : [ {
-        "notes" : [ "F0", "F#0" ]
-      }, {
-        "notes" : [ "F#0" ]
-      }, {
-        "notes" : [ "G0", "TF#1" ]
-      }, {
-        "notes" : [ "C#1" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "D#0" ]
-      }, {
-        "notes" : [ "XF#1" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Chorus",
-      "patch" : 4,
-      "kickInstruments" : [ {
-        "notes" : [ "D1" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "D#1" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Out",
-      "patch" : 5,
-      "kickInstruments" : [ {
-        "notes" : [ "E1" ]
-      }, {
-        "notes" : [ "G1" ]
-      }, {
-        "notes" : [ "A1" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "F1" ]
-      }, {
-        "notes" : [ "G#1" ]
-      }, {
-        "notes" : [ "A#1" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Fin",
-      "patch" : 6,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      }, {
-        "notes" : [ "D2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      }, {
-        "notes" : [ "D#-2" ]
-      }, {
-        "notes" : [ "E-2" ]
-      }, {
-        "notes" : [ "F-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    } ]
-  }, {
-    "name" : "Intolerant",
-    "channel" : 2,
-    "phrases" : [ {
-      "name" : "Intro",
-      "patch" : 1,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      }, {
-        "notes" : [ "F#-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Intro 2",
-      "patch" : 2,
-      "kickInstruments" : [ {
-        "notes" : [ "D-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "D#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Verse",
-      "patch" : 3,
-      "kickInstruments" : [ {
-        "notes" : [ "E-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "F-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    } ]
-  }, {
-    "name" : "Ransom",
-    "channel" : 5,
-    "phrases" : [ {
-      "name" : "Phrase 1",
-      "patch" : 1,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Phrase 2",
-      "patch" : 2,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Phrase 3",
-      "patch" : 3,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      }, {
-        "notes" : [ "D-2" ]
-      }, {
-        "notes" : [ "D#-2" ]
-      }, {
-        "notes" : [ "E-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Phrase 4",
-      "patch" : 4,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      }, {
-        "notes" : [ "D-2" ]
-      }, {
-        "notes" : [ "D#-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    } ]
-  }, {
-    "name" : "Song 6",
-    "channel" : 6,
-    "phrases" : [ {
-      "name" : "Phrase 1",
-      "patch" : 1,
-      "kickInstruments" : [ {
-        "notes" : [ "C-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "C#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Phrase 2",
-      "patch" : 2,
-      "kickInstruments" : [ {
-        "notes" : [ "D-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "D#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
-    }, {
-      "name" : "Phrase 3",
-      "patch" : 3,
-      "kickInstruments" : [ {
-        "notes" : [ "E-2" ]
-      }, {
-        "notes" : [ "F#-2" ]
-      } ],
-      "snareInstruments" : [ {
-        "notes" : [ "F-2" ]
-      }, {
-        "notes" : [ "G-2" ]
-      }, {
-        "notes" : [ "G#-2" ]
-      } ],
-      "triggerThresholdsOpt" : {
-        "kickThreshold" : 900,
-        "snareThreshold" : 900
-      },
-      "handleCalibrationOpt" : {
-        "calibrationMinValue" : 0,
-        "calibrationMaxValue" : 300,
-        "inverted" : true
-      }
+      "instrumentBanks" : [
+        {
+          "name" : "KICK",
+          "instruments" : [ {
+            "notes" : [ "C#0" ]
+          } ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        },
+        {
+          "name" : "ALTKICK",
+          "instruments" : [ ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        },
+        {
+          "name" : "SNARE",
+          "instruments" : [ {
+            "notes" : [ "A#-2" ]
+          } ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        },
+        {
+          "name" : "ALTSNARE",
+          "instruments" : [ ],
+          "triggerThresholdsOpt" : null,
+          "handleCalibrationOpt" : null
+        }
+      ]
     } ]
   } ]
 }

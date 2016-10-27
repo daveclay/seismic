@@ -28,7 +28,7 @@ class InstrumentBankUI(name: String,
 
   def setInstrumentBank(instrumentBank: InstrumentBank): Unit = {
     currentInstrumentBankOpt = Option(instrumentBank)
-    instrumentsUI.setInstruments(instrumentBank.instruments)
+    instrumentsUI.setInstruments(instrumentBank.getInstruments)
     configureHighlighting()
   }
 
@@ -52,7 +52,7 @@ class InstrumentBankUI(name: String,
 
   private def handleInstrumentsUpdated(): Unit = {
     currentInstrumentBankOpt.foreach { instrumentBank =>
-      instrumentsUI.setInstruments(instrumentBank.instruments)
+      instrumentsUI.setInstruments(instrumentBank.getInstruments)
       configureHighlighting()
       onSongUpdated()
     }
