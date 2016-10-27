@@ -16,12 +16,10 @@ object Migrator {
       val song = Song(fromSong.name, fromSong.channel)
       song.setPhrases(fromSong.phrases.map { fromPhrase =>
         val phrase = Phrase(fromPhrase.name, fromPhrase.patch)
-        phrase.getInstrumentBankNamed("KICK").setInstruments(fromPhrase.kickInstruments.map { fromInstrument =>
-          Instrument(fromInstrument.notes)
-        })
-        phrase.getInstrumentBankNamed("SNARE").setInstruments(fromPhrase.snareInstruments.map { fromInstrument =>
-          Instrument(fromInstrument.notes)
-        })
+        phrase.getInstrumentBankNamed("KICK").setInstruments(fromPhrase.instrumentBanks.KICK.instruments.map { fromInstrument => Instrument(fromInstrument.notes) })
+        phrase.getInstrumentBankNamed("ALTKICK").setInstruments(fromPhrase.instrumentBanks.ALTKICK.instruments.map { fromInstrument => Instrument(fromInstrument.notes) })
+        phrase.getInstrumentBankNamed("SNARE").setInstruments(fromPhrase.instrumentBanks.SNARE.instruments.map { fromInstrument => Instrument(fromInstrument.notes) })
+        phrase.getInstrumentBankNamed("ALTSNARE").setInstruments(fromPhrase.instrumentBanks.ALTSNARE.instruments.map { fromInstrument => Instrument(fromInstrument.notes) })
         phrase
       })
       song
@@ -35,6 +33,10 @@ object Migrator {
 
   case class FromSetList(name: String, songs: Array[FromSong])
   case class FromSong(name: String, channel: Int, phrases: Array[FromPhrase])
-  case class FromPhrase(name: String, patch: Int, kickInstruments: Array[FromInstrument], snareInstruments: Array[FromInstrument])
+  case class FromPhrase(name: String, patch: Int,
+                        instrumentBanks: FromInstrumentBanks)
+  case class FromInstrumentBanks(KICK: FromInstrumentBank, SNARE: FromInstrumentBank,
+                        ALTKICK: FromInstrumentBank, ALTSNARE: FromInstrumentBank)
+  case class FromInstrumentBank(name: String, instruments: Array[FromInstrument])
   case class FromInstrument(notes: Array[String])
 }
