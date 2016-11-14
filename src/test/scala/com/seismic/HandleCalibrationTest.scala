@@ -42,6 +42,18 @@ class HandleCalibrationTest extends Test {
         handleCalibration.select(870, Array("A", "B")) should be ("A")
       }
     }
+
+    "with values that exceed the thresholds" - {
+      "should not throw errors for values too high" in new TestData {
+        handleCalibration.inverted = false
+        handleCalibration.select(2000, Array("A", "B")) should be ("B")
+      }
+
+      "should not throw errors for values too low" in new TestData {
+        handleCalibration.inverted = false
+        handleCalibration.select(-100, Array("A", "B")) should be ("A")
+      }
+    }
   }
 
   trait TestData {

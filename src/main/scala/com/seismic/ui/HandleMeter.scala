@@ -91,9 +91,11 @@ class HandleMeter(size: Dimension) extends JLayeredPane {
   def setRawValue(value: Int): Unit = {
     this.lastRawValue = value
 
+    val (min, max) = handleCalibration.getMinMax
+
     val radians = map(value,
-                       handleCalibration.calibrationMinValue,
-                       handleCalibration.calibrationMaxValue,
+                       min,
+                       max,
                        Math.PI.toFloat,
                        4.71239f)
 

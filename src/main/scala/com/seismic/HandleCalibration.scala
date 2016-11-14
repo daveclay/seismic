@@ -1,5 +1,6 @@
 package com.seismic
 
+import com.seismic.utils.ArrayUtils.getConstrainedItem
 import com.seismic.utils.ValueMapHelper._
 
 case class HandleCalibration(var calibrationMinValue: Int = 0,
@@ -7,13 +8,16 @@ case class HandleCalibration(var calibrationMinValue: Int = 0,
                              var inverted: Boolean = true) {
 
   def select[T](value: Int, items: Seq[T]) = {
-    val range = calibrationMaxValue - calibrationMinValue
-    val valueAdjustedForRange = Math.max(0, Math.min(calibrationMaxValue, value - calibrationMinValue))
+    val (min, max) = getMinMax
 
-    val min = if (inverted) range else 0
-    val max = if (inverted) 0 else range
+    val index = Math.round(map(value, min, max, 0, items.size - 1))
+    getConstrainedItem(index, items)
+  }
 
-    items(Math.round(map(valueAdjustedForRange, min, max, 0, items.size - 1)))
+  def getMinMax = {
+    val min = if (inverted) calibrationMaxValue else calibrationMinValue
+    val max = if (inverted) calibrationMinValue else calibrationMaxValue
+    (min, max)
   }
 }
 
